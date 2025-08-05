@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -38,10 +38,16 @@ const companySchema = z.object({
 
 type CompanyFormData = z.infer<typeof companySchema>;
 
-export const AddCompanyDialog = () => {
-  const [open, setOpen] = useState(false);
+interface AddCompanyDialogProps {
+  company?: any;
+  onClose?: () => void;
+}
+
+export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {}) => {
+  const [open, setOpen] = useState(!!company);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isEditing = !!company;
 
   const form = useForm<CompanyFormData>({
     resolver: zodResolver(companySchema),
@@ -57,7 +63,23 @@ export const AddCompanyDialog = () => {
     },
   });
 
-  const addCompanyMutation = useMutation({
+  useEffect(() => {
+    if (company) {
+      form.reset({
+        name: company.name || '',
+        company_type: company.company_type || '',
+        description: company.description || '',
+        employee_count: company.employee_count || undefined,
+        founded_year: company.founded_year || undefined,
+        website: company.website || '',
+        company_locations: company.company_locations?.join(', ') || '',
+        services: company.services?.join(', ') || '',
+      });
+      setOpen(true);
+    }
+  }, [company, form]);
+
+  const mutation = useMutation({
     mutationFn: async (data: CompanyFormData) => {
       const companyData = {
         name: data.name,
@@ -74,47 +96,56 @@ export const AddCompanyDialog = () => {
           : [],
       };
 
-      const { error } = await supabase
-        .from('companies')
-        .insert(companyData);
-
-      if (error) throw error;
+      if (isEditing) {
+        const { error } = await supabase.from('companies').update(companyData).eq('id', company.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('companies').insert(companyData);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['companies'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast({
         title: 'Success',
-        description: 'Company added successfully!',
+        description: isEditing ? 'Company updated successfully!' : 'Company added successfully!',
       });
-      setOpen(false);
-      form.reset();
+      handleClose();
     },
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to add company. Please try again.',
+        description: isEditing ? 'Failed to update company. Please try again.' : 'Failed to add company. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error adding company:', error);
+      console.error('Error with company:', error);
     },
   });
 
+  const handleClose = () => {
+    setOpen(false);
+    if (onClose) onClose();
+    if (!isEditing) form.reset();
+  };
+
   const onSubmit = (data: CompanyFormData) => {
-    addCompanyMutation.mutate(data);
+    mutation.mutate(data);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Company
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleClose}>
+      {!isEditing && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Company
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Company</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Company' : 'Add New Company'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -248,12 +279,12 @@ export const AddCompanyDialog = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={addCompanyMutation.isPending}>
-                {addCompanyMutation.isPending ? 'Adding...' : 'Add Company'}
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? 'Update Company' : 'Add Company')}
               </Button>
             </div>
           </form>

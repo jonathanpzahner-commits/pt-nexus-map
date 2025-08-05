@@ -1,16 +1,22 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Mail, Phone, Globe, MapPin, Award, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, Mail, Phone, Globe, MapPin, Award, Calendar, Edit, Trash2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AddProviderDialog } from '@/components/forms/AddProviderDialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const ProvidersTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [stateFilter, setStateFilter] = useState<string>('all');
+  const [editingProvider, setEditingProvider] = useState<any>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch providers with search and filtering
   const { data: providers, isLoading: providersLoading } = useQuery({
@@ -48,6 +54,21 @@ const ProvidersTab = () => {
     },
   });
 
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('providers').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['providers'] });
+      toast({ title: "Provider deleted successfully" });
+    },
+    onError: (error) => {
+      toast({ title: "Error deleting provider", description: error.message, variant: "destructive" });
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -57,7 +78,15 @@ const ProvidersTab = () => {
             Browse licensed physical therapists and their specializations
           </p>
         </div>
-        <AddProviderDialog />
+        <div className="flex gap-2">
+          <AddProviderDialog />
+          {editingProvider && (
+            <AddProviderDialog 
+              provider={editingProvider} 
+              onClose={() => setEditingProvider(null)}
+            />
+          )}
+        </div>
       </div>
 
       {/* Search and Filter Controls */}
@@ -109,12 +138,44 @@ const ProvidersTab = () => {
             <Card key={provider.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <h3 className="font-semibold text-lg">
-                    {provider.name}
-                  </h3>
-                  <Badge variant="outline" className="text-xs">
-                    {provider.license_state}
-                  </Badge>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">
+                      {provider.name}
+                    </h3>
+                    <Badge variant="outline" className="text-xs mt-1">
+                      {provider.license_state}
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingProvider(provider)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Provider</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete {provider.name}? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteMutation.mutate(provider.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   License: {provider.license_number}

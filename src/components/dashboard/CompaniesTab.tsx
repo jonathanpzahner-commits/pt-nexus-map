@@ -1,16 +1,22 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Search, Building, Users, Calendar, Globe, MapPin, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, Building, Users, Calendar, Globe, MapPin, Plus, Edit, Trash2 } from 'lucide-react';
 import { AddCompanyDialog } from '@/components/forms/AddCompanyDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 
 export const CompaniesTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [editingCompany, setEditingCompany] = useState<any>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch companies with search and filtering
   const { data: companies, isLoading: companiesLoading } = useQuery({
@@ -48,6 +54,21 @@ export const CompaniesTab = () => {
     },
   });
 
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('companies').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['companies'] });
+      toast({ title: "Company deleted successfully" });
+    },
+    onError: (error) => {
+      toast({ title: "Error deleting company", description: error.message, variant: "destructive" });
+    },
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -57,7 +78,15 @@ export const CompaniesTab = () => {
             Discover PT-related businesses, clinics, and service providers
           </p>
         </div>
-        <AddCompanyDialog />
+        <div className="flex gap-2">
+          <AddCompanyDialog />
+          {editingCompany && (
+            <AddCompanyDialog 
+              company={editingCompany} 
+              onClose={() => setEditingCompany(null)}
+            />
+          )}
+        </div>
       </div>
 
       {/* Search and Filter Controls */}
@@ -109,12 +138,44 @@ export const CompaniesTab = () => {
             <Card key={company.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <h3 className="font-semibold text-lg">
-                    {company.name}
-                  </h3>
-                  <Badge variant="outline" className="text-xs">
-                    {company.company_type}
-                  </Badge>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">
+                      {company.name}
+                    </h3>
+                    <Badge variant="outline" className="text-xs mt-1">
+                      {company.company_type}
+                    </Badge>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingCompany(company)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Company</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete {company.name}? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteMutation.mutate(company.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
                 {company.website && (
                   <a 

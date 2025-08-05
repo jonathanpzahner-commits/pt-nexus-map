@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,23 +28,29 @@ import { Plus } from 'lucide-react';
 const providerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   license_number: z.string().min(1, 'License number is required'),
-  license_state: z.string().min(2, 'License state is required').max(2, 'State must be 2 characters'),
-  specializations: z.string().optional(),
-  years_experience: z.number().min(0).optional(),
-  phone: z.string().optional(),
+  license_state: z.string().min(2, 'License state is required'),
   email: z.string().email('Invalid email').optional().or(z.literal('')),
+  phone: z.string().optional(),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
   city: z.string().optional(),
   state: z.string().optional(),
   bio: z.string().optional(),
+  years_experience: z.number().min(0).optional(),
+  specializations: z.string().optional(),
 });
 
 type ProviderFormData = z.infer<typeof providerSchema>;
 
-export const AddProviderDialog = () => {
-  const [open, setOpen] = useState(false);
+interface AddProviderDialogProps {
+  provider?: any;
+  onClose?: () => void;
+}
+
+export const AddProviderDialog = ({ provider, onClose }: AddProviderDialogProps = {}) => {
+  const [open, setOpen] = useState(!!provider);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isEditing = !!provider;
 
   const form = useForm<ProviderFormData>({
     resolver: zodResolver(providerSchema),
@@ -52,76 +58,104 @@ export const AddProviderDialog = () => {
       name: '',
       license_number: '',
       license_state: '',
-      specializations: '',
-      years_experience: undefined,
-      phone: '',
       email: '',
+      phone: '',
       website: '',
       city: '',
       state: '',
       bio: '',
+      years_experience: undefined,
+      specializations: '',
     },
   });
 
-  const addProviderMutation = useMutation({
+  useEffect(() => {
+    if (provider) {
+      form.reset({
+        name: provider.name || '',
+        license_number: provider.license_number || '',
+        license_state: provider.license_state || '',
+        email: provider.email || '',
+        phone: provider.phone || '',
+        website: provider.website || '',
+        city: provider.city || '',
+        state: provider.state || '',
+        bio: provider.bio || '',
+        years_experience: provider.years_experience || undefined,
+        specializations: provider.specializations?.join(', ') || '',
+      });
+      setOpen(true);
+    }
+  }, [provider, form]);
+
+  const mutation = useMutation({
     mutationFn: async (data: ProviderFormData) => {
       const providerData = {
         name: data.name,
         license_number: data.license_number,
         license_state: data.license_state,
-        specializations: data.specializations 
-          ? data.specializations.split(',').map(s => s.trim()).filter(s => s)
-          : [],
-        years_experience: data.years_experience,
         email: data.email || null,
-        website: data.website || null,
         phone: data.phone || null,
+        website: data.website || null,
         city: data.city || null,
         state: data.state || null,
         bio: data.bio || null,
+        years_experience: data.years_experience,
+        specializations: data.specializations 
+          ? data.specializations.split(',').map(s => s.trim()).filter(s => s)
+          : [],
       };
 
-      const { error } = await supabase
-        .from('providers')
-        .insert(providerData);
-
-      if (error) throw error;
+      if (isEditing) {
+        const { error } = await supabase.from('providers').update(providerData).eq('id', provider.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('providers').insert(providerData);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['providers'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast({
         title: 'Success',
-        description: 'Provider added successfully!',
+        description: isEditing ? 'Provider updated successfully!' : 'Provider added successfully!',
       });
-      setOpen(false);
-      form.reset();
+      handleClose();
     },
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to add provider. Please try again.',
+        description: isEditing ? 'Failed to update provider. Please try again.' : 'Failed to add provider. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error adding provider:', error);
+      console.error('Error with provider:', error);
     },
   });
 
+  const handleClose = () => {
+    setOpen(false);
+    if (onClose) onClose();
+    if (!isEditing) form.reset();
+  };
+
   const onSubmit = (data: ProviderFormData) => {
-    addProviderMutation.mutate(data);
+    mutation.mutate(data);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Provider
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleClose}>
+      {!isEditing && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Provider
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Physical Therapist</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Provider' : 'Add New Provider'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -131,9 +165,9 @@ export const AddProviderDialog = () => {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Name *</FormLabel>
+                    <FormLabel>Full Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="Dr. John Smith" {...field} />
+                      <Input placeholder="Dr. Jane Smith" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -159,7 +193,7 @@ export const AddProviderDialog = () => {
                   <FormItem>
                     <FormLabel>License State *</FormLabel>
                     <FormControl>
-                      <Input placeholder="CA" maxLength={2} {...field} />
+                      <Input placeholder="CA" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -185,25 +219,12 @@ export const AddProviderDialog = () => {
               />
               <FormField
                 control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Phone</FormLabel>
-                    <FormControl>
-                      <Input placeholder="(555) 123-4567" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="john@example.com" {...field} />
+                      <Input placeholder="jane@example.com" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -211,12 +232,12 @@ export const AddProviderDialog = () => {
               />
               <FormField
                 control={form.control}
-                name="website"
+                name="phone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Website</FormLabel>
+                    <FormLabel>Phone</FormLabel>
                     <FormControl>
-                      <Input placeholder="https://www.example.com" {...field} />
+                      <Input placeholder="+1 (555) 123-4567" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -248,6 +269,19 @@ export const AddProviderDialog = () => {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Website</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://www.drjanesmith.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <FormField
               control={form.control}
@@ -257,7 +291,7 @@ export const AddProviderDialog = () => {
                   <FormLabel>Specializations</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Orthopedic, Sports Medicine, Neurological (comma-separated)" 
+                      placeholder="Sports Medicine, Orthopedic PT, Pediatric PT (comma-separated)" 
                       {...field} 
                     />
                   </FormControl>
@@ -273,8 +307,8 @@ export const AddProviderDialog = () => {
                   <FormLabel>Bio</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Brief description of experience and specialties..."
-                      className="min-h-[100px]"
+                      placeholder="Brief professional biography..."
+                      className="min-h-[80px]"
                       {...field} 
                     />
                   </FormControl>
@@ -286,12 +320,12 @@ export const AddProviderDialog = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={addProviderMutation.isPending}>
-                {addProviderMutation.isPending ? 'Adding...' : 'Add Provider'}
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? 'Update Provider' : 'Add Provider')}
               </Button>
             </div>
           </form>
