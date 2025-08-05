@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Activity, Users, Building, Briefcase, GraduationCap } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
-import CompaniesTab from './dashboard/CompaniesTab';
-import SchoolsTab from './dashboard/SchoolsTab';
-import JobListingsTab from './dashboard/JobListingsTab';
+import { CompaniesTab } from './dashboard/CompaniesTab';
+import { SchoolsTab } from './dashboard/SchoolsTab';
+import { JobListingsTab } from './dashboard/JobListingsTab';
 
 const Dashboard = () => {
   // Fetch summary statistics

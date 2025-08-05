@@ -1,42 +1,38 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Search, MapPin, Users, Building, ExternalLink, Globe } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Search, Building, Users, Calendar, Globe, MapPin, Plus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const CompaniesTab = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [typeFilter, setTypeFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
 
-  const { data: companies, isLoading } = useQuery({
+  // Fetch companies with search and filtering
+  const { data: companies, isLoading: companiesLoading } = useQuery({
     queryKey: ['companies', searchTerm, typeFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('companies')
-        .select(`
-          *,
-          company_locations(*)
-        `)
-        .order('name', { ascending: true });
-
+      let query = supabase.from('companies').select('*');
+      
       if (searchTerm) {
         query = query.ilike('name', `%${searchTerm}%`);
       }
-
+      
       if (typeFilter !== 'all') {
         query = query.eq('company_type', typeFilter);
       }
-
-      const { data, error } = await query.limit(50);
+      
+      const { data, error } = await query.order('name');
       if (error) throw error;
       return data;
-    }
+    },
   });
 
+  // Fetch unique company types for filter
   const { data: companyTypes } = useQuery({
     queryKey: ['company-types'],
     queryFn: async () => {
@@ -46,138 +42,132 @@ export const CompaniesTab = () => {
         .not('company_type', 'is', null);
       
       if (error) throw error;
-      const uniqueTypes = [...new Set(data.map(c => c.company_type))].sort();
-      return uniqueTypes;
-    }
+      
+      const uniqueTypes = [...new Set(data.map(item => item.company_type))].filter(Boolean);
+      return uniqueTypes.sort();
+    },
   });
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Healthcare Companies</h2>
-          <p className="text-muted-foreground">Organizations providing PT services</p>
+          <h2 className="text-2xl font-bold">Companies</h2>
+          <p className="text-muted-foreground">
+            Discover PT-related businesses, clinics, and service providers
+          </p>
         </div>
         <Button>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4 mr-2" />
           Add Company
         </Button>
       </div>
 
-      {/* Filters */}
+      {/* Search and Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search companies..."
+            placeholder="Search by company name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Filter by type" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
-            {companyTypes?.map(type => (
-              <SelectItem key={type} value={type}>{type}</SelectItem>
+            {companyTypes?.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
       {/* Companies Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {isLoading ? (
-          Array(4).fill(0).map((_, i) => (
+      {companiesLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-5 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
+              <CardHeader className="space-y-2">
+                <div className="h-6 bg-muted rounded w-3/4"></div>
+                <div className="h-4 bg-muted rounded w-1/2"></div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="h-3 bg-muted rounded"></div>
-                  <div className="h-3 bg-muted rounded w-2/3"></div>
-                </div>
+              <CardContent className="space-y-3">
+                <div className="h-4 bg-muted rounded"></div>
+                <div className="h-4 bg-muted rounded w-5/6"></div>
+                <div className="h-20 bg-muted rounded"></div>
               </CardContent>
             </Card>
-          ))
-        ) : companies?.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <p className="text-muted-foreground">No companies found. Try adjusting your search criteria.</p>
-          </div>
-        ) : (
-          companies?.map((company) => (
-            <Card key={company.id} className="hover:shadow-md transition-shadow">
+          ))}
+        </div>
+      ) : companies && companies.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {companies.map((company) => (
+            <Card key={company.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-xl">{company.name}</CardTitle>
-                    <CardDescription className="mt-1">
-                      {company.company_type && (
-                        <Badge variant="secondary">{company.company_type}</Badge>
-                      )}
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    {company.website && (
-                      <Button variant="ghost" size="sm" asChild>
-                        <a href={company.website} target="_blank" rel="noopener noreferrer">
-                          <Globe className="h-4 w-4" />
-                        </a>
-                      </Button>
-                    )}
-                  </div>
+                <div className="flex justify-between items-start">
+                  <h3 className="font-semibold text-lg">
+                    {company.name}
+                  </h3>
+                  <Badge variant="outline" className="text-xs">
+                    {company.company_type}
+                  </Badge>
                 </div>
+                {company.website && (
+                  <a 
+                    href={company.website} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline text-sm"
+                  >
+                    Visit Website
+                  </a>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Description */}
                 {company.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-sm text-muted-foreground line-clamp-3">
                     {company.description}
                   </p>
                 )}
 
+                {/* Company Details */}
                 <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>
-                      {company.employee_count ? `${company.employee_count} employees` : 'Size not specified'}
-                    </span>
-                  </div>
-
+                  {company.employee_count && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Users className="h-4 w-4 text-muted-foreground" />
+                      <span>{company.employee_count} employees</span>
+                    </div>
+                  )}
                   {company.founded_year && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Building className="h-4 w-4" />
-                      <span>Founded {company.founded_year}</span>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      <span>Founded in {company.founded_year}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Company Locations */}
+                {/* Locations */}
                 {company.company_locations && company.company_locations.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Locations</h4>
-                    <div className="space-y-1">
-                      {company.company_locations.slice(0, 3).map((location) => (
-                        <div key={location.id} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          <span>
-                            {[location.city, location.state].filter(Boolean).join(', ')}
-                            {location.location_type && (
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                {location.location_type}
-                              </Badge>
-                            )}
-                          </span>
-                        </div>
+                    <p className="text-sm font-medium">Locations:</p>
+                    <div className="flex flex-wrap gap-1">
+                      {company.company_locations.slice(0, 2).map((location, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {location}
+                        </Badge>
                       ))}
-                      {company.company_locations.length > 3 && (
-                        <p className="text-xs text-muted-foreground">
-                          +{company.company_locations.length - 3} more locations
-                        </p>
+                      {company.company_locations.length > 2 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{company.company_locations.length - 2} more
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -186,16 +176,16 @@ export const CompaniesTab = () => {
                 {/* Services */}
                 {company.services && company.services.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Services</h4>
+                    <p className="text-sm font-medium">Services:</p>
                     <div className="flex flex-wrap gap-1">
-                      {company.services.slice(0, 4).map((service, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
+                      {company.services.slice(0, 3).map((service, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
                           {service}
                         </Badge>
                       ))}
-                      {company.services.length > 4 && (
+                      {company.services.length > 3 && (
                         <Badge variant="outline" className="text-xs">
-                          +{company.services.length - 4} more
+                          +{company.services.length - 3} more
                         </Badge>
                       )}
                     </div>
@@ -203,9 +193,21 @@ export const CompaniesTab = () => {
                 )}
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Building className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Companies Found</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              {searchTerm || typeFilter !== 'all'
+                ? "Try adjusting your search filters."
+                : "No companies have been added yet."}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

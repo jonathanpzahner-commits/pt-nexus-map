@@ -1,42 +1,47 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Plus, Search, MapPin, Users, GraduationCap, ExternalLink, Star } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { 
+  Search, 
+  GraduationCap, 
+  MapPin, 
+  CheckCircle, 
+  Clock, 
+  DollarSign, 
+  Users, 
+  Plus 
+} from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const SchoolsTab = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [stateFilter, setStateFilter] = useState("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [stateFilter, setStateFilter] = useState<string>('all');
 
-  const { data: schools, isLoading } = useQuery({
+  // Fetch schools with search and filtering
+  const { data: schools, isLoading: schoolsLoading } = useQuery({
     queryKey: ['schools', searchTerm, stateFilter],
     queryFn: async () => {
-      let query = supabase
-        .from('schools')
-        .select(`
-          *,
-          faculty(*)
-        `)
-        .order('name', { ascending: true });
-
+      let query = supabase.from('schools').select('*');
+      
       if (searchTerm) {
         query = query.ilike('name', `%${searchTerm}%`);
       }
-
+      
       if (stateFilter !== 'all') {
         query = query.eq('state', stateFilter);
       }
-
-      const { data, error } = await query.limit(50);
+      
+      const { data, error } = await query.order('name');
       if (error) throw error;
       return data;
-    }
+    },
   });
 
+  // Fetch unique states for filter
   const { data: states } = useQuery({
     queryKey: ['school-states'],
     queryFn: async () => {
@@ -46,179 +51,184 @@ export const SchoolsTab = () => {
         .not('state', 'is', null);
       
       if (error) throw error;
-      const uniqueStates = [...new Set(data.map(s => s.state))].sort();
-      return uniqueStates;
-    }
+      
+      const uniqueStates = [...new Set(data.map(item => item.state))].filter(Boolean);
+      return uniqueStates.sort();
+    },
   });
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">PT Education Programs</h2>
-          <p className="text-muted-foreground">Schools and universities offering PT degrees</p>
+          <h2 className="text-2xl font-bold">PT Schools</h2>
+          <p className="text-muted-foreground">
+            Explore physical therapy education programs and universities
+          </p>
         </div>
         <Button>
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="h-4 w-4 mr-2" />
           Add School
         </Button>
       </div>
 
-      {/* Filters */}
+      {/* Search and Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search schools..."
+            placeholder="Search by school name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
         <Select value={stateFilter} onValueChange={setStateFilter}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Filter by state" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All States</SelectItem>
-            {states?.map(state => (
-              <SelectItem key={state} value={state}>{state}</SelectItem>
+            {states?.map((state) => (
+              <SelectItem key={state} value={state}>
+                {state}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
       {/* Schools Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {isLoading ? (
-          Array(4).fill(0).map((_, i) => (
+      {schoolsLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
             <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-5 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
+              <CardHeader className="space-y-2">
+                <div className="h-6 bg-muted rounded w-3/4"></div>
+                <div className="h-4 bg-muted rounded w-1/2"></div>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="h-3 bg-muted rounded"></div>
-                  <div className="h-3 bg-muted rounded w-2/3"></div>
-                </div>
+              <CardContent className="space-y-3">
+                <div className="h-4 bg-muted rounded"></div>
+                <div className="h-4 bg-muted rounded w-5/6"></div>
+                <div className="h-20 bg-muted rounded"></div>
               </CardContent>
             </Card>
-          ))
-        ) : schools?.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <p className="text-muted-foreground">No schools found. Try adjusting your search criteria.</p>
-          </div>
-        ) : (
-          schools?.map((school) => (
-            <Card key={school.id} className="hover:shadow-md transition-shadow">
+          ))}
+        </div>
+      ) : schools && schools.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {schools.map((school) => (
+            <Card key={school.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-xl">{school.name}</CardTitle>
-                    <CardDescription className="mt-1 flex items-center gap-2">
-                      <MapPin className="h-3 w-3" />
-                      {[school.city, school.state].filter(Boolean).join(', ')}
-                    </CardDescription>
-                  </div>
-                  {school.website && (
-                    <Button variant="ghost" size="sm" asChild>
-                      <a href={school.website} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </Button>
-                  )}
+                <div className="flex justify-between items-start">
+                  <h3 className="font-semibold text-lg">
+                    {school.name}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>{school.city}, {school.state}</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Description */}
                 {school.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
+                  <p className="text-sm text-muted-foreground line-clamp-3">
                     {school.description}
                   </p>
                 )}
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {school.accreditation_status && (
-                    <div className="space-y-1">
-                      <span className="font-medium">Accreditation</span>
-                      <div>
-                        <Badge 
-                          variant={school.accreditation_status === 'Accredited' ? 'default' : 'secondary'}
-                          className="text-xs"
-                        >
-                          {school.accreditation_status}
-                        </Badge>
-                      </div>
+                {/* School Details */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4" />
+                    <span className="text-sm">
+                      {school.accreditation}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm">{school.program_length_months} months</span>
+                  </div>
+
+                  {school.tuition_per_year && (
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="h-4 w-4" />
+                      <span className="text-sm">${school.tuition_per_year.toLocaleString()}/year</span>
                     </div>
                   )}
 
-                  {school.program_length && (
-                    <div className="space-y-1">
-                      <span className="font-medium">Program Length</span>
-                      <p className="text-muted-foreground">{school.program_length}</p>
-                    </div>
-                  )}
-
-                  {school.tuition && (
-                    <div className="space-y-1">
-                      <span className="font-medium">Tuition</span>
-                      <p className="text-muted-foreground">${school.tuition.toLocaleString()}</p>
-                    </div>
-                  )}
-
-                  {school.class_size && (
-                    <div className="space-y-1">
-                      <span className="font-medium">Class Size</span>
-                      <p className="text-muted-foreground">{school.class_size} students</p>
+                  {school.average_class_size && (
+                    <div className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      <span className="text-sm">{school.average_class_size} students</span>
                     </div>
                   )}
                 </div>
 
-                {/* Program Types */}
-                {school.program_types && school.program_types.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Programs Offered</h4>
+                {/* Programs */}
+                {school.programs_offered && school.programs_offered.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">Programs:</p>
                     <div className="flex flex-wrap gap-1">
-                      {school.program_types.map((program, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
+                      {school.programs_offered.slice(0, 3).map((program, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
                           {program}
                         </Badge>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Faculty Count */}
-                {school.faculty && school.faculty.length > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{school.faculty.length} faculty members</span>
-                  </div>
-                )}
-
-                {/* Specializations */}
-                {school.specializations && school.specializations.length > 0 && (
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Specializations</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {school.specializations.slice(0, 3).map((spec, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {spec}
-                        </Badge>
-                      ))}
-                      {school.specializations.length > 3 && (
+                      {school.programs_offered.length > 3 && (
                         <Badge variant="outline" className="text-xs">
-                          +{school.specializations.length - 3} more
+                          +{school.programs_offered.length - 3} more
                         </Badge>
                       )}
                     </div>
                   </div>
                 )}
+
+                {/* Faculty and Specializations */}
+                <div className="space-y-2">
+                  {school.faculty_count && (
+                    <p className="text-sm">
+                      <span className="font-medium">Faculty:</span> {school.faculty_count} members
+                    </p>
+                  )}
+                  
+                  {school.specializations && school.specializations.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Specializations:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {school.specializations.slice(0, 2).map((spec, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {spec}
+                          </Badge>
+                        ))}
+                        {school.specializations.length > 2 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{school.specializations.length - 2} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <GraduationCap className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No Schools Found</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              {searchTerm || stateFilter !== 'all'
+                ? "Try adjusting your search filters."
+                : "No schools have been added yet."}
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };
