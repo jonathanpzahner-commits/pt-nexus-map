@@ -66,10 +66,13 @@ export const AddProviderDialog = () => {
   const addProviderMutation = useMutation({
     mutationFn: async (data: ProviderFormData) => {
       const providerData = {
-        ...data,
+        name: data.name,
+        license_number: data.license_number,
+        license_state: data.license_state,
         specializations: data.specializations 
           ? data.specializations.split(',').map(s => s.trim()).filter(s => s)
           : [],
+        years_experience: data.years_experience,
         email: data.email || null,
         website: data.website || null,
         phone: data.phone || null,
