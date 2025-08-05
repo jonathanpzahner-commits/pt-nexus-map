@@ -14,7 +14,212 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      companies: {
+        Row: {
+          company_locations: string[] | null
+          company_type: string
+          created_at: string
+          description: string | null
+          employee_count: number | null
+          founded_year: number | null
+          id: string
+          name: string
+          services: string[] | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          company_locations?: string[] | null
+          company_type: string
+          created_at?: string
+          description?: string | null
+          employee_count?: number | null
+          founded_year?: number | null
+          id?: string
+          name: string
+          services?: string[] | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          company_locations?: string[] | null
+          company_type?: string
+          created_at?: string
+          description?: string | null
+          employee_count?: number | null
+          founded_year?: number | null
+          id?: string
+          name?: string
+          services?: string[] | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      job_listings: {
+        Row: {
+          city: string
+          company_id: string | null
+          created_at: string
+          description: string | null
+          employment_type: string | null
+          experience_level: string | null
+          id: string
+          is_remote: boolean | null
+          posted_by: string | null
+          requirements: string | null
+          salary_max: number | null
+          salary_min: number | null
+          state: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          employment_type?: string | null
+          experience_level?: string | null
+          id?: string
+          is_remote?: boolean | null
+          posted_by?: string | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          state: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          company_id?: string | null
+          created_at?: string
+          description?: string | null
+          employment_type?: string | null
+          experience_level?: string | null
+          id?: string
+          is_remote?: boolean | null
+          posted_by?: string | null
+          requirements?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          state?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_listings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      providers: {
+        Row: {
+          bio: string | null
+          city: string | null
+          created_at: string
+          email: string | null
+          id: string
+          license_number: string
+          license_state: string
+          name: string
+          phone: string | null
+          specializations: string[] | null
+          state: string | null
+          updated_at: string
+          website: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          license_number: string
+          license_state: string
+          name: string
+          phone?: string | null
+          specializations?: string[] | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          city?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          license_number?: string
+          license_state?: string
+          name?: string
+          phone?: string | null
+          specializations?: string[] | null
+          state?: string | null
+          updated_at?: string
+          website?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      schools: {
+        Row: {
+          accreditation: string | null
+          average_class_size: number | null
+          city: string
+          created_at: string
+          description: string | null
+          faculty_count: number | null
+          id: string
+          name: string
+          program_length_months: number | null
+          programs_offered: string[] | null
+          specializations: string[] | null
+          state: string
+          tuition_per_year: number | null
+          updated_at: string
+        }
+        Insert: {
+          accreditation?: string | null
+          average_class_size?: number | null
+          city: string
+          created_at?: string
+          description?: string | null
+          faculty_count?: number | null
+          id?: string
+          name: string
+          program_length_months?: number | null
+          programs_offered?: string[] | null
+          specializations?: string[] | null
+          state: string
+          tuition_per_year?: number | null
+          updated_at?: string
+        }
+        Update: {
+          accreditation?: string | null
+          average_class_size?: number | null
+          city?: string
+          created_at?: string
+          description?: string | null
+          faculty_count?: number | null
+          id?: string
+          name?: string
+          program_length_months?: number | null
+          programs_offered?: string[] | null
+          specializations?: string[] | null
+          state?: string
+          tuition_per_year?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
