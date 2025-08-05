@@ -15,6 +15,7 @@ import {
   Users, 
   Plus 
 } from 'lucide-react';
+import { AddSchoolDialog } from '@/components/forms/AddSchoolDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const SchoolsTab = () => {
@@ -66,10 +67,7 @@ export const SchoolsTab = () => {
             Explore physical therapy education programs and universities
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add School
-        </Button>
+        <AddSchoolDialog />
       </div>
 
       {/* Search and Filter Controls */}

@@ -15,6 +15,7 @@ import {
   Building,
   Plus
 } from 'lucide-react';
+import { AddJobDialog } from '@/components/forms/AddJobDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -84,10 +85,7 @@ export const JobListingsTab = () => {
             Find physical therapy job opportunities across the country
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Post Job
-        </Button>
+        <AddJobDialog />
       </div>
 
       {/* Search and Filter Controls */}

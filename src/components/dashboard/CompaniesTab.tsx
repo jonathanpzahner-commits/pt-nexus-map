@@ -4,8 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Search, Building, Users, Calendar, Globe, MapPin, Plus } from 'lucide-react';
+import { AddCompanyDialog } from '@/components/forms/AddCompanyDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const CompaniesTab = () => {
@@ -57,10 +57,7 @@ export const CompaniesTab = () => {
             Discover PT-related businesses, clinics, and service providers
           </p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Company
-        </Button>
+        <AddCompanyDialog />
       </div>
 
       {/* Search and Filter Controls */}
