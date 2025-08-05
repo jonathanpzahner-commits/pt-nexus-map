@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import Dashboard from '@/components/Dashboard';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -45,19 +46,7 @@ const Index = () => {
       </header>
       
       <main className="p-6 max-w-7xl mx-auto">
-        <div className="text-center py-12">
-          <h2 className="text-3xl font-bold mb-4">
-            Physical Therapy Ecosystem Platform
-          </h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Comprehensive mapping and data platform for PTs, companies, schools, and job listings
-          </p>
-          <div className="bg-muted p-6 rounded-lg">
-            <p className="text-foreground">
-              🔒 Your platform is now secured with authentication. Ready to start building the mapping features!
-            </p>
-          </div>
-        </div>
+        <Dashboard />
       </main>
     </div>
   );
