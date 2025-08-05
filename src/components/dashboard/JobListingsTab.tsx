@@ -5,27 +5,24 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Search, 
-  Briefcase, 
-  MapPin, 
-  Calendar, 
-  DollarSign, 
-  Clock, 
-  Building,
-  Plus
-} from 'lucide-react';
+import { Search, Briefcase, MapPin, DollarSign, Clock, Building, Calendar, Edit, Trash2 } from 'lucide-react';
 import { AddJobDialog } from '@/components/forms/AddJobDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 
 export const JobListingsTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [locationFilter, setLocationFilter] = useState<string>('all');
+  const [cityFilter, setCityFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [editingJob, setEditingJob] = useState<any>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  // Fetch job listings with company information
+  // Fetch job listings with search and filtering
   const { data: jobs, isLoading: jobsLoading } = useQuery({
-    queryKey: ['job-listings', searchTerm, locationFilter],
+    queryKey: ['job-listings', searchTerm, cityFilter, typeFilter],
     queryFn: async () => {
       let query = supabase
         .from('job_listings')
@@ -41,8 +38,12 @@ export const JobListingsTab = () => {
         query = query.ilike('title', `%${searchTerm}%`);
       }
       
-      if (locationFilter !== 'all') {
-        query = query.ilike('city', `%${locationFilter}%`);
+      if (cityFilter !== 'all') {
+        query = query.eq('city', cityFilter);
+      }
+      
+      if (typeFilter !== 'all') {
+        query = query.eq('employment_type', typeFilter);
       }
       
       const { data, error } = await query.order('created_at', { ascending: false });
@@ -51,20 +52,50 @@ export const JobListingsTab = () => {
     },
   });
 
-  // Fetch unique locations for filter
-  const { data: locations } = useQuery({
-    queryKey: ['job-locations'],
+  // Fetch unique cities for filter
+  const { data: cities } = useQuery({
+    queryKey: ['job-cities'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('job_listings')
-        .select('city, state')
-        .not('city', 'is', null)
-        .not('state', 'is', null);
+        .select('city')
+        .not('city', 'is', null);
       
       if (error) throw error;
       
-      const uniqueLocations = [...new Set(data.map(item => `${item.city}, ${item.state}`))];
-      return uniqueLocations.sort();
+      const uniqueCities = [...new Set(data.map(item => item.city))].filter(Boolean);
+      return uniqueCities.sort();
+    },
+  });
+
+  // Fetch unique employment types for filter
+  const { data: employmentTypes } = useQuery({
+    queryKey: ['employment-types'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('job_listings')
+        .select('employment_type')
+        .not('employment_type', 'is', null);
+      
+      if (error) throw error;
+      
+      const uniqueTypes = [...new Set(data.map(item => item.employment_type))].filter(Boolean);
+      return uniqueTypes.sort();
+    },
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from('job_listings').delete().eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['job-listings'] });
+      toast({ title: "Job listing deleted successfully" });
+    },
+    onError: (error) => {
+      toast({ title: "Error deleting job listing", description: error.message, variant: "destructive" });
     },
   });
 
@@ -85,7 +116,15 @@ export const JobListingsTab = () => {
             Find physical therapy job opportunities across the country
           </p>
         </div>
-        <AddJobDialog />
+        <div className="flex gap-2">
+          <AddJobDialog />
+          {editingJob && (
+            <AddJobDialog 
+              job={editingJob} 
+              onClose={() => setEditingJob(null)}
+            />
+          )}
+        </div>
       </div>
 
       {/* Search and Filter Controls */}
@@ -99,15 +138,28 @@ export const JobListingsTab = () => {
             className="pl-10"
           />
         </div>
-        <Select value={locationFilter} onValueChange={setLocationFilter}>
-          <SelectTrigger className="w-full sm:w-[200px]">
-            <SelectValue placeholder="Filter by location" />
+        <Select value={cityFilter} onValueChange={setCityFilter}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by city" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Locations</SelectItem>
-            {locations?.map((location) => (
-              <SelectItem key={location} value={location.split(',')[0]}>
-                {location}
+            <SelectItem value="all">All Cities</SelectItem>
+            {cities?.map((city) => (
+              <SelectItem key={city} value={city}>
+                {city}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Filter by type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            {employmentTypes?.map((type) => (
+              <SelectItem key={type} value={type}>
+                {type}
               </SelectItem>
             ))}
           </SelectContent>
@@ -136,41 +188,69 @@ export const JobListingsTab = () => {
           {jobs.map((job) => (
             <Card key={job.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <div className="space-y-2">
-                  <h3 className="font-semibold text-lg">
-                    {job.title}
-                  </h3>
-                  {job.companies && (
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Building className="h-4 w-4" />
-                      <span>{job.companies.name}</span>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-lg">
+                      {job.title}
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="outline" className="text-xs">
+                        {job.employment_type}
+                      </Badge>
+                      {job.is_remote && (
+                        <Badge variant="secondary" className="text-xs">
+                          Remote
+                        </Badge>
+                      )}
                     </div>
-                  )}
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{job.city}, {job.state}</span>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>Posted {formatDistanceToNow(new Date(job.created_at))} ago</span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingJob(job)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Job Listing</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this job listing for {job.title}? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => deleteMutation.mutate(job.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
+                </div>
+                {job.companies && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Building className="h-4 w-4" />
+                    <span>{job.companies.name}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span>{job.city}, {job.state}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>Posted {formatDistanceToNow(new Date(job.created_at))} ago</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Job Details */}
-                <div className="space-y-2">
-                  {job.employment_type && (
-                    <Badge variant="secondary" className="text-xs">
-                      {job.employment_type}
-                    </Badge>
-                  )}
-                  {job.is_remote && (
-                    <Badge variant="outline" className="text-xs">
-                      Remote
-                    </Badge>
-                  )}
-                </div>
-
                 {/* Description */}
                 {job.description && (
                   <p className="text-sm text-muted-foreground line-clamp-3">
@@ -203,13 +283,6 @@ export const JobListingsTab = () => {
                     <p className="text-sm text-muted-foreground line-clamp-2">{job.requirements}</p>
                   </div>
                 )}
-
-                {/* Action Button */}
-                <div className="pt-2">
-                  <Button variant="outline" size="sm" className="w-full">
-                    View Details
-                  </Button>
-                </div>
               </CardContent>
             </Card>
           ))}
@@ -220,7 +293,7 @@ export const JobListingsTab = () => {
             <Briefcase className="h-12 w-12 text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Jobs Found</h3>
             <p className="text-muted-foreground text-center mb-4">
-              {searchTerm || locationFilter !== 'all'
+              {searchTerm || cityFilter !== 'all' || typeFilter !== 'all'
                 ? "Try adjusting your search filters."
                 : "No job listings have been posted yet."}
             </p>

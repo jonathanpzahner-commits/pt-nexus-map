@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,23 +28,29 @@ import { Plus } from 'lucide-react';
 const schoolSchema = z.object({
   name: z.string().min(1, 'School name is required'),
   city: z.string().min(1, 'City is required'),
-  state: z.string().min(1, 'State is required'),
+  state: z.string().min(2, 'State is required'),
   description: z.string().optional(),
   accreditation: z.string().optional(),
-  program_length_months: z.number().min(1).optional(),
   tuition_per_year: z.number().min(0).optional(),
+  program_length_months: z.number().min(1).optional(),
+  faculty_count: z.number().min(1).optional(),
   average_class_size: z.number().min(1).optional(),
   programs_offered: z.string().optional(),
-  faculty_count: z.number().min(1).optional(),
   specializations: z.string().optional(),
 });
 
 type SchoolFormData = z.infer<typeof schoolSchema>;
 
-export const AddSchoolDialog = () => {
-  const [open, setOpen] = useState(false);
+interface AddSchoolDialogProps {
+  school?: any;
+  onClose?: () => void;
+}
+
+export const AddSchoolDialog = ({ school, onClose }: AddSchoolDialogProps = {}) => {
+  const [open, setOpen] = useState(!!school);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isEditing = !!school;
 
   const form = useForm<SchoolFormData>({
     resolver: zodResolver(schoolSchema),
@@ -54,16 +60,35 @@ export const AddSchoolDialog = () => {
       state: '',
       description: '',
       accreditation: '',
-      program_length_months: undefined,
       tuition_per_year: undefined,
+      program_length_months: undefined,
+      faculty_count: undefined,
       average_class_size: undefined,
       programs_offered: '',
-      faculty_count: undefined,
       specializations: '',
     },
   });
 
-  const addSchoolMutation = useMutation({
+  useEffect(() => {
+    if (school) {
+      form.reset({
+        name: school.name || '',
+        city: school.city || '',
+        state: school.state || '',
+        description: school.description || '',
+        accreditation: school.accreditation || '',
+        tuition_per_year: school.tuition_per_year ? Number(school.tuition_per_year) : undefined,
+        program_length_months: school.program_length_months || undefined,
+        faculty_count: school.faculty_count || undefined,
+        average_class_size: school.average_class_size || undefined,
+        programs_offered: school.programs_offered?.join(', ') || '',
+        specializations: school.specializations?.join(', ') || '',
+      });
+      setOpen(true);
+    }
+  }, [school, form]);
+
+  const mutation = useMutation({
     mutationFn: async (data: SchoolFormData) => {
       const schoolData = {
         name: data.name,
@@ -71,59 +96,68 @@ export const AddSchoolDialog = () => {
         state: data.state,
         description: data.description || null,
         accreditation: data.accreditation || null,
-        program_length_months: data.program_length_months,
         tuition_per_year: data.tuition_per_year,
+        program_length_months: data.program_length_months,
+        faculty_count: data.faculty_count,
         average_class_size: data.average_class_size,
         programs_offered: data.programs_offered 
           ? data.programs_offered.split(',').map(s => s.trim()).filter(s => s)
           : [],
-        faculty_count: data.faculty_count,
         specializations: data.specializations 
           ? data.specializations.split(',').map(s => s.trim()).filter(s => s)
           : [],
       };
 
-      const { error } = await supabase
-        .from('schools')
-        .insert(schoolData);
-
-      if (error) throw error;
+      if (isEditing) {
+        const { error } = await supabase.from('schools').update(schoolData).eq('id', school.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('schools').insert(schoolData);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['schools'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast({
         title: 'Success',
-        description: 'School added successfully!',
+        description: isEditing ? 'School updated successfully!' : 'School added successfully!',
       });
-      setOpen(false);
-      form.reset();
+      handleClose();
     },
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to add school. Please try again.',
+        description: isEditing ? 'Failed to update school. Please try again.' : 'Failed to add school. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error adding school:', error);
+      console.error('Error with school:', error);
     },
   });
 
+  const handleClose = () => {
+    setOpen(false);
+    if (onClose) onClose();
+    if (!isEditing) form.reset();
+  };
+
   const onSubmit = (data: SchoolFormData) => {
-    addSchoolMutation.mutate(data);
+    mutation.mutate(data);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add School
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleClose}>
+      {!isEditing && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add School
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New PT School</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit School' : 'Add New School'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -135,7 +169,7 @@ export const AddSchoolDialog = () => {
                   <FormItem className="md:col-span-2">
                     <FormLabel>School Name *</FormLabel>
                     <FormControl>
-                      <Input placeholder="University of Southern California" {...field} />
+                      <Input placeholder="University of California PT Program" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -174,7 +208,25 @@ export const AddSchoolDialog = () => {
                   <FormItem>
                     <FormLabel>Accreditation</FormLabel>
                     <FormControl>
-                      <Input placeholder="CAPTE Accredited" {...field} />
+                      <Input placeholder="CAPTE" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="tuition_per_year"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Annual Tuition</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="45000" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -190,42 +242,6 @@ export const AddSchoolDialog = () => {
                       <Input 
                         type="number" 
                         placeholder="36" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="tuition_per_year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tuition Per Year ($)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="45000" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="average_class_size"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Average Class Size</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="85" 
                         {...field}
                         onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                       />
@@ -252,6 +268,24 @@ export const AddSchoolDialog = () => {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="average_class_size"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Average Class Size</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        placeholder="40" 
+                        {...field}
+                        onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <FormField
               control={form.control}
@@ -261,7 +295,7 @@ export const AddSchoolDialog = () => {
                   <FormLabel>Description</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Brief description of the school and program..."
+                      placeholder="Brief description of the school and its programs..."
                       className="min-h-[80px]"
                       {...field} 
                     />
@@ -278,7 +312,7 @@ export const AddSchoolDialog = () => {
                   <FormLabel>Programs Offered</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Doctor of Physical Therapy (DPT), PhD in Physical Therapy (comma-separated)" 
+                      placeholder="DPT, MPT, PhD in PT (comma-separated)" 
                       {...field} 
                     />
                   </FormControl>
@@ -294,7 +328,7 @@ export const AddSchoolDialog = () => {
                   <FormLabel>Specializations</FormLabel>
                   <FormControl>
                     <Input 
-                      placeholder="Neurological, Orthopedic, Cardiovascular (comma-separated)" 
+                      placeholder="Sports Medicine, Neurological PT, Pediatric PT (comma-separated)" 
                       {...field} 
                     />
                   </FormControl>
@@ -306,12 +340,12 @@ export const AddSchoolDialog = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={addSchoolMutation.isPending}>
-                {addSchoolMutation.isPending ? 'Adding...' : 'Add School'}
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? (isEditing ? 'Updating...' : 'Adding...') : (isEditing ? 'Update School' : 'Add School')}
               </Button>
             </div>
           </form>

@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -29,113 +29,129 @@ import { Plus } from 'lucide-react';
 
 const jobSchema = z.object({
   title: z.string().min(1, 'Job title is required'),
-  company_id: z.string().min(1, 'Company is required'),
   city: z.string().min(1, 'City is required'),
-  state: z.string().min(1, 'State is required'),
+  state: z.string().min(2, 'State is required'),
   description: z.string().optional(),
   requirements: z.string().optional(),
+  employment_type: z.string().min(1, 'Employment type is required'),
+  experience_level: z.string().optional(),
   salary_min: z.number().min(0).optional(),
   salary_max: z.number().min(0).optional(),
-  employment_type: z.string().optional(),
-  experience_level: z.string().optional(),
   is_remote: z.boolean().default(false),
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
 
-export const AddJobDialog = () => {
-  const [open, setOpen] = useState(false);
+interface AddJobDialogProps {
+  job?: any;
+  onClose?: () => void;
+}
+
+export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
+  const [open, setOpen] = useState(!!job);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  // Fetch companies for dropdown
-  const { data: companies } = useQuery({
-    queryKey: ['companies-for-jobs'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('companies')
-        .select('id, name')
-        .order('name');
-      if (error) throw error;
-      return data;
-    },
-  });
+  const isEditing = !!job;
 
   const form = useForm<JobFormData>({
     resolver: zodResolver(jobSchema),
     defaultValues: {
       title: '',
-      company_id: '',
       city: '',
       state: '',
       description: '',
       requirements: '',
-      salary_min: undefined,
-      salary_max: undefined,
       employment_type: 'Full-time',
       experience_level: '',
+      salary_min: undefined,
+      salary_max: undefined,
       is_remote: false,
     },
   });
 
-  const addJobMutation = useMutation({
+  useEffect(() => {
+    if (job) {
+      form.reset({
+        title: job.title || '',
+        city: job.city || '',
+        state: job.state || '',
+        description: job.description || '',
+        requirements: job.requirements || '',
+        employment_type: job.employment_type || 'Full-time',
+        experience_level: job.experience_level || '',
+        salary_min: job.salary_min || undefined,
+        salary_max: job.salary_max || undefined,
+        is_remote: job.is_remote || false,
+      });
+      setOpen(true);
+    }
+  }, [job, form]);
+
+  const mutation = useMutation({
     mutationFn: async (data: JobFormData) => {
       const jobData = {
         title: data.title,
-        company_id: data.company_id,
         city: data.city,
         state: data.state,
         description: data.description || null,
         requirements: data.requirements || null,
+        employment_type: data.employment_type,
+        experience_level: data.experience_level || null,
         salary_min: data.salary_min,
         salary_max: data.salary_max,
-        employment_type: data.employment_type || 'Full-time',
-        experience_level: data.experience_level || null,
         is_remote: data.is_remote,
-        posted_by: null, // Could be set to current user ID when auth is implemented
       };
 
-      const { error } = await supabase
-        .from('job_listings')
-        .insert(jobData);
-
-      if (error) throw error;
+      if (isEditing) {
+        const { error } = await supabase.from('job_listings').update(jobData).eq('id', job.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('job_listings').insert(jobData);
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['job-listings'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       toast({
         title: 'Success',
-        description: 'Job posted successfully!',
+        description: isEditing ? 'Job listing updated successfully!' : 'Job listing posted successfully!',
       });
-      setOpen(false);
-      form.reset();
+      handleClose();
     },
     onError: (error) => {
       toast({
         title: 'Error',
-        description: 'Failed to post job. Please try again.',
+        description: isEditing ? 'Failed to update job listing. Please try again.' : 'Failed to post job listing. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error posting job:', error);
+      console.error('Error with job listing:', error);
     },
   });
 
+  const handleClose = () => {
+    setOpen(false);
+    if (onClose) onClose();
+    if (!isEditing) form.reset();
+  };
+
   const onSubmit = (data: JobFormData) => {
-    addJobMutation.mutate(data);
+    mutation.mutate(data);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Post Job
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={handleClose}>
+      {!isEditing && (
+        <DialogTrigger asChild>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Post Job
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Post New Job</DialogTitle>
+          <DialogTitle>{isEditing ? 'Edit Job Listing' : 'Post New Job'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -152,32 +168,6 @@ export const AddJobDialog = () => {
                 </FormItem>
               )}
             />
-            
-            <FormField
-              control={form.control}
-              name="company_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Company *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a company" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {companies?.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -186,7 +176,7 @@ export const AddJobDialog = () => {
                   <FormItem>
                     <FormLabel>City *</FormLabel>
                     <FormControl>
-                      <Input placeholder="San Diego" {...field} />
+                      <Input placeholder="Los Angeles" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -210,7 +200,7 @@ export const AddJobDialog = () => {
                 name="employment_type"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Employment Type</FormLabel>
+                    <FormLabel>Employment Type *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -243,10 +233,9 @@ export const AddJobDialog = () => {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Entry Level">Entry Level</SelectItem>
-                        <SelectItem value="Mid-level">Mid-level</SelectItem>
-                        <SelectItem value="Senior">Senior</SelectItem>
-                        <SelectItem value="Director">Director</SelectItem>
-                        <SelectItem value="All Levels">All Levels</SelectItem>
+                        <SelectItem value="Mid Level">Mid Level</SelectItem>
+                        <SelectItem value="Senior Level">Senior Level</SelectItem>
+                        <SelectItem value="Lead/Management">Lead/Management</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -258,7 +247,7 @@ export const AddJobDialog = () => {
                 name="salary_min"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Minimum Salary ($)</FormLabel>
+                    <FormLabel>Minimum Salary (Annual)</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -276,7 +265,7 @@ export const AddJobDialog = () => {
                 name="salary_max"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Maximum Salary ($)</FormLabel>
+                    <FormLabel>Maximum Salary (Annual)</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
@@ -290,7 +279,6 @@ export const AddJobDialog = () => {
                 )}
               />
             </div>
-
             <FormField
               control={form.control}
               name="is_remote"
@@ -304,13 +292,12 @@ export const AddJobDialog = () => {
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel>
-                      Remote Position
+                      Remote Work Available
                     </FormLabel>
                   </div>
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="description"
@@ -319,7 +306,7 @@ export const AddJobDialog = () => {
                   <FormLabel>Job Description</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Describe the role, responsibilities, and what makes this position special..."
+                      placeholder="Detailed job description..."
                       className="min-h-[100px]"
                       {...field} 
                     />
@@ -328,7 +315,6 @@ export const AddJobDialog = () => {
                 </FormItem>
               )}
             />
-
             <FormField
               control={form.control}
               name="requirements"
@@ -337,7 +323,7 @@ export const AddJobDialog = () => {
                   <FormLabel>Requirements</FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="List education, experience, licenses, and other requirements..."
+                      placeholder="Job requirements and qualifications..."
                       className="min-h-[80px]"
                       {...field} 
                     />
@@ -346,17 +332,16 @@ export const AddJobDialog = () => {
                 </FormItem>
               )}
             />
-
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={addJobMutation.isPending}>
-                {addJobMutation.isPending ? 'Posting...' : 'Post Job'}
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? (isEditing ? 'Updating...' : 'Posting...') : (isEditing ? 'Update Job' : 'Post Job')}
               </Button>
             </div>
           </form>

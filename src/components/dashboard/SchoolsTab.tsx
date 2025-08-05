@@ -89,7 +89,15 @@ export const SchoolsTab = () => {
             Explore physical therapy education programs and universities
           </p>
         </div>
-        <AddSchoolDialog />
+        <div className="flex gap-2">
+          <AddSchoolDialog />
+          {editingSchool && (
+            <AddSchoolDialog 
+              school={editingSchool} 
+              onClose={() => setEditingSchool(null)}
+            />
+          )}
+        </div>
       </div>
 
       {/* Search and Filter Controls */}
