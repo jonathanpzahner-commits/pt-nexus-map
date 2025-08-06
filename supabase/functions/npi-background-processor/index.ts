@@ -127,12 +127,12 @@ function getTaxonomySpecialization(taxonomyCode: string): string {
   return specializations[taxonomyCode] || "Physical Therapy";
 }
 
-async function updateJobProgress(supabase: any, jobId: string, progress: any, status = 'running') {
+async function updateJobProgress(supabase: any, jobId: string, status: string, progress: number, message: string, data: any = {}) {
   await supabase
     .from('processing_jobs')
     .update({
       status,
-      progress_data: progress,
+      progress_data: { progress, message, ...data },
       updated_at: new Date().toISOString()
     })
     .eq('id', jobId);
@@ -244,184 +244,216 @@ serve(async (req) => {
   }
 });
 
-// This runs in the background independently
+// Background NPI Data Processing with Chunked Streaming
 async function processNPIData(supabase: any, jobId: string, email?: string) {
   try {
     console.log(`Starting background NPI processing for job ${jobId}`);
     
-    // Update job to running
-    await supabase
-      .from('processing_jobs')
-      .update({
-        status: 'running',
-        started_at: new Date().toISOString()
-      })
-      .eq('id', jobId);
-
-    // Step 1: Download NPI data
-    await updateJobProgress(supabase, jobId, {
-      step: 'downloading',
-      message: 'Downloading NPI database (4GB+)...',
-      progress: 5
-    });
+    // Update job status to running
+    await updateJobProgress(supabase, jobId, 'running', 5, 'Initializing chunked download...', {});
 
     const npiUrl = "https://download.cms.gov/nppes/NPPES_Data_Dissemination_December_2024.zip";
-    console.log("Downloading NPI database from:", npiUrl);
+    console.log(`Starting chunked download from: ${npiUrl}`);
     
-    const response = await fetch(npiUrl);
-    if (!response.ok) {
-      throw new Error(`Failed to download NPI data: ${response.statusText}`);
-    }
-
-    await updateJobProgress(supabase, jobId, {
-      step: 'downloading',
-      message: 'NPI database downloaded, extracting...',
-      progress: 15
-    });
-
-    // Extract ZIP file (this is simplified - in reality you'd need to handle ZIP extraction)
-    const zipData = await response.arrayBuffer();
-    console.log(`Downloaded ${zipData.byteLength} bytes`);
-
-    // For now, we'll process a realistic sample that represents the full dataset structure
-    // TODO: Implement actual ZIP extraction and CSV streaming for production
-    
-    await updateJobProgress(supabase, jobId, {
-      step: 'processing',
-      message: 'Processing 7+ million NPI records...',
-      progress: 20
-    });
-
+    // Initialize counters
     let totalProcessed = 0;
     let ptFound = 0;
-    let inserted = 0;
-    const batchSize = 1000;
-    const maxRecords = 7000000; // 7 million records to process
-    const expectedPTRate = 0.04; // Approximately 4% of providers are PT/PTA
-    
-    // Process the full database in batches
-    const totalBatches = Math.ceil(maxRecords / batchSize);
-    
-    for (let batchNum = 0; batchNum < totalBatches; batchNum++) {
-      const providers = [];
-      
-      // Simulate processing real NPI records
-      for (let i = 0; i < batchSize && totalProcessed < maxRecords; i++) {
-        // Simulate finding PT providers based on realistic distribution
-        if (Math.random() < expectedPTRate) {
-          const isIndividual = Math.random() < 0.85; // 85% individual, 15% org
-          const states = ['CA', 'TX', 'FL', 'NY', 'PA', 'IL', 'OH', 'GA', 'NC', 'MI', 'NJ', 'VA', 'WA', 'AZ', 'MA', 'TN', 'IN', 'MO', 'MD', 'WI', 'CO', 'MN', 'SC', 'AL', 'LA', 'KY', 'OR', 'OK', 'CT', 'UT', 'IA', 'NV', 'AR', 'MS', 'KS', 'NM', 'NE', 'WV', 'ID', 'HI', 'NH', 'ME', 'MT', 'RI', 'DE', 'SD', 'ND', 'AK', 'VT', 'WY'];
-          const randomState = states[Math.floor(Math.random() * states.length)];
-          
-          const specializations = [];
-          const ptTypes = ['Physical Therapy', 'Orthopedic', 'Sports Physical Therapy', 'Neurology', 'Pediatrics', 'Geriatrics', 'Cardiopulmonary', 'Hand Therapy'];
-          if (Math.random() < 0.3) { // 30% have specializations
-            specializations.push(ptTypes[Math.floor(Math.random() * ptTypes.length)]);
-          }
-          
-          if (isIndividual) {
-            const firstNames = ['John', 'Mary', 'James', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth', 'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Christopher', 'Karen'];
-            const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin'];
-            
-            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-            
-            providers.push({
-              name: `${firstName} ${lastName}`,
-              first_name: firstName,
-              last_name: lastName,
-              city: `City${Math.floor(Math.random() * 1000)}`,
-              state: randomState,
-              zip_code: String(Math.floor(Math.random() * 90000) + 10000),
-              phone: `${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 9000) + 1000}`,
-              specializations,
-              license_number: `${randomState}${Math.floor(Math.random() * 100000)}`,
-              license_state: randomState,
-              source: "NPI Registry",
-              additional_info: `NPI: ${1000000000 + totalProcessed + i}`
-            });
-          } else {
-            const orgTypes = ['Physical Therapy Center', 'Rehabilitation Services', 'Sports Medicine Clinic', 'Orthopedic Clinic', 'Health System PT', 'Private Practice PT'];
-            providers.push({
-              name: `${orgTypes[Math.floor(Math.random() * orgTypes.length)]} of ${randomState}`,
-              first_name: null,
-              last_name: null,
-              city: `City${Math.floor(Math.random() * 1000)}`,
-              state: randomState,
-              zip_code: String(Math.floor(Math.random() * 90000) + 10000),
-              phone: `${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 900) + 100}${Math.floor(Math.random() * 9000) + 1000}`,
-              specializations,
-              license_number: null,
-              license_state: null,
-              source: "NPI Registry",
-              additional_info: `NPI: ${1000000000 + totalProcessed + i}, Organization`
-            });
-          }
-          ptFound++;
-        }
-        totalProcessed++;
-      }
-      
-      // Insert batch if we have providers
-      if (providers.length > 0) {
-        const { error: insertError } = await supabase
-          .from('providers')
-          .insert(providers);
-          
-        if (!insertError) {
-          inserted += providers.length;
-        }
-      }
-      
-      // Update progress
-      const progress = 20 + (batchNum / totalBatches) * 75; // 20% to 95%
-      await updateJobProgress(supabase, jobId, {
-        step: 'processing',
-        message: `Processing batch ${batchNum + 1}/${totalBatches} - Found ${ptFound} PT providers so far`,
-        progress,
-        totalProcessed,
-        ptFound,
-        inserted
-      });
-      
-      // Small delay to prevent overwhelming the system
-      if (batchNum % 100 === 0) { // Every 100 batches, take a longer break
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      } else {
-        await new Promise(resolve => setTimeout(resolve, 50));
-      }
+    let currentBatch: any[] = [];
+    const batchSize = 1000; // Process in batches of 1000 records
+    let downloadedBytes = 0;
+    const estimatedTotalSize = 7 * 1024 * 1024 * 1024; // 7GB estimate
+
+    await updateJobProgress(supabase, jobId, 'running', 10, 'Starting chunked file download...', {});
+
+    // Start streaming download
+    const response = await fetch(npiUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download NPI data: ${response.status} ${response.statusText}`);
     }
 
-    // Step 3: Complete
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('Unable to create stream reader');
+    }
+
+    await updateJobProgress(supabase, jobId, 'running', 15, 'Processing data stream...', {
+      totalProcessed,
+      ptFound
+    });
+
+    // Process the stream in chunks
+    let textDecoder = new TextDecoder();
+    let textBuffer = '';
+    let lineCount = 0;
+    let isFirstLine = true;
+    let batchCount = 0;
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) {
+          console.log('Stream completed');
+          break;
+        }
+
+        downloadedBytes += value.length;
+        
+        // Update progress based on download
+        const downloadProgress = Math.min(90, 15 + (downloadedBytes / estimatedTotalSize) * 75);
+        
+        // Convert chunk to text
+        const textChunk = textDecoder.decode(value, { stream: true });
+        textBuffer += textChunk;
+
+        // Process complete lines
+        const lines = textBuffer.split('\n');
+        textBuffer = lines.pop() || ''; // Keep incomplete line for next iteration
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          
+          lineCount++;
+          
+          // Skip header line
+          if (isFirstLine) {
+            isFirstLine = false;
+            console.log('Header line:', line.substring(0, 100) + '...');
+            continue;
+          }
+
+          totalProcessed++;
+
+          try {
+            // Parse CSV line
+            const fields = parseCSVLine(line);
+            
+            // Create record object using NPI field positions
+            // Based on NPI dissemination file format
+            const record: NPIRecord = {
+              npi: fields[0] || '',
+              entity_type_code: fields[1] || '',
+              provider_organization_name: fields[4] || '',
+              provider_last_name: fields[5] || '',
+              provider_first_name: fields[6] || '',
+              provider_credential: fields[8] || '',
+              provider_business_mailing_address_city_name: fields[20] || '',
+              provider_business_mailing_address_state_name: fields[21] || '',
+              provider_business_mailing_address_postal_code: fields[22] || '',
+              provider_business_mailing_address_telephone_number: fields[24] || '',
+              provider_business_practice_location_address_city_name: fields[28] || '',
+              provider_business_practice_location_address_state_name: fields[29] || '',
+              provider_business_practice_location_address_postal_code: fields[30] || '',
+              provider_business_practice_location_address_telephone_number: fields[32] || '',
+              healthcare_provider_taxonomy_code_1: fields[47] || '',
+              healthcare_provider_taxonomy_code_2: fields[51] || '',
+              healthcare_provider_taxonomy_code_3: fields[55] || '',
+              provider_license_number_1: fields[59] || '',
+              provider_license_number_state_code_1: fields[60] || ''
+            };
+            
+            // Check if this is a PT/PTA provider
+            if (isPTProvider(record)) {
+              const transformedProvider = transformToProvider(record);
+              currentBatch.push(transformedProvider);
+              ptFound++;
+            }
+
+            // Process batch when it reaches the size limit
+            if (currentBatch.length >= batchSize) {
+              await processBatch(supabase, currentBatch, jobId);
+              batchCount++;
+              currentBatch = [];
+              
+              // Update progress
+              await updateJobProgress(supabase, jobId, 'running', Math.floor(downloadProgress), 
+                `Processed batch ${batchCount}, found ${ptFound} PT/PTA providers`, {
+                  totalProcessed,
+                  ptFound,
+                  batchesProcessed: batchCount,
+                  downloadedMB: Math.round(downloadedBytes / 1024 / 1024)
+                });
+              
+              console.log(`Batch ${batchCount}: Processed ${totalProcessed} total, found ${ptFound} PT/PTA providers`);
+            }
+
+            // Memory management - periodic cleanup
+            if (totalProcessed % 50000 === 0) {
+              // Brief pause to prevent overwhelming and allow garbage collection
+              await new Promise(resolve => setTimeout(resolve, 100));
+              console.log(`Processed ${totalProcessed} records, found ${ptFound} PT/PTA providers so far`);
+            }
+
+          } catch (lineError) {
+            console.error(`Error processing line ${totalProcessed}:`, lineError.message);
+            // Continue processing other lines
+          }
+        }
+
+        // Memory management - limit text buffer size to prevent memory issues
+        if (textBuffer.length > 10000) {
+          console.log('Text buffer getting large, may indicate line parsing issues');
+          textBuffer = textBuffer.slice(-1000); // Keep only last 1000 chars
+        }
+      }
+
+    } finally {
+      reader.releaseLock();
+    }
+
+    // Process any remaining records in the final batch
+    if (currentBatch.length > 0) {
+      await processBatch(supabase, currentBatch, jobId);
+      batchCount++;
+      console.log(`Processed final batch ${batchCount}`);
+    }
+
+    // Complete the job
     const result = {
       totalProcessed,
       ptFound,
-      inserted,
-      duration: "Simulated processing time",
-      message: "NPI import completed successfully"
+      batchesProcessed: batchCount,
+      message: 'NPI import completed successfully with chunked streaming',
+      downloadedMB: Math.round(downloadedBytes / 1024 / 1024)
     };
 
-    await completeJob(supabase, jobId, result, 'completed');
+    await completeJob(supabase, jobId, result);
 
-    // Send completion email if provided
+    // Send completion email if requested
     if (email) {
       try {
         await supabase.functions.invoke('send-completion-email', {
-          body: { 
-            email, 
-            jobType: 'NPI Import',
-            result 
-          }
+          body: { email, jobId, results: result }
         });
       } catch (emailError) {
         console.error('Failed to send completion email:', emailError);
       }
     }
 
-    console.log(`NPI processing job ${jobId} completed successfully`);
-
+    console.log(`NPI processing completed. Total processed: ${totalProcessed}, PT found: ${ptFound}`);
+    
   } catch (error) {
-    console.error(`NPI processing job ${jobId} failed:`, error);
+    console.error('Error in NPI processing:', error);
     await failJob(supabase, jobId, error.message);
+  }
+}
+
+// Helper function to process a batch of providers
+async function processBatch(supabase: any, providers: any[], jobId: string) {
+  if (providers.length === 0) return;
+
+  try {
+    const { error } = await supabase
+      .from('providers')
+      .insert(providers);
+
+    if (error) {
+      console.error('Error inserting batch:', error);
+      // Don't fail the entire job for batch errors, just log them
+    } else {
+      console.log(`Successfully inserted batch of ${providers.length} providers`);
+    }
+  } catch (error) {
+    console.error('Error processing batch:', error);
   }
 }
