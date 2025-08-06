@@ -226,41 +226,37 @@ function validateAndTransformRecord(row: any, entityType: string, rowNumber: num
 function validateProvider(row: any, rowNumber: number, errors: ValidationError[]) {
   const data: any = {};
 
-  // Required fields
-  if (!row.name || row.name.trim() === '') {
-    errors.push({ row: rowNumber, field: 'name', value: row.name, message: 'Name is required' });
+  // Required fields - either use combined name or first/last name
+  const firstName = row['First Name']?.toString().trim() || '';
+  const lastName = row['Last Name']?.toString().trim() || '';
+  
+  if (!firstName && !lastName) {
+    errors.push({ row: rowNumber, field: 'name', value: '', message: 'First name or last name is required' });
   } else {
-    data.name = row.name.trim();
+    data.first_name = firstName;
+    data.last_name = lastName;
+    data.name = `${firstName} ${lastName}`.trim(); // Create combined name for compatibility
   }
 
-  if (!row.license_number || row.license_number.toString().trim() === '') {
-    errors.push({ row: rowNumber, field: 'license_number', value: row.license_number, message: 'License number is required' });
-  } else {
-    data.license_number = row.license_number.toString().trim();
+  // Map user's column headers to database fields
+  if (row.Email) data.email = row.Email.toString().trim();
+  if (row.Phone) data.phone = row.Phone.toString().trim();
+  if (row.City) data.city = row.City.toString().trim();
+  if (row['State/Province']) data.state = row['State/Province'].toString().trim();
+  if (row.Zip) data.zip_code = row.Zip.toString().trim();
+  if (row['Current Employer']) data.current_employer = row['Current Employer'].toString().trim();
+  if (row['Current Job Title']) data.current_job_title = row['Current Job Title'].toString().trim();
+  if (row['Additional Info']) {
+    data.additional_info = row['Additional Info'].toString().trim();
+    data.bio = row['Additional Info'].toString().trim(); // Also map to bio for compatibility
   }
+  if (row.Source) data.source = row.Source.toString().trim();
+  if (row.LinkedIn) data.linkedin_url = row.LinkedIn.toString().trim();
 
-  if (!row.license_state || row.license_state.trim() === '') {
-    errors.push({ row: rowNumber, field: 'license_state', value: row.license_state, message: 'License state is required' });
-  } else {
-    data.license_state = row.license_state.trim();
-  }
-
-  // Optional fields
-  if (row.email) data.email = row.email.toString().trim();
-  if (row.phone) data.phone = row.phone.toString().trim();
-  if (row.website) data.website = row.website.toString().trim();
-  if (row.city) data.city = row.city.toString().trim();
-  if (row.state) data.state = row.state.toString().trim();
-  if (row.bio) data.bio = row.bio.toString().trim();
-  if (row.years_experience) {
-    const years = parseInt(row.years_experience);
-    if (!isNaN(years)) data.years_experience = years;
-  }
-
-  // Parse specializations array
-  if (row.specializations) {
-    const specs = row.specializations.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
-    if (specs.length > 0) data.specializations = specs;
+  // Parse skill set as specializations
+  if (row['Skill Set']) {
+    const skills = row['Skill Set'].toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (skills.length > 0) data.specializations = skills;
   }
 
   return data;

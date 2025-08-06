@@ -204,52 +204,76 @@ export type Database = {
       }
       providers: {
         Row: {
+          additional_info: string | null
           bio: string | null
           city: string | null
           created_at: string
+          current_employer: string | null
+          current_job_title: string | null
           email: string | null
+          first_name: string | null
           id: string
-          license_number: string
-          license_state: string
-          name: string
+          last_name: string | null
+          license_number: string | null
+          license_state: string | null
+          linkedin_url: string | null
+          name: string | null
           phone: string | null
+          source: string | null
           specializations: string[] | null
           state: string | null
           updated_at: string
           website: string | null
           years_experience: number | null
+          zip_code: string | null
         }
         Insert: {
+          additional_info?: string | null
           bio?: string | null
           city?: string | null
           created_at?: string
+          current_employer?: string | null
+          current_job_title?: string | null
           email?: string | null
+          first_name?: string | null
           id?: string
-          license_number: string
-          license_state: string
-          name: string
+          last_name?: string | null
+          license_number?: string | null
+          license_state?: string | null
+          linkedin_url?: string | null
+          name?: string | null
           phone?: string | null
+          source?: string | null
           specializations?: string[] | null
           state?: string | null
           updated_at?: string
           website?: string | null
           years_experience?: number | null
+          zip_code?: string | null
         }
         Update: {
+          additional_info?: string | null
           bio?: string | null
           city?: string | null
           created_at?: string
+          current_employer?: string | null
+          current_job_title?: string | null
           email?: string | null
+          first_name?: string | null
           id?: string
-          license_number?: string
-          license_state?: string
-          name?: string
+          last_name?: string | null
+          license_number?: string | null
+          license_state?: string | null
+          linkedin_url?: string | null
+          name?: string | null
           phone?: string | null
+          source?: string | null
           specializations?: string[] | null
           state?: string | null
           updated_at?: string
           website?: string | null
           years_experience?: number | null
+          zip_code?: string | null
         }
         Relationships: []
       }

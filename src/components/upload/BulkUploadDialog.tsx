@@ -179,8 +179,8 @@ export const BulkUploadDialog = ({ open, onOpenChange, onUploadComplete }: BulkU
     const templates = {
       providers: {
         filename: 'providers_template.csv',
-        headers: 'name,license_number,license_state,email,phone,website,city,state,bio,years_experience,specializations',
-        sample: 'John Smith,PT123456,CA,john@email.com,555-1234,https://example.com,Los Angeles,CA,Experienced PT,5,"Orthopedic, Sports"'
+        headers: 'First Name,Last Name,Email,Phone,City,State/Province,Zip,Current Employer,Current Job Title,Skill Set,Additional Info,Source,LinkedIn',
+        sample: 'John,Smith,john@email.com,555-1234,Los Angeles,CA,90210,ABC Therapy,Physical Therapist,"Orthopedic, Sports Medicine",10 years experience,LinkedIn,https://linkedin.com/in/johnsmith'
       },
       companies: {
         filename: 'companies_template.csv',
