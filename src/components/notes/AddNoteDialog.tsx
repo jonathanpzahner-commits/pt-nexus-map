@@ -47,7 +47,7 @@ export const AddNoteDialog = ({
   onClose, 
   trigger 
 }: AddNoteDialogProps) => {
-  const [open, setOpen] = useState(!!note);
+  const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isEditing = !!note;
@@ -125,7 +125,7 @@ export const AddNoteDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={setOpen}>
       {!isEditing && trigger && (
         <DialogTrigger asChild>
           {trigger}
