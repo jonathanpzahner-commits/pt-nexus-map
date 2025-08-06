@@ -4,7 +4,7 @@ import { SearchFilters } from './SearchFilters';
 import { SearchResults } from './SearchResults';
 import { LocationRadiusSearch } from './LocationRadiusSearch';
 import { GeocodingManager } from './GeocodingManager';
-import { NPIProcessor } from '../admin/NPIProcessor';
+import { NPIBackgroundProcessor } from '../admin/NPIBackgroundProcessor';
 import { useServerSearch } from '@/hooks/useServerSearch';
 import { useState } from 'react';
 
@@ -50,7 +50,7 @@ export const GlobalSearch = () => {
       </div>
 
       {/* NPI Database Processor */}
-      <NPIProcessor />
+      <NPIBackgroundProcessor />
 
       {/* Geocoding Setup */}
       <GeocodingManager />

@@ -202,6 +202,51 @@ export type Database = {
         }
         Relationships: []
       }
+      processing_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_details: string | null
+          id: string
+          job_type: string
+          metadata: Json | null
+          progress_data: Json | null
+          result_data: Json | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_details?: string | null
+          id?: string
+          job_type: string
+          metadata?: Json | null
+          progress_data?: Json | null
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_details?: string | null
+          id?: string
+          job_type?: string
+          metadata?: Json | null
+          progress_data?: Json | null
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       providers: {
         Row: {
           additional_info: string | null
