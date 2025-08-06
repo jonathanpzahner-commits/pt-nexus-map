@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Mail, Phone, Globe, MapPin, Award, Calendar, Edit, Trash2 } from 'lucide-react';
+import { Search, Mail, Phone, Globe, MapPin, Award, Calendar, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AddProviderDialog } from '@/components/forms/AddProviderDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -19,21 +19,49 @@ const ProvidersTab = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch providers with search and filtering
-  const { data: providers, isLoading: providersLoading } = useQuery({
-    queryKey: ['providers', searchTerm, stateFilter],
+  // Fetch total count
+  const { data: totalCount } = useQuery({
+    queryKey: ['providers-count', searchTerm, stateFilter],
     queryFn: async () => {
-      let query = supabase.from('providers').select('*');
+      let query = supabase.from('providers').select('*', { count: 'exact', head: true });
       
       if (searchTerm) {
-        query = query.ilike('name', `%${searchTerm}%`);
+        query = query.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%`);
       }
       
       if (stateFilter !== 'all') {
         query = query.eq('state', stateFilter);
       }
       
-      const { data, error } = await query.order('name');
+      const { count, error } = await query;
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  // Fetch providers with search, filtering, and pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 50;
+  
+  const { data: providers, isLoading: providersLoading } = useQuery({
+    queryKey: ['providers', searchTerm, stateFilter, currentPage],
+    queryFn: async () => {
+      let query = supabase.from('providers').select('*');
+      
+      if (searchTerm) {
+        query = query.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%`);
+      }
+      
+      if (stateFilter !== 'all') {
+        query = query.eq('state', stateFilter);
+      }
+      
+      const from = (currentPage - 1) * pageSize;
+      const to = from + pageSize - 1;
+      
+      const { data, error } = await query
+        .order('name')
+        .range(from, to);
       if (error) throw error;
       return data;
     },
@@ -70,6 +98,22 @@ const ProvidersTab = () => {
     },
   });
 
+  // Calculate pagination values
+  const totalPages = Math.ceil((totalCount || 0) / pageSize);
+  const startIndex = (currentPage - 1) * pageSize + 1;
+  const endIndex = Math.min(currentPage * pageSize, totalCount || 0);
+
+  // Reset to page 1 when search/filter changes
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    setCurrentPage(1);
+  };
+
+  const handleStateFilterChange = (value: string) => {
+    setStateFilter(value);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -77,6 +121,14 @@ const ProvidersTab = () => {
           <h2 className="text-2xl font-bold">Physical Therapists</h2>
           <p className="text-muted-foreground">
             Browse licensed physical therapists and their specializations
+            {totalCount !== undefined && (
+              <span className="block mt-1 font-medium">
+                {totalCount.toLocaleString()} total providers
+                {(searchTerm || stateFilter !== 'all') && (
+                  <span className="text-primary"> (filtered)</span>
+                )}
+              </span>
+            )}
           </p>
         </div>
         <div className="flex gap-2">
@@ -95,13 +147,13 @@ const ProvidersTab = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
-            placeholder="Search by name..."
+            placeholder="Search by name, email, or city..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className="pl-10"
           />
         </div>
-        <Select value={stateFilter} onValueChange={setStateFilter}>
+        <Select value={stateFilter} onValueChange={handleStateFilterChange}>
           <SelectTrigger className="w-full sm:w-[200px]">
             <SelectValue placeholder="Filter by state" />
           </SelectTrigger>
@@ -115,6 +167,40 @@ const ProvidersTab = () => {
           </SelectContent>
         </Select>
       </div>
+
+      {/* Results Summary */}
+      {totalCount !== undefined && providers && providers.length > 0 && (
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 py-2 border-t border-b">
+          <p className="text-sm text-muted-foreground">
+            Showing {startIndex}-{endIndex} of {totalCount.toLocaleString()} providers
+          </p>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+              <span className="text-sm px-3 py-1 bg-muted rounded">
+                {currentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Providers Grid */}
       {providersLoading ? (
@@ -267,6 +353,35 @@ const ProvidersTab = () => {
               />
             </div>
           ))}
+          
+          {/* Pagination Controls at Bottom */}
+          {totalPages > 1 && (
+            <div className="flex justify-center pt-6">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+                <span className="text-sm px-3 py-1 bg-muted rounded">
+                  {currentPage} of {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <Card>
