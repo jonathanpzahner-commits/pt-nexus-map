@@ -259,9 +259,10 @@ async function processNPIData(supabase: any, jobId: string, email?: string) {
     let totalProcessed = 0;
     let ptFound = 0;
     let currentBatch: any[] = [];
-    const batchSize = 1000; // Process in batches of 1000 records
+    const batchSize = 100; // Much smaller batches to prevent timeout
     let downloadedBytes = 0;
     const estimatedTotalSize = 7 * 1024 * 1024 * 1024; // 7GB estimate
+    let lastProgressUpdate = Date.now();
 
     await updateJobProgress(supabase, jobId, 'running', 10, 'Starting chunked file download...', {});
 
@@ -365,23 +366,35 @@ async function processNPIData(supabase: any, jobId: string, email?: string) {
               batchCount++;
               currentBatch = [];
               
-              // Update progress
-              await updateJobProgress(supabase, jobId, 'running', Math.floor(downloadProgress), 
-                `Processed batch ${batchCount}, found ${ptFound} PT/PTA providers`, {
-                  totalProcessed,
-                  ptFound,
-                  batchesProcessed: batchCount,
-                  downloadedMB: Math.round(downloadedBytes / 1024 / 1024)
-                });
+              // Update progress more frequently for smaller batches
+              const now = Date.now();
+              if (now - lastProgressUpdate > 2000) { // Update every 2 seconds
+                await updateJobProgress(supabase, jobId, 'running', Math.floor(downloadProgress), 
+                  `Processed batch ${batchCount}, found ${ptFound} PT/PTA providers`, {
+                    totalProcessed,
+                    ptFound,
+                    batchesProcessed: batchCount,
+                    downloadedMB: Math.round(downloadedBytes / 1024 / 1024)
+                  });
+                lastProgressUpdate = now;
+              }
               
               console.log(`Batch ${batchCount}: Processed ${totalProcessed} total, found ${ptFound} PT/PTA providers`);
+              
+              // Longer pause after each batch to prevent CPU overload
+              await new Promise(resolve => setTimeout(resolve, 250));
             }
 
-            // Memory management - periodic cleanup
-            if (totalProcessed % 50000 === 0) {
-              // Brief pause to prevent overwhelming and allow garbage collection
-              await new Promise(resolve => setTimeout(resolve, 100));
+            // Memory management and CPU breaks - more frequent pauses
+            if (totalProcessed % 5000 === 0) {
+              // Longer pause to prevent overwhelming and allow garbage collection
+              await new Promise(resolve => setTimeout(resolve, 500));
               console.log(`Processed ${totalProcessed} records, found ${ptFound} PT/PTA providers so far`);
+              
+              // Force garbage collection hint
+              if (globalThis.gc) {
+                globalThis.gc();
+              }
             }
 
           } catch (lineError) {
@@ -390,10 +403,15 @@ async function processNPIData(supabase: any, jobId: string, email?: string) {
           }
         }
 
-        // Memory management - limit text buffer size to prevent memory issues
-        if (textBuffer.length > 10000) {
-          console.log('Text buffer getting large, may indicate line parsing issues');
-          textBuffer = textBuffer.slice(-1000); // Keep only last 1000 chars
+        // More aggressive memory management - limit text buffer size
+        if (textBuffer.length > 5000) {
+          console.log('Text buffer getting large, trimming to prevent memory issues');
+          textBuffer = textBuffer.slice(-500); // Keep only last 500 chars
+        }
+        
+        // Periodic stream pause to prevent overwhelming
+        if (lineCount % 1000 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
 
