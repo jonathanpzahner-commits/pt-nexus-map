@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { NotesSection } from '@/components/notes/NotesSection';
 
 export const JobListingsTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -184,107 +185,115 @@ export const JobListingsTab = () => {
           ))}
         </div>
       ) : jobs && jobs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-8">
           {jobs.map((job) => (
-            <Card key={job.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">
-                      {job.title}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline" className="text-xs">
-                        {job.employment_type}
-                      </Badge>
-                      {job.is_remote && (
-                        <Badge variant="secondary" className="text-xs">
-                          Remote
+            <div key={job.id} className="space-y-4">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">
+                        {job.title}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {job.employment_type}
                         </Badge>
-                      )}
+                        {job.is_remote && (
+                          <Badge variant="secondary" className="text-xs">
+                            Remote
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingJob(job)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Job Listing</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this job listing for {job.title}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMutation.mutate(job.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingJob(job)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Job Listing</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete this job listing for {job.title}? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteMutation.mutate(job.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-                {job.companies && (
+                  {job.companies && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Building className="h-4 w-4" />
+                      <span>{job.companies.name}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Building className="h-4 w-4" />
-                    <span>{job.companies.name}</span>
+                    <MapPin className="h-4 w-4" />
+                    <span>{job.city}, {job.state}</span>
                   </div>
-                )}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{job.city}, {job.state}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4" />
-                  <span>Posted {formatDistanceToNow(new Date(job.created_at))} ago</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Description */}
-                {job.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {job.description}
-                  </p>
-                )}
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    <span>Posted {formatDistanceToNow(new Date(job.created_at))} ago</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Description */}
+                  {job.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {job.description}
+                    </p>
+                  )}
 
-                {/* Salary */}
-                {(job.salary_min || job.salary_max) && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <DollarSign className="h-4 w-4 text-muted-foreground" />
-                    <span className="font-medium">
-                      {formatSalary(job.salary_min, job.salary_max)}
-                    </span>
-                  </div>
-                )}
+                  {/* Salary */}
+                  {(job.salary_min || job.salary_max) && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-medium">
+                        {formatSalary(job.salary_min, job.salary_max)}
+                      </span>
+                    </div>
+                  )}
 
-                {/* Experience Level */}
-                {job.experience_level && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span>{job.experience_level}</span>
-                  </div>
-                )}
+                  {/* Experience Level */}
+                  {job.experience_level && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Briefcase className="h-4 w-4 text-muted-foreground" />
+                      <span>{job.experience_level}</span>
+                    </div>
+                  )}
 
-                {/* Requirements */}
-                {job.requirements && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Requirements:</p>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{job.requirements}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  {/* Requirements */}
+                  {job.requirements && (
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Requirements:</p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">{job.requirements}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              <NotesSection 
+                entityType="job_listing"
+                entityId={job.id}
+                entityName={job.title}
+              />
+            </div>
           ))}
         </div>
       ) : (

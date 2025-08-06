@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AddProviderDialog } from '@/components/forms/AddProviderDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
+import { NotesSection } from '@/components/notes/NotesSection';
 
 const ProvidersTab = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,130 +134,138 @@ const ProvidersTab = () => {
           ))}
         </div>
       ) : providers && providers.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-8">
           {providers.map((provider) => (
-            <Card key={provider.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">
-                      {provider.name}
-                    </h3>
-                    <Badge variant="outline" className="text-xs mt-1">
-                      {provider.license_state}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingProvider(provider)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Provider</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete {provider.name}? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteMutation.mutate(provider.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  License: {provider.license_number}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Specializations */}
-                {provider.specializations && provider.specializations.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Specializations:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {provider.specializations.slice(0, 3).map((spec, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {spec}
-                        </Badge>
-                      ))}
-                      {provider.specializations.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{provider.specializations.length - 3} more
-                        </Badge>
-                      )}
+            <div key={provider.id} className="space-y-4">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">
+                        {provider.name}
+                      </h3>
+                      <Badge variant="outline" className="text-xs mt-1">
+                        {provider.license_state}
+                      </Badge>
                     </div>
-                  </div>
-                )}
-
-                {/* Contact Information */}
-                <div className="space-y-2">
-                  {provider.email && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a href={`mailto:${provider.email}`} className="text-primary hover:underline">
-                        {provider.email}
-                      </a>
-                    </div>
-                  )}
-                  {provider.phone && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <a href={`tel:${provider.phone}`} className="text-primary hover:underline">
-                        {provider.phone}
-                      </a>
-                    </div>
-                  )}
-                  {provider.website && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <a 
-                        href={provider.website} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingProvider(provider)}
                       >
-                        Visit Website
-                      </a>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Provider</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete {provider.name}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMutation.mutate(provider.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
-                  )}
-                  {provider.city && provider.state && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>{provider.city}, {provider.state}</span>
-                    </div>
-                  )}
-                  {provider.years_experience && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>{provider.years_experience} years experience</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Bio */}
-                {provider.bio && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">About:</p>
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {provider.bio}
-                    </p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  <p className="text-sm text-muted-foreground">
+                    License: {provider.license_number}
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Specializations */}
+                  {provider.specializations && provider.specializations.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Specializations:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {provider.specializations.slice(0, 3).map((spec, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {spec}
+                          </Badge>
+                        ))}
+                        {provider.specializations.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{provider.specializations.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Contact Information */}
+                  <div className="space-y-2">
+                    {provider.email && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <a href={`mailto:${provider.email}`} className="text-primary hover:underline">
+                          {provider.email}
+                        </a>
+                      </div>
+                    )}
+                    {provider.phone && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <a href={`tel:${provider.phone}`} className="text-primary hover:underline">
+                          {provider.phone}
+                        </a>
+                      </div>
+                    )}
+                    {provider.website && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <a 
+                          href={provider.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          Visit Website
+                        </a>
+                      </div>
+                    )}
+                    {provider.city && provider.state && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span>{provider.city}, {provider.state}</span>
+                      </div>
+                    )}
+                    {provider.years_experience && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span>{provider.years_experience} years experience</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bio */}
+                  {provider.bio && (
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">About:</p>
+                      <p className="text-sm text-muted-foreground line-clamp-3">
+                        {provider.bio}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+              
+              <NotesSection 
+                entityType="provider"
+                entityId={provider.id}
+                entityName={provider.name}
+              />
+            </div>
           ))}
         </div>
       ) : (

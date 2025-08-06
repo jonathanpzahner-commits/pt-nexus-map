@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, Building, Users, Calendar, Globe, MapPin, Plus, Edit, Trash2 } from 'lucide-react';
+import { NotesSection } from '@/components/notes/NotesSection';
 import { AddCompanyDialog } from '@/components/forms/AddCompanyDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -133,124 +134,132 @@ export const CompaniesTab = () => {
           ))}
         </div>
       ) : companies && companies.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-8">
           {companies.map((company) => (
-            <Card key={company.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">
-                      {company.name}
-                    </h3>
-                    <Badge variant="outline" className="text-xs mt-1">
-                      {company.company_type}
-                    </Badge>
+            <div key={company.id} className="space-y-4">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">
+                        {company.name}
+                      </h3>
+                      <Badge variant="outline" className="text-xs mt-1">
+                        {company.company_type}
+                      </Badge>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingCompany(company)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Company</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete {company.name}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMutation.mutate(company.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingCompany(company)}
+                  {company.website && (
+                    <a 
+                      href={company.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline text-sm"
                     >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Company</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete {company.name}? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteMutation.mutate(company.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-                {company.website && (
-                  <a 
-                    href={company.website} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline text-sm"
-                  >
-                    Visit Website
-                  </a>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Description */}
-                {company.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {company.description}
-                  </p>
-                )}
+                      Visit Website
+                    </a>
+                  )}
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Description */}
+                  {company.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {company.description}
+                    </p>
+                  )}
 
-                {/* Company Details */}
-                <div className="space-y-2">
-                  {company.employee_count && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span>{company.employee_count} employees</span>
+                  {/* Company Details */}
+                  <div className="space-y-2">
+                    {company.employee_count && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <span>{company.employee_count} employees</span>
+                      </div>
+                    )}
+                    {company.founded_year && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                        <span>Founded in {company.founded_year}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Locations */}
+                  {company.company_locations && company.company_locations.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Locations:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {company.company_locations.slice(0, 2).map((location, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {location}
+                          </Badge>
+                        ))}
+                        {company.company_locations.length > 2 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{company.company_locations.length - 2} more
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   )}
-                  {company.founded_year && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span>Founded in {company.founded_year}</span>
+
+                  {/* Services */}
+                  {company.services && company.services.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Services:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {company.services.slice(0, 3).map((service, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {service}
+                          </Badge>
+                        ))}
+                        {company.services.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{company.services.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   )}
-                </div>
-
-                {/* Locations */}
-                {company.company_locations && company.company_locations.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Locations:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {company.company_locations.slice(0, 2).map((location, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
-                          {location}
-                        </Badge>
-                      ))}
-                      {company.company_locations.length > 2 && (
-                        <Badge variant="secondary" className="text-xs">
-                          +{company.company_locations.length - 2} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Services */}
-                {company.services && company.services.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium">Services:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {company.services.slice(0, 3).map((service, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {service}
-                        </Badge>
-                      ))}
-                      {company.services.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{company.services.length - 3} more
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+              
+              <NotesSection 
+                entityType="company"
+                entityId={company.id}
+                entityName={company.name}
+              />
+            </div>
           ))}
         </div>
       ) : (

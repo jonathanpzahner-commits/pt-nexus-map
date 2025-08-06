@@ -18,6 +18,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { AddSchoolDialog } from '@/components/forms/AddSchoolDialog';
+import { NotesSection } from '@/components/notes/NotesSection';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -144,132 +145,140 @@ export const SchoolsTab = () => {
           ))}
         </div>
       ) : schools && schools.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="space-y-8">
           {schools.map((school) => (
-            <Card key={school.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">
-                      {school.name}
-                    </h3>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setEditingSchool(school)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete School</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Are you sure you want to delete {school.name}? This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => deleteMutation.mutate(school.id)}>
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{school.city}, {school.state}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Description */}
-                {school.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {school.description}
-                  </p>
-                )}
-
-                {/* School Details */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4" />
-                    <span className="text-sm">
-                      {school.accreditation}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">{school.program_length_months} months</span>
-                  </div>
-
-                  {school.tuition_per_year && (
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4" />
-                      <span className="text-sm">${school.tuition_per_year.toLocaleString()}/year</span>
+            <div key={school.id} className="space-y-4">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">
+                        {school.name}
+                      </h3>
                     </div>
-                  )}
-
-                  {school.average_class_size && (
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      <span className="text-sm">{school.average_class_size} students</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Programs */}
-                {school.programs_offered && school.programs_offered.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Programs:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {school.programs_offered.slice(0, 3).map((program, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {program}
-                        </Badge>
-                      ))}
-                      {school.programs_offered.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{school.programs_offered.length - 3} more
-                        </Badge>
-                      )}
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => setEditingSchool(school)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete School</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete {school.name}? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => deleteMutation.mutate(school.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
-                )}
-
-                {/* Faculty and Specializations */}
-                <div className="space-y-2">
-                  {school.faculty_count && (
-                    <p className="text-sm">
-                      <span className="font-medium">Faculty:</span> {school.faculty_count} members
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-4 w-4" />
+                    <span>{school.city}, {school.state}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Description */}
+                  {school.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {school.description}
                     </p>
                   )}
-                  
-                  {school.specializations && school.specializations.length > 0 && (
+
+                  {/* School Details */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm">
+                        {school.accreditation}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">{school.program_length_months} months</span>
+                    </div>
+
+                    {school.tuition_per_year && (
+                      <div className="flex items-center gap-2">
+                        <DollarSign className="h-4 w-4" />
+                        <span className="text-sm">${school.tuition_per_year.toLocaleString()}/year</span>
+                      </div>
+                    )}
+
+                    {school.average_class_size && (
+                      <div className="flex items-center gap-2">
+                        <Users className="h-4 w-4" />
+                        <span className="text-sm">{school.average_class_size} students</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Programs */}
+                  {school.programs_offered && school.programs_offered.length > 0 && (
                     <div className="space-y-1">
-                      <p className="text-sm font-medium">Specializations:</p>
+                      <p className="text-sm font-medium">Programs:</p>
                       <div className="flex flex-wrap gap-1">
-                        {school.specializations.slice(0, 2).map((spec, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {spec}
+                        {school.programs_offered.slice(0, 3).map((program, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {program}
                           </Badge>
                         ))}
-                        {school.specializations.length > 2 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{school.specializations.length - 2} more
+                        {school.programs_offered.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{school.programs_offered.length - 3} more
                           </Badge>
                         )}
                       </div>
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
+
+                  {/* Faculty and Specializations */}
+                  <div className="space-y-2">
+                    {school.faculty_count && (
+                      <p className="text-sm">
+                        <span className="font-medium">Faculty:</span> {school.faculty_count} members
+                      </p>
+                    )}
+                    
+                    {school.specializations && school.specializations.length > 0 && (
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">Specializations:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {school.specializations.slice(0, 2).map((spec, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {spec}
+                            </Badge>
+                          ))}
+                          {school.specializations.length > 2 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{school.specializations.length - 2} more
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <NotesSection 
+                entityType="school"
+                entityId={school.id}
+                entityName={school.name}
+              />
+            </div>
           ))}
         </div>
       ) : (

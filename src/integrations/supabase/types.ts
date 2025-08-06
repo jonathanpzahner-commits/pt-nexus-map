@@ -118,6 +118,39 @@ export type Database = {
           },
         ]
       }
+      notes: {
+        Row: {
+          content: string | null
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       providers: {
         Row: {
           bio: string | null
