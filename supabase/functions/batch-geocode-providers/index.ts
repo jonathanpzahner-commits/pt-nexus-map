@@ -20,7 +20,10 @@ serve(async (req) => {
     );
 
     const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
+    console.log("Mapbox token available:", !!mapboxToken);
+    
     if (!mapboxToken) {
+      console.error("Mapbox token not configured");
       throw new Error("Mapbox token not configured");
     }
 
@@ -31,9 +34,15 @@ serve(async (req) => {
       .is('latitude', null)
       .limit(50); // Process in batches
 
-    if (selectError) throw selectError;
+    console.log("Providers query result:", { providers: providers?.length, error: selectError });
+
+    if (selectError) {
+      console.error("Database error:", selectError);
+      throw selectError;
+    }
 
     if (!providers || providers.length === 0) {
+      console.log("No providers to geocode");
       return new Response(
         JSON.stringify({ message: "No providers to geocode", processed: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -52,8 +61,10 @@ serve(async (req) => {
         if (provider.zip_code) parts.push(provider.zip_code);
         
         const searchQuery = parts.join(", ");
+        console.log(`Geocoding provider ${provider.id} with query: "${searchQuery}"`);
         
         if (!searchQuery.trim()) {
+          console.log(`Provider ${provider.id} has no address data`);
           failed++;
           continue;
         }
@@ -62,10 +73,21 @@ serve(async (req) => {
         const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxToken}&country=US&limit=1`;
         
         const response = await fetch(geocodeUrl);
+        console.log(`Mapbox API response status for ${provider.id}:`, response.status);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`Mapbox API error for ${provider.id}:`, response.status, errorText);
+          failed++;
+          continue;
+        }
+
         const data = await response.json();
+        console.log(`Mapbox response for ${provider.id}:`, { featuresCount: data.features?.length });
 
         if (data.features && data.features.length > 0) {
           const [longitude, latitude] = data.features[0].center;
+          console.log(`Found coordinates for ${provider.id}:`, { latitude, longitude });
 
           // Update provider with coordinates
           const { error: updateError } = await supabaseAdmin
@@ -77,9 +99,11 @@ serve(async (req) => {
             console.error(`Failed to update provider ${provider.id}:`, updateError);
             failed++;
           } else {
+            console.log(`Successfully updated provider ${provider.id}`);
             processed++;
           }
         } else {
+          console.log(`No coordinates found for ${provider.id}`);
           failed++;
         }
 
