@@ -38,7 +38,10 @@ export const useSearch = () => {
   const { data: companies = [], isLoading: loadingCompanies } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('companies').select('*');
+      const { data, error } = await supabase
+        .from('companies')
+        .select('*')
+        .limit(5000); // Reasonable limit for companies
       if (error) throw error;
       return data;
     },
@@ -47,7 +50,10 @@ export const useSearch = () => {
   const { data: schools = [], isLoading: loadingSchools } = useQuery({
     queryKey: ['schools'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('schools').select('*');
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .limit(2000); // Reasonable limit for schools
       if (error) throw error;
       return data;
     },
@@ -56,7 +62,10 @@ export const useSearch = () => {
   const { data: providers = [], isLoading: loadingProviders } = useQuery({
     queryKey: ['providers'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('providers').select('*');
+      const { data, error } = await supabase
+        .from('providers')
+        .select('*')
+        .limit(20000); // Increase limit to handle large datasets
       if (error) throw error;
       return data;
     },
@@ -65,7 +74,10 @@ export const useSearch = () => {
   const { data: jobListings = [], isLoading: loadingJobs } = useQuery({
     queryKey: ['job-listings'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('job_listings').select('*');
+      const { data, error } = await supabase
+        .from('job_listings')
+        .select('*')
+        .limit(5000); // Reasonable limit for job listings
       if (error) throw error;
       return data;
     },
