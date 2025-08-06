@@ -9,6 +9,9 @@ export interface SearchFilters {
   companyType: string;
   employmentType: string;
   experienceLevel: string;
+  radius: number; // in miles
+  userLatitude?: number;
+  userLongitude?: number;
 }
 
 export interface SearchResult {
@@ -28,6 +31,9 @@ const defaultFilters: SearchFilters = {
   companyType: '',
   employmentType: '',
   experienceLevel: '',
+  radius: 50, // 50 miles default
+  userLatitude: undefined,
+  userLongitude: undefined,
 };
 
 const RESULTS_PER_PAGE = 50;
@@ -59,8 +65,15 @@ export const useServerSearch = () => {
           query = query.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,specializations.cs.{${searchTerm}}`);
         }
 
-        // Apply location filter
-        if (filters.location.trim()) {
+        // Apply location filter with radius search
+        if (filters.userLatitude && filters.userLongitude && filters.radius) {
+          // Use the database function to calculate distance
+          query = query.rpc('providers_within_radius', {
+            user_lat: filters.userLatitude,
+            user_lng: filters.userLongitude,
+            radius_miles: filters.radius
+          });
+        } else if (filters.location.trim()) {
           const locationTerm = filters.location.toLowerCase();
           query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
         }

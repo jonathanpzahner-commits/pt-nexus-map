@@ -214,9 +214,11 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          latitude: number | null
           license_number: string | null
           license_state: string | null
           linkedin_url: string | null
+          longitude: number | null
           name: string | null
           phone: string | null
           source: string | null
@@ -238,9 +240,11 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          latitude?: number | null
           license_number?: string | null
           license_state?: string | null
           linkedin_url?: string | null
+          longitude?: number | null
           name?: string | null
           phone?: string | null
           source?: string | null
@@ -262,9 +266,11 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          latitude?: number | null
           license_number?: string | null
           license_state?: string | null
           linkedin_url?: string | null
+          longitude?: number | null
           name?: string | null
           phone?: string | null
           source?: string | null
@@ -333,7 +339,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_distance: {
+        Args: { lat1: number; lon1: number; lat2: number; lon2: number }
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never

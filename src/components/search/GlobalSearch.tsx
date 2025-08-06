@@ -2,9 +2,13 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { SearchFilters } from './SearchFilters';
 import { SearchResults } from './SearchResults';
+import { LocationRadiusSearch } from './LocationRadiusSearch';
 import { useServerSearch } from '@/hooks/useServerSearch';
+import { useState } from 'react';
 
 export const GlobalSearch = () => {
+  const [currentLocationName, setCurrentLocationName] = useState<string>('');
+  
   const {
     searchQuery,
     setSearchQuery,
@@ -22,6 +26,14 @@ export const GlobalSearch = () => {
     hasPrevPage,
   } = useServerSearch();
 
+  const handleLocationSet = (latitude: number, longitude: number, address: string) => {
+    updateFilters({
+      userLatitude: latitude,
+      userLongitude: longitude,
+    });
+    setCurrentLocationName(address);
+  };
+
   return (
     <div className="space-y-6">
       {/* Search Input */}
@@ -34,6 +46,14 @@ export const GlobalSearch = () => {
           className="pl-10 h-12 text-base"
         />
       </div>
+
+      {/* Location & Radius Search */}
+      <LocationRadiusSearch
+        onLocationSet={handleLocationSet}
+        radius={filters.radius}
+        onRadiusChange={(radius) => updateFilters({ radius })}
+        currentLocation={currentLocationName}
+      />
 
       {/* Filters */}
       <SearchFilters
