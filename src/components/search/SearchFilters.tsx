@@ -159,14 +159,14 @@ export const SearchFilters = ({
               <div>
                 <Label className="text-sm font-medium">Company Type</Label>
                 <Select 
-                  value={filters.companyType} 
-                  onValueChange={(value) => onFiltersChange({ companyType: value })}
+                  value={filters.companyType || "all"} 
+                  onValueChange={(value) => onFiltersChange({ companyType: value === "all" ? "" : value })}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Any type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any type</SelectItem>
+                    <SelectItem value="all">Any type</SelectItem>
                     {companyTypes.map(type => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))}
@@ -178,14 +178,14 @@ export const SearchFilters = ({
               <div>
                 <Label className="text-sm font-medium">Employment Type</Label>
                 <Select 
-                  value={filters.employmentType} 
-                  onValueChange={(value) => onFiltersChange({ employmentType: value })}
+                  value={filters.employmentType || "all"} 
+                  onValueChange={(value) => onFiltersChange({ employmentType: value === "all" ? "" : value })}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Any type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any type</SelectItem>
+                    <SelectItem value="all">Any type</SelectItem>
                     {employmentTypes.map(type => (
                       <SelectItem key={type} value={type}>{type}</SelectItem>
                     ))}
@@ -197,14 +197,14 @@ export const SearchFilters = ({
               <div>
                 <Label className="text-sm font-medium">Experience Level</Label>
                 <Select 
-                  value={filters.experienceLevel} 
-                  onValueChange={(value) => onFiltersChange({ experienceLevel: value })}
+                  value={filters.experienceLevel || "all"} 
+                  onValueChange={(value) => onFiltersChange({ experienceLevel: value === "all" ? "" : value })}
                 >
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Any level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any level</SelectItem>
+                    <SelectItem value="all">Any level</SelectItem>
                     {experienceLevels.map(level => (
                       <SelectItem key={level} value={level}>{level}</SelectItem>
                     ))}
