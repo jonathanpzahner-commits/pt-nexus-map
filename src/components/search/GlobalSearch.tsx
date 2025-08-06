@@ -4,6 +4,7 @@ import { SearchFilters } from './SearchFilters';
 import { SearchResults } from './SearchResults';
 import { LocationRadiusSearch } from './LocationRadiusSearch';
 import { GeocodingManager } from './GeocodingManager';
+import { NPIProcessor } from '../admin/NPIProcessor';
 import { useServerSearch } from '@/hooks/useServerSearch';
 import { useState } from 'react';
 
@@ -47,6 +48,9 @@ export const GlobalSearch = () => {
           className="pl-10 h-12 text-base"
         />
       </div>
+
+      {/* NPI Database Processor */}
+      <NPIProcessor />
 
       {/* Geocoding Setup */}
       <GeocodingManager />
