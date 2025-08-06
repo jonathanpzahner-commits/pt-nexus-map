@@ -2,7 +2,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { SearchFilters } from './SearchFilters';
 import { SearchResults } from './SearchResults';
-import { useSearch } from '@/hooks/useSearch';
+import { useServerSearch } from '@/hooks/useServerSearch';
 
 export const GlobalSearch = () => {
   const {
@@ -14,7 +14,13 @@ export const GlobalSearch = () => {
     results,
     isLoading,
     totalResults,
-  } = useSearch();
+    currentPage,
+    totalPages,
+    nextPage,
+    prevPage,
+    hasNextPage,
+    hasPrevPage,
+  } = useServerSearch();
 
   return (
     <div className="space-y-6">
@@ -39,6 +45,29 @@ export const GlobalSearch = () => {
 
       {/* Results */}
       <SearchResults results={results} isLoading={isLoading} />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <button
+            onClick={prevPage}
+            disabled={!hasPrevPage}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={nextPage}
+            disabled={!hasNextPage}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
+      )}
     </div>
   );
 };
