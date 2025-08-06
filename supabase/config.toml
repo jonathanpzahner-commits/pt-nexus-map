@@ -1,1 +1,15 @@
 project_id = "bvplrcqhscqcsyxuxbcr"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://8ae45b9b-9c44-4296-8984-541ba17f8358.lovableproject.com"]
+jwt_expiry = 3600
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[functions.process-bulk-upload]
+verify_jwt = true

@@ -1,18 +1,23 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, Users, Building, Briefcase, GraduationCap, Map, Search } from 'lucide-react';
+import { Activity, Users, Building, Briefcase, GraduationCap, Map, Search, Upload } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
 import { SchoolsTab } from './dashboard/SchoolsTab';
 import { JobListingsTab } from './dashboard/JobListingsTab';
 import { MapContainer } from './map/MapContainer';
 import { GlobalSearch } from './search/GlobalSearch';
+import { BulkUploadDialog } from './upload/BulkUploadDialog';
 
 const Dashboard = () => {
+  const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+
   // Fetch summary statistics
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
     queryKey: ['dashboard-stats'],
     queryFn: async () => {
       const [providers, companies, schools, jobs] = await Promise.all([
@@ -30,6 +35,11 @@ const Dashboard = () => {
       };
     },
   });
+
+  const handleUploadComplete = () => {
+    // Refetch stats when upload completes
+    refetchStats();
+  };
 
   const summaryCards = [
     {
@@ -60,6 +70,18 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-8">
+      {/* Header with Bulk Upload */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Dashboard Overview</h2>
+          <p className="text-muted-foreground">Manage your PT ecosystem data</p>
+        </div>
+        <Button onClick={() => setIsBulkUploadOpen(true)} className="flex items-center gap-2">
+          <Upload className="h-4 w-4" />
+          Bulk Upload Data
+        </Button>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {summaryCards.map((card, index) => {
@@ -130,6 +152,13 @@ const Dashboard = () => {
           <MapContainer />
         </TabsContent>
       </Tabs>
+
+      {/* Bulk Upload Dialog */}
+      <BulkUploadDialog 
+        open={isBulkUploadOpen}
+        onOpenChange={setIsBulkUploadOpen}
+        onUploadComplete={handleUploadComplete}
+      />
     </div>
   );
 };
