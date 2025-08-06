@@ -17,5 +17,8 @@ verify_jwt = true
 [functions.geocode-location]
 verify_jwt = false
 
+[functions.location-autocomplete]
+verify_jwt = false
+
 [functions.batch-geocode-providers]
 verify_jwt = false
