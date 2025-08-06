@@ -13,3 +13,9 @@ enable_confirmations = false
 
 [functions.process-bulk-upload]
 verify_jwt = true
+
+[functions.geocode-location]
+verify_jwt = false
+
+[functions.batch-geocode-providers]
+verify_jwt = false

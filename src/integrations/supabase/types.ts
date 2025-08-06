@@ -343,6 +343,22 @@ export type Database = {
         Args: { lat1: number; lon1: number; lat2: number; lon2: number }
         Returns: number
       }
+      providers_within_radius: {
+        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Returns: {
+          id: string
+          name: string
+          first_name: string
+          last_name: string
+          city: string
+          state: string
+          latitude: number
+          longitude: number
+          specializations: string[]
+          bio: string
+          distance_miles: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

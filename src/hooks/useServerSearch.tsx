@@ -67,39 +67,63 @@ export const useServerSearch = () => {
 
         // Apply location filter with radius search
         if (filters.userLatitude && filters.userLongitude && filters.radius) {
-          // Use the database function to calculate distance
-          query = query.rpc('providers_within_radius', {
-            user_lat: filters.userLatitude,
-            user_lng: filters.userLongitude,
-            radius_miles: filters.radius
-          });
-        } else if (filters.location.trim()) {
-          const locationTerm = filters.location.toLowerCase();
-          query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
-        }
-
-        // Apply specialization filter
-        if (filters.specialization.trim()) {
-          query = query.contains('specializations', [filters.specialization]);
-        }
-
-        const { data: providers, error, count } = await query;
-        if (error) throw error;
-
-        if (providers) {
-          providers.forEach(provider => {
-            const location = provider.city && provider.state ? `${provider.city}, ${provider.state}` : '';
-            results.push({
-              id: provider.id,
-              type: 'provider',
-              title: provider.name || `${provider.first_name} ${provider.last_name}`,
-              subtitle: 'Physical Therapist',
-              location,
-              description: provider.bio,
-              data: provider,
+          // Use stored procedure for radius search
+          const { data: radiusResults, error: radiusError } = await supabase
+            .rpc('providers_within_radius', {
+              user_lat: filters.userLatitude,
+              user_lng: filters.userLongitude,
+              radius_miles: filters.radius
+            })
+            .range(offset, offset + RESULTS_PER_PAGE - 1);
+          
+          if (radiusError) throw radiusError;
+          
+          // Handle radius search results
+          if (radiusResults) {
+            radiusResults.forEach((provider: any) => {
+              const location = provider.city && provider.state ? `${provider.city}, ${provider.state}` : '';
+              results.push({
+                id: provider.id,
+                type: 'provider',
+                title: provider.name || `${provider.first_name} ${provider.last_name}`,
+                subtitle: `Physical Therapist (${provider.distance_miles?.toFixed(1)}mi away)`,
+                location,
+                description: provider.bio,
+                data: provider,
+              });
             });
-          });
-          totalCount += count || 0;
+            totalCount += radiusResults.length;
+          }
+        } else {
+          // Regular provider search without radius
+          if (filters.location.trim()) {
+            const locationTerm = filters.location.toLowerCase();
+            query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
+          }
+
+          // Apply specialization filter
+          if (filters.specialization.trim()) {
+            query = query.contains('specializations', [filters.specialization]);
+          }
+
+          const { data: providers, error, count } = await query;
+          if (error) throw error;
+
+          if (providers) {
+            providers.forEach(provider => {
+              const location = provider.city && provider.state ? `${provider.city}, ${provider.state}` : '';
+              results.push({
+                id: provider.id,
+                type: 'provider',
+                title: provider.name || `${provider.first_name} ${provider.last_name}`,
+                subtitle: 'Physical Therapist',
+                location,
+                description: provider.bio,
+                data: provider,
+              });
+            });
+            totalCount += count || 0;
+          }
         }
       }
 
