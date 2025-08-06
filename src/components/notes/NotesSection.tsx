@@ -19,6 +19,7 @@ export const NotesSection = ({ entityType, entityId, entityName }: NotesSectionP
   const { data: notes = [], isLoading } = useQuery({
     queryKey: ['notes', entityType, entityId],
     queryFn: async () => {
+      console.log('Fetching notes for:', entityType, entityId);
       const { data, error } = await supabase
         .from('notes')
         .select('*')
@@ -26,7 +27,11 @@ export const NotesSection = ({ entityType, entityId, entityName }: NotesSectionP
         .eq('entity_id', entityId)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching notes:', error);
+        throw error;
+      }
+      console.log('Notes fetched:', data);
       return data;
     },
   });
@@ -46,6 +51,8 @@ export const NotesSection = ({ entityType, entityId, entityName }: NotesSectionP
       </Card>
     );
   }
+
+  console.log('NotesSection rendering for:', entityName, 'with', notes.length, 'notes');
 
   return (
     <Card>

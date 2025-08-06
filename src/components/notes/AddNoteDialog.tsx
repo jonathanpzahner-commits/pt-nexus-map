@@ -72,6 +72,7 @@ export const AddNoteDialog = ({
 
   const mutation = useMutation({
     mutationFn: async (data: NoteFormData) => {
+      console.log('Submitting note:', data, 'for entity:', entityType, entityId);
       const noteData = {
         title: data.title,
         content: data.content || null,
@@ -80,12 +81,14 @@ export const AddNoteDialog = ({
       };
 
       if (isEditing) {
+        console.log('Updating note:', note.id);
         const { error } = await supabase
           .from('notes')
           .update(noteData)
           .eq('id', note.id);
         if (error) throw error;
       } else {
+        console.log('Creating new note with data:', noteData);
         const { error } = await supabase
           .from('notes')
           .insert(noteData);
@@ -93,6 +96,7 @@ export const AddNoteDialog = ({
       }
     },
     onSuccess: () => {
+      console.log('Note operation successful');
       queryClient.invalidateQueries({ queryKey: ['notes', entityType, entityId] });
       toast({
         title: 'Success',
@@ -101,12 +105,12 @@ export const AddNoteDialog = ({
       handleClose();
     },
     onError: (error) => {
+      console.error('Note operation failed:', error);
       toast({
         title: 'Error',
         description: isEditing ? 'Failed to update note. Please try again.' : 'Failed to add note. Please try again.',
         variant: 'destructive',
       });
-      console.error('Error with note:', error);
     },
   });
 
