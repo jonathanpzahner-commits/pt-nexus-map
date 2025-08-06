@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -129,6 +130,9 @@ export const AddNoteDialog = ({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit Note' : 'Add New Note'}</DialogTitle>
+          <DialogDescription>
+            {isEditing ? 'Update your note details below.' : 'Create a new note to track important information.'}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
