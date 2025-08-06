@@ -2,12 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, Users, Building, Briefcase, GraduationCap, Map } from 'lucide-react';
+import { Activity, Users, Building, Briefcase, GraduationCap, Map, Search } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
 import { SchoolsTab } from './dashboard/SchoolsTab';
 import { JobListingsTab } from './dashboard/JobListingsTab';
 import { MapContainer } from './map/MapContainer';
+import { GlobalSearch } from './search/GlobalSearch';
 
 const Dashboard = () => {
   // Fetch summary statistics
@@ -89,8 +90,12 @@ const Dashboard = () => {
       </div>
 
       {/* Tabbed Content */}
-      <Tabs defaultValue="providers" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="search" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="search" className="flex items-center gap-1">
+            <Search className="h-4 w-4" />
+            Search
+          </TabsTrigger>
           <TabsTrigger value="providers">PTs</TabsTrigger>
           <TabsTrigger value="companies">Companies</TabsTrigger>
           <TabsTrigger value="schools">Schools</TabsTrigger>
@@ -100,6 +105,10 @@ const Dashboard = () => {
             Map
           </TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="search" className="space-y-4">
+          <GlobalSearch />
+        </TabsContent>
         
         <TabsContent value="providers" className="space-y-4">
           <ProvidersTab />

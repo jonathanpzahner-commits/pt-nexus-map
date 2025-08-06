@@ -1,0 +1,298 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Building2, GraduationCap, Users, Briefcase, MapPin, ExternalLink } from 'lucide-react';
+import { SearchResult } from '@/hooks/useSearch';
+import { NotesSection } from '@/components/notes/NotesSection';
+import { useState } from 'react';
+
+interface SearchResultsProps {
+  results: SearchResult[];
+  isLoading: boolean;
+}
+
+export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
+  const [expandedResults, setExpandedResults] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) => {
+    const newExpanded = new Set(expandedResults);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedResults(newExpanded);
+  };
+
+  const getTypeIcon = (type: SearchResult['type']) => {
+    switch (type) {
+      case 'company':
+        return <Building2 className="h-4 w-4 text-blue-500" />;
+      case 'school':
+        return <GraduationCap className="h-4 w-4 text-green-500" />;
+      case 'provider':
+        return <Users className="h-4 w-4 text-amber-500" />;
+      case 'job_listing':
+        return <Briefcase className="h-4 w-4 text-red-500" />;
+    }
+  };
+
+  const getTypeBadgeColor = (type: SearchResult['type']) => {
+    switch (type) {
+      case 'company':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'school':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'provider':
+        return 'bg-amber-100 text-amber-800 border-amber-200';
+      case 'job_listing':
+        return 'bg-red-100 text-red-800 border-red-200';
+    }
+  };
+
+  const formatEntityType = (type: SearchResult['type']) => {
+    switch (type) {
+      case 'company':
+        return 'Company';
+      case 'school':
+        return 'School';
+      case 'provider':
+        return 'Provider';
+      case 'job_listing':
+        return 'Job';
+    }
+  };
+
+  const renderEntityDetails = (result: SearchResult) => {
+    const { data, type } = result;
+    
+    switch (type) {
+      case 'company':
+        return (
+          <div className="space-y-2 text-sm">
+            {data.services && data.services.length > 0 && (
+              <div>
+                <span className="font-medium">Services: </span>
+                <span className="text-muted-foreground">{data.services.join(', ')}</span>
+              </div>
+            )}
+            {data.founded_year && (
+              <div>
+                <span className="font-medium">Founded: </span>
+                <span className="text-muted-foreground">{data.founded_year}</span>
+              </div>
+            )}
+            {data.employee_count && (
+              <div>
+                <span className="font-medium">Employees: </span>
+                <span className="text-muted-foreground">{data.employee_count}</span>
+              </div>
+            )}
+            {data.website && (
+              <div>
+                <a 
+                  href={data.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Visit Website
+                </a>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'school':
+        return (
+          <div className="space-y-2 text-sm">
+            {data.programs_offered && data.programs_offered.length > 0 && (
+              <div>
+                <span className="font-medium">Programs: </span>
+                <span className="text-muted-foreground">{data.programs_offered.join(', ')}</span>
+              </div>
+            )}
+            {data.tuition_per_year && (
+              <div>
+                <span className="font-medium">Tuition: </span>
+                <span className="text-muted-foreground">${data.tuition_per_year.toLocaleString()}/year</span>
+              </div>
+            )}
+            {data.program_length_months && (
+              <div>
+                <span className="font-medium">Program Length: </span>
+                <span className="text-muted-foreground">{data.program_length_months} months</span>
+              </div>
+            )}
+            {data.accreditation && (
+              <div>
+                <span className="font-medium">Accreditation: </span>
+                <span className="text-muted-foreground">{data.accreditation}</span>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'provider':
+        return (
+          <div className="space-y-2 text-sm">
+            {data.specializations && data.specializations.length > 0 && (
+              <div>
+                <span className="font-medium">Specializations: </span>
+                <span className="text-muted-foreground">{data.specializations.join(', ')}</span>
+              </div>
+            )}
+            {data.years_experience && (
+              <div>
+                <span className="font-medium">Experience: </span>
+                <span className="text-muted-foreground">{data.years_experience} years</span>
+              </div>
+            )}
+            {data.license_number && (
+              <div>
+                <span className="font-medium">License: </span>
+                <span className="text-muted-foreground">{data.license_number} ({data.license_state})</span>
+              </div>
+            )}
+            {data.email && (
+              <div>
+                <a 
+                  href={`mailto:${data.email}`}
+                  className="text-primary hover:underline"
+                >
+                  {data.email}
+                </a>
+              </div>
+            )}
+          </div>
+        );
+      
+      case 'job_listing':
+        return (
+          <div className="space-y-2 text-sm">
+            {data.salary_min && data.salary_max && (
+              <div>
+                <span className="font-medium">Salary: </span>
+                <span className="text-muted-foreground">
+                  ${data.salary_min.toLocaleString()} - ${data.salary_max.toLocaleString()}
+                </span>
+              </div>
+            )}
+            {data.experience_level && (
+              <div>
+                <span className="font-medium">Experience Level: </span>
+                <span className="text-muted-foreground">{data.experience_level}</span>
+              </div>
+            )}
+            {data.is_remote && (
+              <Badge variant="secondary" className="text-xs">Remote</Badge>
+            )}
+            {data.requirements && (
+              <div>
+                <span className="font-medium">Requirements: </span>
+                <span className="text-muted-foreground">{data.requirements}</span>
+              </div>
+            )}
+          </div>
+        );
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {[...Array(3)].map((_, i) => (
+          <Card key={i}>
+            <CardContent className="p-4">
+              <div className="animate-pulse space-y-3">
+                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="h-3 bg-muted rounded w-1/2"></div>
+                <div className="h-3 bg-muted rounded w-full"></div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (results.length === 0) {
+    return (
+      <Card>
+        <CardContent className="p-8 text-center">
+          <div className="text-muted-foreground">
+            <div className="text-lg font-medium mb-2">No results found</div>
+            <div className="text-sm">Try adjusting your search terms or filters</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {results.map((result) => {
+        const isExpanded = expandedResults.has(result.id);
+        
+        return (
+          <Card key={result.id} className="transition-shadow hover:shadow-md">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    {getTypeIcon(result.type)}
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${getTypeBadgeColor(result.type)}`}
+                    >
+                      {formatEntityType(result.type)}
+                    </Badge>
+                  </div>
+                  <CardTitle className="text-lg">{result.title}</CardTitle>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    {result.subtitle}
+                  </div>
+                  {result.location && (
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground mt-1">
+                      <MapPin className="h-3 w-3" />
+                      {result.location}
+                    </div>
+                  )}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => toggleExpanded(result.id)}
+                >
+                  {isExpanded ? 'Less' : 'More'}
+                </Button>
+              </div>
+              {result.description && !isExpanded && (
+                <p className="text-sm text-muted-foreground line-clamp-2">
+                  {result.description}
+                </p>
+              )}
+            </CardHeader>
+            
+            {isExpanded && (
+              <CardContent className="pt-0 space-y-4">
+                {result.description && (
+                  <p className="text-sm">{result.description}</p>
+                )}
+                
+                {renderEntityDetails(result)}
+                
+                <NotesSection
+                  entityType={result.type}
+                  entityId={result.id}
+                  entityName={result.title}
+                />
+              </CardContent>
+            )}
+          </Card>
+        );
+      })}
+    </div>
+  );
+};
