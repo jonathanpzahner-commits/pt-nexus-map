@@ -41,7 +41,7 @@ export const useSearch = () => {
       const { data, error } = await supabase
         .from('companies')
         .select('*')
-        .limit(5000); // Reasonable limit for companies
+        .limit(100000); // Handle large company datasets
       if (error) throw error;
       return data;
     },
@@ -53,7 +53,7 @@ export const useSearch = () => {
       const { data, error } = await supabase
         .from('schools')
         .select('*')
-        .limit(2000); // Reasonable limit for schools
+        .limit(10000); // Increased limit for schools
       if (error) throw error;
       return data;
     },
@@ -65,7 +65,7 @@ export const useSearch = () => {
       const { data, error } = await supabase
         .from('providers')
         .select('*')
-        .limit(20000); // Increase limit to handle large datasets
+        .limit(500000); // Handle up to 400k+ physical therapists
       if (error) throw error;
       return data;
     },
@@ -77,7 +77,7 @@ export const useSearch = () => {
       const { data, error } = await supabase
         .from('job_listings')
         .select('*')
-        .limit(5000); // Reasonable limit for job listings
+        .limit(50000); // Increased limit for job listings
       if (error) throw error;
       return data;
     },
