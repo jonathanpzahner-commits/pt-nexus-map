@@ -10,6 +10,7 @@ import { CompaniesTab } from './dashboard/CompaniesTab';
 import { SchoolsTab } from './dashboard/SchoolsTab';
 import { JobListingsTab } from './dashboard/JobListingsTab';
 import { MapContainer } from './map/MapContainer';
+import { InteractiveMapView } from './map/InteractiveMapView';
 import { GlobalSearch } from './search/GlobalSearch';
 import { BulkUploadDialog } from './upload/BulkUploadDialog';
 import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
@@ -152,7 +153,10 @@ const Dashboard = () => {
         </TabsContent>
         
         <TabsContent value="map" className="space-y-4">
-          <MapContainer />
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Interactive PT Ecosystem Map</h2>
+            <InteractiveMapView />
+          </div>
         </TabsContent>
       </Tabs>
 
