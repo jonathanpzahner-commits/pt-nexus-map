@@ -23,10 +23,10 @@ Deno.serve(async (req) => {
     const { data: companies, error: fetchError } = await supabase
       .from('companies')
       .select('id, name, company_locations')
-      .or('city.is.null,state.is.null')
       .not('company_locations', 'is', null)
-      .neq('company_locations', '{}')
-      .limit(50000); // Ensure we get all companies
+      .neq('company_locations::text', '[]')
+      .or('city.is.null,state.is.null')
+      .limit(25000); // Get up to 25k companies
 
     if (fetchError) {
       console.error('Error fetching companies:', fetchError);
