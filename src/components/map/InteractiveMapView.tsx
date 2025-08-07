@@ -49,13 +49,19 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     queryFn: async () => {
       console.log('Fetching companies...');
       const { data, error } = await supabase.from('companies').select('*');
+      console.log('Companies query result:', { data: data?.length, error });
       if (error) {
         console.error('Companies query error:', error);
         throw error;
       }
-      console.log('Companies loaded:', data?.length);
-      return data;
+      return data || [];
     },
+  });
+
+  console.log('Companies state:', { 
+    data: companies?.length, 
+    isLoading: companiesLoading, 
+    error: companiesError 
   });
 
   const { data: schools = [] } = useQuery({
