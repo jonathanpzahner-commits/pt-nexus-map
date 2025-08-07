@@ -118,14 +118,14 @@ function parseLocationString(location: string): { city?: string, state?: string,
 
   const cleanLocation = location.trim();
   
-  // Pattern 1: "City, State ZIP" (with comma)
-  const cityStateMatch = cleanLocation.match(/^(.+),\s*([A-Z]{2})\s*(\d{5}(?:\d{4})?(?:-\d{4})?)?\s*$/);
-  if (cityStateMatch) {
-    result.city = cityStateMatch[1].trim();
-    result.state = cityStateMatch[2].trim();
-    if (cityStateMatch[3]) {
-      let zip = cityStateMatch[3].trim();
-      // Handle concatenated ZIP+4 format (e.g., 280795541 -> 28079-5541)
+  // Pattern 1: "City, State ZIP" (with comma) - handles 5, 9, or ZIP+4 formats
+  const cityStateCommaMatch = cleanLocation.match(/^(.+?),\s*([A-Z]{2})\s*(\d{5,9}(?:-\d{4})?)?\s*$/);
+  if (cityStateCommaMatch) {
+    result.city = cityStateCommaMatch[1].trim();
+    result.state = cityStateCommaMatch[2].trim();
+    if (cityStateCommaMatch[3]) {
+      let zip = cityStateCommaMatch[3].trim();
+      // Handle 9-digit concatenated ZIP (e.g., 280795541 -> 28079-5541)
       if (zip.length === 9 && !zip.includes('-')) {
         zip = zip.substring(0, 5) + '-' + zip.substring(5);
       }
@@ -134,19 +134,27 @@ function parseLocationString(location: string): { city?: string, state?: string,
     return result;
   }
 
-  // Pattern 2: "City State ZIP" (space separated, handle concatenated ZIP)
-  const cityStateSpaceMatch = cleanLocation.match(/^(.+?)\s+([A-Z]{2})\s*(\d{5}(?:\d{4})?(?:-\d{4})?)?\s*$/);
+  // Pattern 2: "City State ZIP" (space separated) - handles various ZIP formats
+  const cityStateSpaceMatch = cleanLocation.match(/^(.+?)\s+([A-Z]{2})\s+(\d{5,9}(?:-\d{4})?)?\s*$/);
   if (cityStateSpaceMatch) {
     result.city = cityStateSpaceMatch[1].trim();
     result.state = cityStateSpaceMatch[2].trim();
     if (cityStateSpaceMatch[3]) {
       let zip = cityStateSpaceMatch[3].trim();
-      // Handle concatenated ZIP+4 format (e.g., 280795541 -> 28079-5541)
+      // Handle 9-digit concatenated ZIP (e.g., 280795541 -> 28079-5541)
       if (zip.length === 9 && !zip.includes('-')) {
         zip = zip.substring(0, 5) + '-' + zip.substring(5);
       }
       result.zip_code = zip;
     }
+    return result;
+  }
+
+  // Pattern 3: "City State" (no ZIP)
+  const cityStateOnlyMatch = cleanLocation.match(/^(.+?)\s+([A-Z]{2})\s*$/);
+  if (cityStateOnlyMatch) {
+    result.city = cityStateOnlyMatch[1].trim();
+    result.state = cityStateOnlyMatch[2].trim();
     return result;
   }
 
