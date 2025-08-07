@@ -452,8 +452,9 @@ function inferLocationFromName(schoolName: string): { city: string; state: strin
     'wisconsin': 'WI', 'wyoming': 'WY'
   };
 
-  // City/State specific mappings for known schools
+  // Comprehensive specific mappings for known schools
   const locationMap: { [key: string]: { city: string; state: string } } = {
+    // Previously successful mappings
     'hawaii pacific university honolulu': { city: 'Honolulu', state: 'HI' },
     'neumann university': { city: 'Aston', state: 'PA' },
     'seton hill university': { city: 'Greensburg', state: 'PA' },
@@ -478,6 +479,68 @@ function inferLocationFromName(schoolName: string): { city: string; state: strin
     'rockhurst university': { city: 'Kansas City', state: 'MO' },
     'florida southern college': { city: 'Lakeland', state: 'FL' },
     'loma linda university': { city: 'Loma Linda', state: 'CA' },
+
+    // Failed schools - adding proper mappings
+    'murphy deming college of health sciences/mary baldwin university': { city: 'Fishersville', state: 'VA' },
+    'gannon university - ruskin': { city: 'Ruskin', state: 'FL' },
+    'gannon university - erie': { city: 'Erie', state: 'PA' },
+    'georgia southern university': { city: 'Statesboro', state: 'GA' },
+    'seton hall university': { city: 'South Orange', state: 'NJ' },
+    'california state university, long beach': { city: 'Long Beach', state: 'CA' },
+    'east tennessee state university': { city: 'Johnson City', state: 'TN' },
+    'concordia university - saint paul': { city: 'Saint Paul', state: 'MN' },
+    'universidad ana g. méndez': { city: 'San Juan', state: 'PR' },
+    'oregon state university - cascades': { city: 'Bend', state: 'OR' },
+    'louisiana state university health sciences center in shreveport': { city: 'Shreveport', state: 'LA' },
+    'southern california university of health sciences': { city: 'Whittier', state: 'CA' },
+    'rocky mountain university of health professions': { city: 'Provo', state: 'UT' },
+    'california state university, northridge': { city: 'Northridge', state: 'CA' },
+    'louisiana state university': { city: 'Baton Rouge', state: 'LA' },
+    'pacific northwest university of health sciences': { city: 'Yakima', state: 'WA' },
+    'harrisburg university of science and technology': { city: 'Harrisburg', state: 'PA' },
+    'university of charleston in west virginia': { city: 'Charleston', state: 'WV' },
+    'creighton university - omaha': { city: 'Omaha', state: 'NE' },
+    'western university of health sciences - oregon': { city: 'Lebanon', state: 'OR' },
+    'college of staten island, (cuny)': { city: 'Staten Island', state: 'NY' },
+    'touro university (manhattan/long island)': { city: 'New York', state: 'NY' },
+    'western university of health sciences - california': { city: 'Pomona', state: 'CA' },
+    'oregon tech-ohsu': { city: 'Portland', state: 'OR' },
+    'nova southeastern university - fort lauderdale': { city: 'Fort Lauderdale', state: 'FL' },
+    'nova southeastern university - tampa bay': { city: 'Tampa', state: 'FL' },
+    'university of north texas health science center at fort worth': { city: 'Fort Worth', state: 'TX' },
+    'south college – knoxville': { city: 'Knoxville', state: 'TN' },
+    'concordia university ann arbor': { city: 'Ann Arbor', state: 'MI' },
+    'suny binghamton university': { city: 'Binghamton', state: 'NY' },
+    'california state university, fresno': { city: 'Fresno', state: 'CA' },
+    'midwestern university - downers grove': { city: 'Downers Grove', state: 'IL' },
+    'emory & henry university - school of health sciences': { city: 'Emory', state: 'VA' },
+    'hawaii pacific university las vegas': { city: 'Las Vegas', state: 'NV' },
+    'pcom georgia': { city: 'Suwanee', state: 'GA' },
+    'arkansas college of health education': { city: 'Fort Smith', state: 'AR' },
+    'william carey university bridge program': { city: 'Hattiesburg', state: 'MS' },
+    'texas a&m university texarkana': { city: 'Texarkana', state: 'TX' },
+    'des moines university - osteopathic medical center': { city: 'Des Moines', state: 'IA' },
+    'university of the incarnate word': { city: 'San Antonio', state: 'TX' },
+    'massachusetts college of pharmacy and health sciences': { city: 'Boston', state: 'MA' },
+    'at still university of health sciences': { city: 'Kirksville', state: 'MO' },
+    'concordia university wisconsin': { city: 'Mequon', state: 'WI' },
+    'california state university, sacramento': { city: 'Sacramento', state: 'CA' },
+    'university of north georgia': { city: 'Dahlonega', state: 'GA' },
+    'franklin pierce university': { city: 'Rindge', state: 'NH' },
+    'franciscan missionaries of our lady university': { city: 'Baton Rouge', state: 'LA' },
+    'mayo clinic college of medicine and science': { city: 'Rochester', state: 'MN' },
+    'indiana university': { city: 'Bloomington', state: 'IN' },
+    'midwestern university - glendale': { city: 'Glendale', state: 'AZ' },
+    'new england institute of technology': { city: 'East Greenwich', state: 'RI' },
+    'rosalind franklin university of medicine and science': { city: 'North Chicago', state: 'IL' },
+    'maryville university of saint louis': { city: 'St. Louis', state: 'MO' },
+    'texas tech university health sciences center': { city: 'Lubbock', state: 'TX' },
+    'university of central arkansas': { city: 'Conway', state: 'AR' },
+    'university of mary hardin-baylor': { city: 'Belton', state: 'TX' },
+    'university of southern california': { city: 'Los Angeles', state: 'CA' },
+    'florida agricultural and mechanical university': { city: 'Tallahassee', state: 'FL' },
+
+    // Add more comprehensive mappings
     'central michigan university': { city: 'Mount Pleasant', state: 'MI' },
     'university of central florida': { city: 'Orlando', state: 'FL' },
     'trine university': { city: 'Angola', state: 'IN' },
@@ -661,48 +724,59 @@ function inferLocationFromName(schoolName: string): { city: string; state: strin
     return locationMap[lowerName];
   }
   
-  // Try to extract state from name
+  // Enhanced parsing for location information in school names
+  
+  // Look for explicit city, state patterns
+  const cityStatePattern = /,\s*([A-Z]{2})\s*$/;
+  const cityStateMatch = schoolName.match(cityStatePattern);
+  if (cityStateMatch) {
+    const state = cityStateMatch[1];
+    const beforeState = schoolName.replace(cityStateMatch[0], '').trim();
+    
+    // Extract city from the end of the remaining text
+    const cityMatch = beforeState.match(/\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s*$/);
+    if (cityMatch) {
+      return { city: cityMatch[1], state };
+    }
+  }
+  
+  // Look for "University of [State]" or "State University" patterns
   for (const [stateName, abbrev] of Object.entries(stateMap)) {
-    if (name.includes(stateName)) {
-      // Try to extract city from common patterns
-      let city = "";
+    if (name.includes(`university of ${stateName}`)) {
+      // State university main campuses
+      const stateCapitals: { [key: string]: string } = {
+        'AL': 'Tuscaloosa', 'AK': 'Fairbanks', 'AZ': 'Tucson', 'AR': 'Fayetteville',
+        'CA': 'Los Angeles', 'CO': 'Boulder', 'CT': 'Storrs', 'DE': 'Newark',
+        'FL': 'Gainesville', 'GA': 'Athens', 'HI': 'Honolulu', 'ID': 'Moscow',
+        'IL': 'Urbana', 'IN': 'Bloomington', 'IA': 'Iowa City', 'KS': 'Lawrence',
+        'KY': 'Lexington', 'LA': 'Baton Rouge', 'ME': 'Orono', 'MD': 'College Park',
+        'MA': 'Amherst', 'MI': 'Ann Arbor', 'MN': 'Minneapolis', 'MS': 'Oxford',
+        'MO': 'Columbia', 'MT': 'Missoula', 'NE': 'Lincoln', 'NV': 'Reno',
+        'NH': 'Durham', 'NJ': 'New Brunswick', 'NM': 'Albuquerque', 'NY': 'Buffalo',
+        'NC': 'Chapel Hill', 'ND': 'Grand Forks', 'OH': 'Columbus', 'OK': 'Norman',
+        'OR': 'Eugene', 'PA': 'University Park', 'RI': 'Kingston', 'SC': 'Columbia',
+        'SD': 'Vermillion', 'TN': 'Knoxville', 'TX': 'Austin', 'UT': 'Salt Lake City',
+        'VT': 'Burlington', 'VA': 'Charlottesville', 'WA': 'Seattle', 'WV': 'Morgantown',
+        'WI': 'Madison', 'WY': 'Laramie'
+      };
       
-      // Look for "University of [State]" pattern
-      if (name.includes(`university of ${stateName}`)) {
-        // Often the main campus is in the capital or largest city
-        const capitals: { [key: string]: string } = {
-          'AL': 'Montgomery', 'AK': 'Anchorage', 'AZ': 'Phoenix', 'AR': 'Little Rock',
-          'CA': 'Sacramento', 'CO': 'Denver', 'CT': 'Hartford', 'DE': 'Wilmington',
-          'FL': 'Tallahassee', 'GA': 'Atlanta', 'HI': 'Honolulu', 'ID': 'Boise',
-          'IL': 'Springfield', 'IN': 'Indianapolis', 'IA': 'Des Moines', 'KS': 'Topeka',
-          'KY': 'Frankfort', 'LA': 'Baton Rouge', 'ME': 'Augusta', 'MD': 'Annapolis',
-          'MA': 'Boston', 'MI': 'Lansing', 'MN': 'St. Paul', 'MS': 'Jackson',
-          'MO': 'Jefferson City', 'MT': 'Helena', 'NE': 'Lincoln', 'NV': 'Carson City',
-          'NH': 'Concord', 'NJ': 'Trenton', 'NM': 'Santa Fe', 'NY': 'Albany',
-          'NC': 'Raleigh', 'ND': 'Bismarck', 'OH': 'Columbus', 'OK': 'Oklahoma City',
-          'OR': 'Salem', 'PA': 'Harrisburg', 'RI': 'Providence', 'SC': 'Columbia',
-          'SD': 'Pierre', 'TN': 'Nashville', 'TX': 'Austin', 'UT': 'Salt Lake City',
-          'VT': 'Montpelier', 'VA': 'Richmond', 'WA': 'Olympia', 'WV': 'Charleston',
-          'WI': 'Madison', 'WY': 'Cheyenne'
-        };
-        
-        // Use state capital as default, but check for major cities for common universities
-        if (abbrev === 'CA' && name.includes('university of california')) {
-          city = 'Los Angeles'; // UCLA main campus
-        } else if (abbrev === 'TX' && name.includes('university of texas')) {
-          city = 'Austin'; // UT main campus
-        } else if (abbrev === 'FL' && name.includes('university of florida')) {
-          city = 'Gainesville';
-        } else if (abbrev === 'MI' && name.includes('university of michigan')) {
-          city = 'Ann Arbor';
-        } else if (abbrev === 'WA' && name.includes('university of washington')) {
-          city = 'Seattle';
-        } else {
-          city = capitals[abbrev] || "";
-        }
-      }
+      return { city: stateCapitals[abbrev] || '', state: abbrev };
+    }
+    
+    if (name.includes(`${stateName} state university`)) {
+      const stateCapitals: { [key: string]: string } = {
+        'AL': 'Montgomery', 'AZ': 'Tempe', 'AR': 'Jonesboro', 'CA': 'Long Beach',
+        'CO': 'Fort Collins', 'FL': 'Tallahassee', 'GA': 'Atlanta', 'ID': 'Pocatello',
+        'IL': 'Normal', 'IN': 'Terre Haute', 'IA': 'Ames', 'KS': 'Manhattan',
+        'KY': 'Frankfort', 'LA': 'Baton Rouge', 'MI': 'East Lansing', 'MN': 'Mankato',
+        'MS': 'Mississippi State', 'MO': 'Springfield', 'MT': 'Bozeman', 'NV': 'Las Vegas',
+        'NY': 'Albany', 'NC': 'Raleigh', 'ND': 'Fargo', 'OH': 'Columbus',
+        'OK': 'Stillwater', 'OR': 'Corvallis', 'PA': 'University Park', 'SD': 'Brookings',
+        'TN': 'Nashville', 'TX': 'College Station', 'UT': 'Logan', 'WA': 'Pullman',
+        'WV': 'Morgantown', 'WI': 'Madison'
+      };
       
-      return { city, state: abbrev };
+      return { city: stateCapitals[abbrev] || '', state: abbrev };
     }
   }
   
@@ -728,11 +802,84 @@ function inferLocationFromName(schoolName: string): { city: string; state: strin
     { pattern: /baltimore/i, city: 'Baltimore', state: 'MD' },
     { pattern: /milwaukee/i, city: 'Milwaukee', state: 'WI' },
     { pattern: /kansas city/i, city: 'Kansas City', state: 'MO' },
+    { pattern: /fort worth/i, city: 'Fort Worth', state: 'TX' },
+    { pattern: /san antonio/i, city: 'San Antonio', state: 'TX' },
+    { pattern: /columbus/i, city: 'Columbus', state: 'OH' },
+    { pattern: /charlotte/i, city: 'Charlotte', state: 'NC' },
+    { pattern: /indianapolis/i, city: 'Indianapolis', state: 'IN' },
+    { pattern: /jacksonville/i, city: 'Jacksonville', state: 'FL' },
+    { pattern: /oklahoma city/i, city: 'Oklahoma City', state: 'OK' },
+    { pattern: /richmond/i, city: 'Richmond', state: 'VA' },
+    { pattern: /new orleans/i, city: 'New Orleans', state: 'LA' },
+    { pattern: /raleigh/i, city: 'Raleigh', state: 'NC' },
+    { pattern: /omaha/i, city: 'Omaha', state: 'NE' },
+    { pattern: /fresno/i, city: 'Fresno', state: 'CA' },
+    { pattern: /long beach/i, city: 'Long Beach', state: 'CA' },
+    { pattern: /sacramento/i, city: 'Sacramento', state: 'CA' },
+    { pattern: /mesa/i, city: 'Mesa', state: 'AZ' },
+    { pattern: /virginia beach/i, city: 'Virginia Beach', state: 'VA' },
+    { pattern: /colorado springs/i, city: 'Colorado Springs', state: 'CO' },
+    { pattern: /fort lauderdale/i, city: 'Fort Lauderdale', state: 'FL' },
+    { pattern: /tampa/i, city: 'Tampa', state: 'FL' },
+    { pattern: /aurora/i, city: 'Aurora', state: 'CO' },
+    { pattern: /anaheim/i, city: 'Anaheim', state: 'CA' },
+    { pattern: /santa ana/i, city: 'Santa Ana', state: 'CA' },
+    { pattern: /st\. louis/i, city: 'St. Louis', state: 'MO' },
+    { pattern: /saint louis/i, city: 'St. Louis', state: 'MO' },
+    { pattern: /riverside/i, city: 'Riverside', state: 'CA' },
+    { pattern: /corpus christi/i, city: 'Corpus Christi', state: 'TX' },
+    { pattern: /lexington/i, city: 'Lexington', state: 'KY' },
+    { pattern: /pittsburgh/i, city: 'Pittsburgh', state: 'PA' },
+    { pattern: /anchorage/i, city: 'Anchorage', state: 'AK' },
+    { pattern: /stockton/i, city: 'Stockton', state: 'CA' },
+    { pattern: /cincinnati/i, city: 'Cincinnati', state: 'OH' },
+    { pattern: /st\. paul/i, city: 'St. Paul', state: 'MN' },
+    { pattern: /saint paul/i, city: 'St. Paul', state: 'MN' },
+    { pattern: /toledo/i, city: 'Toledo', state: 'OH' },
+    { pattern: /newark/i, city: 'Newark', state: 'NJ' },
+    { pattern: /greensboro/i, city: 'Greensboro', state: 'NC' },
+    { pattern: /plano/i, city: 'Plano', state: 'TX' },
+    { pattern: /henderson/i, city: 'Henderson', state: 'NV' },
+    { pattern: /lincoln/i, city: 'Lincoln', state: 'NE' },
+    { pattern: /buffalo/i, city: 'Buffalo', state: 'NY' },
+    { pattern: /jersey city/i, city: 'Jersey City', state: 'NJ' },
+    { pattern: /chula vista/i, city: 'Chula Vista', state: 'CA' },
+    { pattern: /fort wayne/i, city: 'Fort Wayne', state: 'IN' },
+    { pattern: /orlando/i, city: 'Orlando', state: 'FL' },
+    { pattern: /chandler/i, city: 'Chandler', state: 'AZ' },
+    { pattern: /laredo/i, city: 'Laredo', state: 'TX' },
+    { pattern: /madison/i, city: 'Madison', state: 'WI' },
+    { pattern: /durham/i, city: 'Durham', state: 'NC' },
+    { pattern: /lubbock/i, city: 'Lubbock', state: 'TX' },
+    { pattern: /winston-salem/i, city: 'Winston-Salem', state: 'NC' },
+    { pattern: /garland/i, city: 'Garland', state: 'TX' },
+    { pattern: /glendale/i, city: 'Glendale', state: 'AZ' },
+    { pattern: /hialeah/i, city: 'Hialeah', state: 'FL' },
+    { pattern: /reno/i, city: 'Reno', state: 'NV' },
+    { pattern: /baton rouge/i, city: 'Baton Rouge', state: 'LA' },
+    { pattern: /irvine/i, city: 'Irvine', state: 'CA' },
+    { pattern: /chesapeake/i, city: 'Chesapeake', state: 'VA' },
+    { pattern: /irving/i, city: 'Irving', state: 'TX' },
+    { pattern: /scottsdale/i, city: 'Scottsdale', state: 'AZ' },
+    { pattern: /north las vegas/i, city: 'North Las Vegas', state: 'NV' },
+    { pattern: /fremont/i, city: 'Fremont', state: 'CA' },
+    { pattern: /gilbert/i, city: 'Gilbert', state: 'AZ' },
+    { pattern: /san bernardino/i, city: 'San Bernardino', state: 'CA' },
+    { pattern: /boise/i, city: 'Boise', state: 'ID' },
+    { pattern: /birmingham/i, city: 'Birmingham', state: 'AL' }
   ];
   
   for (const { pattern, city, state } of cityPatterns) {
     if (pattern.test(name)) {
       return { city, state };
+    }
+  }
+  
+  // Try to extract state from name and use known pattern
+  for (const [stateName, abbrev] of Object.entries(stateMap)) {
+    if (name.includes(stateName)) {
+      // Return empty city but correct state so we can try other logic
+      return { city: "", state: abbrev };
     }
   }
   
