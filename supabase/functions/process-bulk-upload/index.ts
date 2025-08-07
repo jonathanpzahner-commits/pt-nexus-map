@@ -102,6 +102,12 @@ Deno.serve(async (req) => {
       const rowNumber = i + 2; // Excel rows start at 1, header is row 1
 
       try {
+        // Log first few rows to understand CSV structure
+        if (i < 3) {
+          console.log(`Row ${rowNumber} data:`, JSON.stringify(row, null, 2));
+          console.log(`Available columns:`, Object.keys(row));
+        }
+        
         const validatedRecord = validateAndTransformRecord(row, job.entity_type, rowNumber);
         if (validatedRecord.errors.length > 0) {
           validationErrors.push(...validatedRecord.errors);
