@@ -35,6 +35,16 @@ export const GeocodingManager = () => {
           break;
         }
         
+        // If we're only getting failures and no successes, stop after a few attempts
+        if (data.processed === 0 && data.failed > 0 && batchCount >= 3) {
+          toast({
+            title: "Geocoding stopped",
+            description: "No providers with valid address data found. Please upload providers with city/state information.",
+            variant: "destructive",
+          });
+          break;
+        }
+        
         totalProcessed += data.processed;
         totalFailed += data.failed;
         
