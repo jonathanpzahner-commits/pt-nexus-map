@@ -27,11 +27,12 @@ serve(async (req) => {
       throw new Error("Mapbox token not configured");
     }
 
-    // Get providers without coordinates
+    // Get providers without coordinates that have some address data
     const { data: providers, error: selectError } = await supabaseAdmin
       .from('providers')
       .select('id, city, state, zip_code')
       .is('latitude', null)
+      .or('city.neq.,state.neq.,zip_code.neq.') // Only get providers with at least some address data
       .limit(50); // Process in batches
 
     console.log("Providers query result:", { providers: providers?.length, error: selectError });
