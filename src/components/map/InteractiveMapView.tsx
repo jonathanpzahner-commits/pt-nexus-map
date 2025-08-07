@@ -146,18 +146,47 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       jobListings: []
     };
 
-    // Filter companies
+    // Filter companies - check both company_locations array and individual city/state fields
     for (const company of companies) {
+      let coords = null;
+      let locationString = '';
+      
+      // Try company_locations array first
       if (company.company_locations && company.company_locations.length > 0) {
         for (const location of company.company_locations) {
-          const coords = await geocodeLocation(location);
+          coords = await geocodeLocation(location);
           if (coords) {
-            const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
-            if (distance <= radiusMiles) {
-              filtered.companies.push({ ...company, _coords: coords, _location: location });
-              break;
-            }
+            locationString = location;
+            break;
           }
+        }
+      }
+      
+      // If no coords yet, try individual fields or any location-like field
+      if (!coords) {
+        // Check for common location field combinations using type assertion
+        const companyAny = company as any;
+        const city = companyAny.city || companyAny.location_city || companyAny.address_city;
+        const state = companyAny.state || companyAny.location_state || companyAny.address_state;
+        
+        if (city && state) {
+          locationString = `${city}, ${state}`;
+          coords = await geocodeLocation(locationString);
+        } else if (companyAny.address) {
+          // Try full address if available
+          locationString = companyAny.address;
+          coords = await geocodeLocation(locationString);
+        } else if (companyAny.location) {
+          // Try generic location field
+          locationString = companyAny.location;
+          coords = await geocodeLocation(locationString);
+        }
+      }
+      
+      if (coords) {
+        const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
+        if (distance <= radiusMiles) {
+          filtered.companies.push({ ...company, _coords: coords, _location: locationString });
         }
       }
     }
@@ -305,12 +334,40 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     const addMarkers = async () => {
       // Companies
       for (const company of dataToShow.companies) {
-        const coords = company._coords || (company.company_locations && company.company_locations.length > 0 ? 
-          await geocodeLocation(company.company_locations[0]) : null);
+        let coords = company._coords;
+        
+        if (!coords) {
+          // Try company_locations array first
+          if (company.company_locations && company.company_locations.length > 0) {
+            coords = await geocodeLocation(company.company_locations[0]);
+          } else {
+            // Try individual location fields using type assertion
+            const companyAny = company as any;
+            const city = companyAny.city || companyAny.location_city || companyAny.address_city;
+            const state = companyAny.state || companyAny.location_state || companyAny.address_state;
+            
+            if (city && state) {
+              coords = await geocodeLocation(`${city}, ${state}`);
+            } else if (companyAny.address) {
+              coords = await geocodeLocation(companyAny.address);
+            } else if (companyAny.location) {
+              coords = await geocodeLocation(companyAny.location);
+            }
+          }
+        }
         
         if (coords) {
+          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+            `<div class="p-2">
+              <h3 class="font-semibold text-sm">${company.name}</h3>
+              <p class="text-xs text-gray-600">${company.company_type || 'Company'}</p>
+              <p class="text-xs">${company._location || ''}</p>
+            </div>`
+          );
+
           const marker = new mapboxgl.Marker({ color: '#3B82F6' })
             .setLngLat(coords)
+            .setPopup(popup)
             .addTo(map.current!);
 
           marker.getElement().addEventListener('click', () => {

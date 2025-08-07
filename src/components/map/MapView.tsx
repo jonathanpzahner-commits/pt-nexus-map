@@ -98,24 +98,51 @@ export const MapView = ({ mapboxToken, onTokenSubmit }: MapViewProps) => {
 
       // Add company markers
       for (const company of companies) {
+        let coords = null;
+        let locationString = '';
+        
+        // Try company_locations array first
         if (company.company_locations && company.company_locations.length > 0) {
           for (const location of company.company_locations) {
-            const coords = await geocodeLocation(location);
+            coords = await geocodeLocation(location);
             if (coords) {
-              const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-                `<div class="p-2">
-                  <h3 class="font-semibold text-sm">${company.name}</h3>
-                  <p class="text-xs text-gray-600">${company.company_type}</p>
-                  <p class="text-xs">${location}</p>
-                </div>`
-              );
-
-              new mapboxgl.Marker({ color: '#3B82F6' })
-                .setLngLat(coords)
-                .setPopup(popup)
-                .addTo(map.current);
+              locationString = location;
+              break;
             }
           }
+        }
+        
+        // If no coords yet, try individual fields using type assertion
+        if (!coords) {
+          const companyAny = company as any;
+          const city = companyAny.city || companyAny.location_city || companyAny.address_city;
+          const state = companyAny.state || companyAny.location_state || companyAny.address_state;
+          
+          if (city && state) {
+            locationString = `${city}, ${state}`;
+            coords = await geocodeLocation(locationString);
+          } else if (companyAny.address) {
+            locationString = companyAny.address;
+            coords = await geocodeLocation(locationString);
+          } else if (companyAny.location) {
+            locationString = companyAny.location;
+            coords = await geocodeLocation(locationString);
+          }
+        }
+        
+        if (coords) {
+          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+            `<div class="p-2">
+              <h3 class="font-semibold text-sm">${company.name}</h3>
+              <p class="text-xs text-gray-600">${company.company_type || 'Company'}</p>
+              <p class="text-xs">${locationString}</p>
+            </div>`
+          );
+
+          new mapboxgl.Marker({ color: '#3B82F6' })
+            .setLngLat(coords)
+            .setPopup(popup)
+            .addTo(map.current);
         }
       }
 
