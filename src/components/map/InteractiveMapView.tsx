@@ -111,8 +111,19 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     if (!token) return null;
     
     try {
+      // Add "United States" to state names for better geocoding accuracy
+      let searchLocation = location;
+      
+      // List of US states to detect state-only searches
+      const usStates = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'];
+      
+      // If location is just a state name, add "United States" for better geocoding
+      if (usStates.includes(location.trim())) {
+        searchLocation = `${location}, United States`;
+      }
+      
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(location)}.json?access_token=${token}&limit=1`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchLocation)}.json?access_token=${token}&limit=1&country=US`
       );
       const data = await response.json();
       
