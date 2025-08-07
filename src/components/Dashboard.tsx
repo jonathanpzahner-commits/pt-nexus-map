@@ -9,7 +9,6 @@ import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
 import { SchoolsTab } from './dashboard/SchoolsTab';
 import { JobListingsTab } from './dashboard/JobListingsTab';
-import { MapContainer } from './map/MapContainer';
 import { InteractiveMapView } from './map/InteractiveMapView';
 import { GlobalSearch } from './search/GlobalSearch';
 import { BulkUploadDialog } from './upload/BulkUploadDialog';
