@@ -368,6 +368,21 @@ function validateCompany(row: any, rowNumber: number, errors: ValidationError[])
     locationString = address.toString().trim();
   }
   
+  // Store individual location fields
+  if (city) data.city = city.toString().trim();
+  if (state) data.state = state.toString().trim();
+  if (zip) data.zip_code = zip.toString().trim();
+  if (address) data.address = address.toString().trim();
+  
+  // Build company_locations array for geocoding
+  if (city && state) {
+    data.company_locations = [`${city.toString().trim()}, ${state.toString().trim()}`];
+  } else if (state) {
+    data.company_locations = [state.toString().trim()];
+  } else {
+    data.company_locations = [];
+  }
+  
   // Store location data for duplicate checking
   if (locationString) {
     data._location_key = locationString.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();

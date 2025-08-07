@@ -166,8 +166,8 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       if (!coords) {
         // Check for common location field combinations using type assertion
         const companyAny = company as any;
-        const city = companyAny.city || companyAny.location_city || companyAny.address_city;
-        const state = companyAny.state || companyAny.location_state || companyAny.address_state;
+        const city = companyAny.city;
+        const state = companyAny.state;
         
         if (city && state) {
           locationString = `${city}, ${state}`;
@@ -176,9 +176,9 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           // Try full address if available
           locationString = companyAny.address;
           coords = await geocodeLocation(locationString);
-        } else if (companyAny.location) {
-          // Try generic location field
-          locationString = companyAny.location;
+        } else if (state) {
+          // Try just state
+          locationString = state;
           coords = await geocodeLocation(locationString);
         }
       }
@@ -343,15 +343,15 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           } else {
             // Try individual location fields using type assertion
             const companyAny = company as any;
-            const city = companyAny.city || companyAny.location_city || companyAny.address_city;
-            const state = companyAny.state || companyAny.location_state || companyAny.address_state;
+            const city = companyAny.city;
+            const state = companyAny.state;
             
             if (city && state) {
               coords = await geocodeLocation(`${city}, ${state}`);
             } else if (companyAny.address) {
               coords = await geocodeLocation(companyAny.address);
-            } else if (companyAny.location) {
-              coords = await geocodeLocation(companyAny.location);
+            } else if (state) {
+              coords = await geocodeLocation(state);
             }
           }
         }

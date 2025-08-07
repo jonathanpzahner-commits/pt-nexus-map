@@ -115,8 +115,8 @@ export const MapView = ({ mapboxToken, onTokenSubmit }: MapViewProps) => {
         // If no coords yet, try individual fields using type assertion
         if (!coords) {
           const companyAny = company as any;
-          const city = companyAny.city || companyAny.location_city || companyAny.address_city;
-          const state = companyAny.state || companyAny.location_state || companyAny.address_state;
+          const city = companyAny.city;
+          const state = companyAny.state;
           
           if (city && state) {
             locationString = `${city}, ${state}`;
@@ -124,8 +124,8 @@ export const MapView = ({ mapboxToken, onTokenSubmit }: MapViewProps) => {
           } else if (companyAny.address) {
             locationString = companyAny.address;
             coords = await geocodeLocation(locationString);
-          } else if (companyAny.location) {
-            locationString = companyAny.location;
+          } else if (state) {
+            locationString = state;
             coords = await geocodeLocation(locationString);
           }
         }

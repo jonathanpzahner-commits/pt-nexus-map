@@ -67,6 +67,8 @@ export type Database = {
       }
       companies: {
         Row: {
+          address: string | null
+          city: string | null
           company_locations: string[] | null
           company_type: string
           created_at: string
@@ -74,12 +76,18 @@ export type Database = {
           employee_count: number | null
           founded_year: number | null
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           services: string[] | null
+          state: string | null
           updated_at: string
           website: string | null
+          zip_code: string | null
         }
         Insert: {
+          address?: string | null
+          city?: string | null
           company_locations?: string[] | null
           company_type: string
           created_at?: string
@@ -87,12 +95,18 @@ export type Database = {
           employee_count?: number | null
           founded_year?: number | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           services?: string[] | null
+          state?: string | null
           updated_at?: string
           website?: string | null
+          zip_code?: string | null
         }
         Update: {
+          address?: string | null
+          city?: string | null
           company_locations?: string[] | null
           company_type?: string
           created_at?: string
@@ -100,10 +114,14 @@ export type Database = {
           employee_count?: number | null
           founded_year?: number | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           services?: string[] | null
+          state?: string | null
           updated_at?: string
           website?: string | null
+          zip_code?: string | null
         }
         Relationships: []
       }
