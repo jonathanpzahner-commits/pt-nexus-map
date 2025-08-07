@@ -4,7 +4,20 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Activity, Users, Building, Briefcase, GraduationCap, Map, Search, Upload } from 'lucide-react';
+import { 
+  Activity, 
+  Users, 
+  Building, 
+  Briefcase, 
+  GraduationCap, 
+  Map, 
+  Search, 
+  Upload,
+  Home,
+  MessageSquare,
+  Headphones,
+  DollarSign
+} from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
 import { SchoolsTab } from './dashboard/SchoolsTab';
@@ -13,11 +26,13 @@ import { InteractiveMapView } from './map/InteractiveMapView';
 import { GlobalSearch } from './search/GlobalSearch';
 import { BulkUploadDialog } from './upload/BulkUploadDialog';
 import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
+import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
 import { toast } from 'sonner';
 
 const Dashboard = () => {
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch summary statistics
   const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery({
@@ -56,6 +71,10 @@ const Dashboard = () => {
     }
   };
 
+  const handleNavigateToTab = (tab: string) => {
+    setActiveTab(tab);
+  };
+
   const summaryCards = [
     {
       title: "Physical Therapists",
@@ -84,97 +103,143 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Header with Bulk Upload */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Dashboard Overview</h2>
-          <p className="text-muted-foreground">Manage your PT ecosystem data</p>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={handleMigrateLocations} variant="outline" className="flex items-center gap-2">
-            <Map className="h-4 w-4" />
-            Migrate Locations
-          </Button>
-          <Button onClick={() => setIsBulkUploadOpen(true)} className="flex items-center gap-2">
-            <Upload className="h-4 w-4" />
-            Bulk Upload Data
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {summaryCards.map((card, index) => {
-          const Icon = card.icon;
-          return (
-            <Card key={index}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {card.title}
-                </CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {statsLoading ? (
-                    <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-                  ) : (
-                    card.value
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {card.description}
-                </p>
-              </CardContent>
-            </Card>
-          );
-        })}
+    <div className="space-y-6">
+      {/* Admin Controls */}
+      <div className="flex justify-end gap-2">
+        <Button onClick={handleMigrateLocations} variant="outline" size="sm" className="flex items-center gap-2">
+          <Map className="h-4 w-4" />
+          Migrate Locations
+        </Button>
+        <Button onClick={() => setIsBulkUploadOpen(true)} variant="outline" size="sm" className="flex items-center gap-2">
+          <Upload className="h-4 w-4" />
+          Bulk Upload Data
+        </Button>
       </div>
 
       <BackgroundProcessStatus />
 
-      {/* Tabbed Content */}
-      <Tabs defaultValue="search" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="search" className="flex items-center gap-1">
-            <Search className="h-4 w-4" />
-            Search
+      {/* Main Navigation */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-8 h-12">
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <Home className="h-4 w-4" />
+            <span className="hidden sm:inline">Overview</span>
           </TabsTrigger>
-          <TabsTrigger value="providers">PTs</TabsTrigger>
-          <TabsTrigger value="companies">Companies</TabsTrigger>
-          <TabsTrigger value="schools">Schools</TabsTrigger>
-          <TabsTrigger value="jobs">Jobs</TabsTrigger>
-          <TabsTrigger value="map" className="flex items-center gap-1">
+          <TabsTrigger value="search" className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            <span className="hidden sm:inline">Search</span>
+          </TabsTrigger>
+          <TabsTrigger value="providers" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">PTs</span>
+          </TabsTrigger>
+          <TabsTrigger value="companies" className="flex items-center gap-2">
+            <Building className="h-4 w-4" />
+            <span className="hidden sm:inline">Companies</span>
+          </TabsTrigger>
+          <TabsTrigger value="schools" className="flex items-center gap-2">
+            <GraduationCap className="h-4 w-4" />
+            <span className="hidden sm:inline">Schools</span>
+          </TabsTrigger>
+          <TabsTrigger value="jobs" className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4" />
+            <span className="hidden sm:inline">Jobs</span>
+          </TabsTrigger>
+          <TabsTrigger value="map" className="flex items-center gap-2">
             <Map className="h-4 w-4" />
-            Map
+            <span className="hidden sm:inline">Map</span>
+          </TabsTrigger>
+          <TabsTrigger value="community" className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4" />
+            <span className="hidden sm:inline">Community</span>
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <EcosystemOverview onNavigateToTab={handleNavigateToTab} />
+        </TabsContent>
         
         <TabsContent value="search" className="space-y-4">
-          <GlobalSearch />
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Search className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Global Search</h2>
+            </div>
+            <GlobalSearch />
+          </div>
         </TabsContent>
         
         <TabsContent value="providers" className="space-y-4">
-          <ProvidersTab />
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Users className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Physical Therapists</h2>
+            </div>
+            <ProvidersTab />
+          </div>
         </TabsContent>
         
         <TabsContent value="companies" className="space-y-4">
-          <CompaniesTab />
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Building className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">PT Companies</h2>
+            </div>
+            <CompaniesTab />
+          </div>
         </TabsContent>
         
         <TabsContent value="schools" className="space-y-4">
-          <SchoolsTab />
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <GraduationCap className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Education Programs</h2>
+            </div>
+            <SchoolsTab />
+          </div>
         </TabsContent>
         
         <TabsContent value="jobs" className="space-y-4">
-          <JobListingsTab />
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Briefcase className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Career Opportunities</h2>
+            </div>
+            <JobListingsTab />
+          </div>
         </TabsContent>
         
         <TabsContent value="map" className="space-y-4">
           <div className="space-y-4">
-            <h2 className="text-xl font-semibold">Interactive PT Ecosystem Map</h2>
+            <div className="flex items-center gap-3">
+              <Map className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Interactive PT Ecosystem Map</h2>
+            </div>
             <InteractiveMapView />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="community" className="space-y-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <MessageSquare className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">PT Community</h2>
+            </div>
+            <Card className="p-8 text-center">
+              <CardContent>
+                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Community Coming Soon</h3>
+                <p className="text-muted-foreground mb-4">
+                  Connect with fellow PTs, share insights, and build professional relationships
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <span className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">Forum Discussions</span>
+                  <span className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">Mentorship</span>
+                  <span className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">Career Advice</span>
+                  <span className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">Industry News</span>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
       </Tabs>
