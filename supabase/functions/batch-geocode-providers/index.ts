@@ -32,7 +32,8 @@ serve(async (req) => {
       .from('providers')
       .select('id, city, state, zip_code')
       .is('latitude', null)
-      .or('city.neq.,state.neq.,zip_code.neq.') // Only get providers with at least some address data
+      .not('city', 'is', null)
+      .not('city', 'eq', '')
       .limit(50); // Process in batches
 
     console.log("Providers query result:", { providers: providers?.length, error: selectError });
