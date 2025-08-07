@@ -19,6 +19,11 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
+    const body = await req.json().catch(() => ({}));
+    const isAutoMode = body.auto_mode === true;
+
+    console.log("Geocoding mode:", isAutoMode ? "automatic" : "manual");
+
     const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
     console.log("Mapbox token available:", !!mapboxToken);
     
@@ -46,7 +51,12 @@ serve(async (req) => {
     if (!providers || providers.length === 0) {
       console.log("No providers to geocode");
       return new Response(
-        JSON.stringify({ message: "No providers to geocode", processed: 0 }),
+        JSON.stringify({ 
+          message: "No providers to geocode", 
+          processed: 0,
+          auto_mode: isAutoMode,
+          completed: true
+        }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -123,7 +133,9 @@ serve(async (req) => {
         message: `Geocoding batch completed`, 
         processed, 
         failed,
-        total: providers.length
+        total: providers.length,
+        auto_mode: isAutoMode,
+        completed: providers.length < 50 // If we processed less than limit, we're done
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

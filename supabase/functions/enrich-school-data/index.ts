@@ -33,16 +33,42 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { schoolIds } = await req.json()
-    
-    if (!schoolIds || !Array.isArray(schoolIds)) {
-      return new Response(
-        JSON.stringify({ error: 'schoolIds array is required' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
+    const body = await req.json().catch(() => ({}));
+    const isAutoMode = body.auto_mode === true;
+    let schoolIds = body.schoolIds || body.school_ids || [];
 
-    console.log(`Starting data enrichment for ${schoolIds.length} schools`)
+    console.log("Enrichment mode:", isAutoMode ? "automatic" : "manual");
+
+    // In auto mode, automatically find schools that need enrichment
+    if (isAutoMode) {
+      const { data: schoolsNeedingEnrichment, error: fetchError } = await supabaseClient
+        .from('schools')
+        .select('id')
+        .or('description.is.null,accreditation.is.null,tuition_per_year.is.null')
+        .limit(10); // Process 10 at a time in auto mode
+
+      if (fetchError) {
+        console.error("Error fetching schools:", fetchError);
+        throw fetchError;
+      }
+
+      if (!schoolsNeedingEnrichment || schoolsNeedingEnrichment.length === 0) {
+        console.log("No schools need enrichment - auto mode complete");
+        return new Response(
+          JSON.stringify({ 
+            message: "All schools are enriched", 
+            enriched: 0,
+            errors: [],
+            auto_mode: true,
+            completed: true
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      schoolIds = schoolsNeedingEnrichment.map(s => s.id);
+      console.log(`Auto mode: found ${schoolIds.length} schools needing enrichment`);
+    }
 
     // Get schools that need enrichment (check for any missing fields)
     const { data: schools, error: fetchError } = await supabaseClient
@@ -97,7 +123,9 @@ Deno.serve(async (req) => {
         success: true,
         enriched: enrichedSchools.length,
         errors: errors,
-        schools: enrichedSchools
+        schools: enrichedSchools,
+        auto_mode: isAutoMode,
+        completed: isAutoMode && schoolIds.length < 10 // If we processed less than limit, we're done
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
