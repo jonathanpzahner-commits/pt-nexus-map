@@ -296,7 +296,9 @@ function validateCompany(row: any, rowNumber: number, errors: ValidationError[])
   // Smart company name detection
   const companyName = row.name || row['Company Name'] || row['Company name'] || 
                      row.company || row['business-name'] || row.company_name ||
-                     row.business_name || row.organization_name;
+                     row.business_name || row.organization_name || row['Organization Name'] ||
+                     row['Organization'] || row['Client'] || row['Business Name'] ||
+                     row['Firm Name'] || row['Practice Name'] || row['Clinic Name'];
   
   if (!companyName || companyName.toString().trim() === '') {
     console.log(`Available columns in row ${rowNumber}:`, Object.keys(row));
