@@ -44,11 +44,16 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   const navigate = useNavigate();
 
   // Fetch all location data
-  const { data: companies = [] } = useQuery({
+  const { data: companies = [], isLoading: companiesLoading, error: companiesError } = useQuery({
     queryKey: ['companies'],
     queryFn: async () => {
+      console.log('Fetching companies...');
       const { data, error } = await supabase.from('companies').select('*');
-      if (error) throw error;
+      if (error) {
+        console.error('Companies query error:', error);
+        throw error;
+      }
+      console.log('Companies loaded:', data?.length);
       return data;
     },
   });
