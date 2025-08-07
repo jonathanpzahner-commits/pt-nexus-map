@@ -118,24 +118,34 @@ function parseLocationString(location: string): { city?: string, state?: string,
 
   const cleanLocation = location.trim();
   
-  // Pattern 1: "City, State" or "City, State ZIP"
-  const cityStateMatch = cleanLocation.match(/^(.+),\s*([A-Z]{2})(?:\s+(\d{5}(?:-\d{4})?))?$/);
+  // Pattern 1: "City, State ZIP" (with comma)
+  const cityStateMatch = cleanLocation.match(/^(.+),\s*([A-Z]{2})\s*(\d{5}(?:\d{4})?(?:-\d{4})?)?\s*$/);
   if (cityStateMatch) {
     result.city = cityStateMatch[1].trim();
     result.state = cityStateMatch[2].trim();
     if (cityStateMatch[3]) {
-      result.zip_code = cityStateMatch[3].trim();
+      let zip = cityStateMatch[3].trim();
+      // Handle concatenated ZIP+4 format (e.g., 280795541 -> 28079-5541)
+      if (zip.length === 9 && !zip.includes('-')) {
+        zip = zip.substring(0, 5) + '-' + zip.substring(5);
+      }
+      result.zip_code = zip;
     }
     return result;
   }
 
-  // Pattern 2: "City State" (space separated)
-  const cityStateSpaceMatch = cleanLocation.match(/^(.+)\s+([A-Z]{2})(?:\s+(\d{5}(?:-\d{4})?))?$/);
+  // Pattern 2: "City State ZIP" (space separated, handle concatenated ZIP)
+  const cityStateSpaceMatch = cleanLocation.match(/^(.+?)\s+([A-Z]{2})\s*(\d{5}(?:\d{4})?(?:-\d{4})?)?\s*$/);
   if (cityStateSpaceMatch) {
     result.city = cityStateSpaceMatch[1].trim();
     result.state = cityStateSpaceMatch[2].trim();
     if (cityStateSpaceMatch[3]) {
-      result.zip_code = cityStateSpaceMatch[3].trim();
+      let zip = cityStateSpaceMatch[3].trim();
+      // Handle concatenated ZIP+4 format (e.g., 280795541 -> 28079-5541)
+      if (zip.length === 9 && !zip.includes('-')) {
+        zip = zip.substring(0, 5) + '-' + zip.substring(5);
+      }
+      result.zip_code = zip;
     }
     return result;
   }
