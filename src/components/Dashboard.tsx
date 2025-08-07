@@ -12,6 +12,7 @@ import { JobListingsTab } from './dashboard/JobListingsTab';
 import { MapContainer } from './map/MapContainer';
 import { GlobalSearch } from './search/GlobalSearch';
 import { BulkUploadDialog } from './upload/BulkUploadDialog';
+import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
 
 const Dashboard = () => {
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
@@ -110,6 +111,8 @@ const Dashboard = () => {
           );
         })}
       </div>
+
+      <BackgroundProcessStatus />
 
       {/* Tabbed Content */}
       <Tabs defaultValue="search" className="space-y-4">
