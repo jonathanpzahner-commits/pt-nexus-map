@@ -292,6 +292,7 @@ function validateCompany(row: any, rowNumber: number, errors: ValidationError[])
   const data: any = {};
   
   console.log(`Row ${rowNumber} company data:`, JSON.stringify(row, null, 2));
+  console.log(`Available columns in row ${rowNumber}:`, Object.keys(row));
 
   // Smart company name detection
   const companyName = row.name || row['Company Name'] || row['Company name'] || 
