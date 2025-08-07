@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
-import { MapPin, Building2, GraduationCap, Briefcase, Users, Search, Download, CreditCard } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { MapPin, Building2, GraduationCap, Briefcase, Users, Search, Download, CreditCard, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface InteractiveMapViewProps {
@@ -23,6 +25,8 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   const map = useRef<mapboxgl.Map | null>(null);
   const [token, setToken] = useState(mapboxToken || '');
   const [searchLocation, setSearchLocation] = useState('');
+  const [locationSuggestions, setLocationSuggestions] = useState<Array<{place_name: string, center: [number, number]}>>([]);
+  const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [radius, setRadius] = useState([50]);
   const [searchCenter, setSearchCenter] = useState<[number, number] | null>(null);
   const [filteredData, setFilteredData] = useState({
@@ -75,6 +79,33 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       return data;
     },
   });
+
+  const searchLocationSuggestions = async (query: string): Promise<void> => {
+    if (!token || query.length < 2) {
+      setLocationSuggestions([]);
+      return;
+    }
+    
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&limit=5&types=place,locality,neighborhood,address`
+      );
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        const suggestions = data.features.map((feature: any) => ({
+          place_name: feature.place_name,
+          center: feature.center
+        }));
+        setLocationSuggestions(suggestions);
+      } else {
+        setLocationSuggestions([]);
+      }
+    } catch (error) {
+      console.error('Location search error:', error);
+      setLocationSuggestions([]);
+    }
+  };
 
   const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
     if (!token) return null;
@@ -182,30 +213,38 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     return filtered;
   };
 
+  const handleLocationSelect = async (location: string, coords?: [number, number]) => {
+    setSearchLocation(location);
+    setIsLocationDropdownOpen(false);
+    
+    // Use provided coords or geocode the location
+    const finalCoords = coords || await geocodeLocation(location);
+    if (!finalCoords) {
+      toast.error('Could not find location');
+      return;
+    }
+
+    setSearchCenter(finalCoords);
+    
+    if (map.current) {
+      map.current.flyTo({
+        center: finalCoords,
+        zoom: 10,
+        essential: true
+      });
+    }
+
+    await filterDataByRadius(finalCoords, radius[0]);
+    toast.success(`Found locations within ${radius[0]} miles of ${location}`);
+  };
+
   const handleSearch = async () => {
     if (!searchLocation.trim()) {
       toast.error('Please enter a location to search');
       return;
     }
 
-    const coords = await geocodeLocation(searchLocation);
-    if (!coords) {
-      toast.error('Could not find location');
-      return;
-    }
-
-    setSearchCenter(coords);
-    
-    if (map.current) {
-      map.current.flyTo({
-        center: coords,
-        zoom: 10,
-        essential: true
-      });
-    }
-
-    await filterDataByRadius(coords, radius[0]);
-    toast.success(`Found locations within ${radius[0]} miles of ${searchLocation}`);
+    await handleLocationSelect(searchLocation);
   };
 
   const handleExport = async () => {
@@ -414,15 +453,57 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           <CardTitle className="text-sm">Location Search</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-2">
-            <Input
-              placeholder="Enter city, state (e.g. Lexington, KY)"
-              value={searchLocation}
-              onChange={(e) => setSearchLocation(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-            />
-            <Button onClick={handleSearch} size="sm">
-              <Search className="h-4 w-4" />
+          <div className="space-y-2">
+            <Popover open={isLocationDropdownOpen} onOpenChange={setIsLocationDropdownOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isLocationDropdownOpen}
+                  className="w-full justify-between"
+                >
+                  {searchLocation || "Search for a location..."}
+                  <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-0">
+                <Command>
+                  <CommandInput 
+                    placeholder="Enter city, state (e.g. Lexington, KY)" 
+                    value={searchLocation}
+                    onValueChange={(value) => {
+                      setSearchLocation(value);
+                      searchLocationSuggestions(value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSearch();
+                        setIsLocationDropdownOpen(false);
+                      }
+                    }}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No locations found.</CommandEmpty>
+                    <CommandGroup>
+                      {locationSuggestions.map((suggestion, index) => (
+                        <CommandItem
+                          key={index}
+                          value={suggestion.place_name}
+                          onSelect={() => handleLocationSelect(suggestion.place_name, suggestion.center)}
+                        >
+                          <MapPin className="mr-2 h-4 w-4" />
+                          {suggestion.place_name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <Button onClick={handleSearch} size="sm" className="w-full">
+              <Search className="h-4 w-4 mr-2" />
+              Search Location
             </Button>
           </div>
           
