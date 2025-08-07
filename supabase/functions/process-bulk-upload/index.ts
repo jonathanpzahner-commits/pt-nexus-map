@@ -295,11 +295,23 @@ function validateCompany(row: any, rowNumber: number, errors: ValidationError[])
   console.log(`Available columns in row ${rowNumber}:`, Object.keys(row));
 
   // Smart company name detection
-  const companyName = row.name || row['Company Name'] || row['Company name'] || 
-                     row.company || row['business-name'] || row.company_name ||
-                     row.business_name || row.organization_name || row['Organization Name'] ||
-                     row['Organization'] || row['Client'] || row['Business Name'] ||
-                     row['Firm Name'] || row['Practice Name'] || row['Clinic Name'];
+  let companyName = row.name || row['Company Name'] || row['Company name'] || 
+                   row.company || row['business-name'] || row.company_name ||
+                   row.business_name || row.organization_name || row['Organization Name'] ||
+                   row['Organization'] || row['Client'] || row['Business Name'] ||
+                   row['Firm Name'] || row['Practice Name'] || row['Clinic Name'];
+  
+  // If no company name found in expected columns, try to find any non-empty string value
+  if (!companyName) {
+    const values = Object.values(row);
+    companyName = values.find(val => 
+      val && 
+      typeof val === 'string' && 
+      val.toString().trim().length > 2 &&
+      !val.toString().match(/^\d+$/) && // Not just numbers
+      !val.toString().match(/^[A-Z]{2}$/) // Not just state codes
+    );
+  }
   
   if (!companyName || companyName.toString().trim() === '') {
     console.log(`Available columns in row ${rowNumber}:`, Object.keys(row));
