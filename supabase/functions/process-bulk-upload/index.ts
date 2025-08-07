@@ -295,7 +295,7 @@ function validateCompany(row: any, rowNumber: number, errors: ValidationError[])
 
   // Smart company name detection
   const companyName = row.name || row['Company Name'] || row['Company name'] || 
-                     row['business-name'] || row['Company Name'] || row.company_name ||
+                     row.company || row['business-name'] || row.company_name ||
                      row.business_name || row.organization_name;
   
   if (!companyName || companyName.toString().trim() === '') {
