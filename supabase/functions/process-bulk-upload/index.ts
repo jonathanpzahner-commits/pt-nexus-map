@@ -95,6 +95,8 @@ Deno.serve(async (req) => {
 
     const validationErrors: ValidationError[] = [];
     const validRecords: any[] = [];
+    const duplicateTracker = new Map<string, number>();
+    let duplicatesSkipped = 0;
 
     // Validate and process data based on entity type
     for (let i = 0; i < jsonData.length; i++) {
@@ -109,9 +111,25 @@ Deno.serve(async (req) => {
         }
         
         const validatedRecord = validateAndTransformRecord(row, job.entity_type, rowNumber);
+        
         if (validatedRecord.errors.length > 0) {
           validationErrors.push(...validatedRecord.errors);
-        } else {
+        } else if (validatedRecord.data && Object.keys(validatedRecord.data).length > 0) {
+          // Check for duplicates if this is a company
+          if (job.entity_type === 'companies' && validatedRecord.data.name && validatedRecord.data._location_key) {
+            const duplicateKey = `${validatedRecord.data.name.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim()}|${validatedRecord.data._location_key}`;
+            
+            if (duplicateTracker.has(duplicateKey)) {
+              console.log(`Skipping duplicate company: ${validatedRecord.data.name} at ${validatedRecord.data._location_key}`);
+              duplicatesSkipped++;
+              continue;
+            }
+            duplicateTracker.set(duplicateKey, rowNumber);
+            
+            // Remove the location key before saving
+            delete validatedRecord.data._location_key;
+          }
+          
           validRecords.push(validatedRecord.data);
         }
       } catch (error) {
@@ -124,7 +142,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    console.log(`Validated ${validRecords.length} records, ${validationErrors.length} errors`);
+    console.log(`Validated ${validRecords.length} records, ${validationErrors.length} errors, ${duplicatesSkipped} duplicates skipped`);
 
     // Insert valid records in batches
     let successfulInserts = 0;
@@ -174,19 +192,21 @@ Deno.serve(async (req) => {
           total: jsonData.length,
           successful: successfulInserts,
           failed: validationErrors.length,
+          duplicates_skipped: duplicatesSkipped,
           errors: validationErrors.slice(0, 50) // Limit errors stored
         }
       })
       .eq('id', jobId);
 
-    console.log(`Job completed: ${successfulInserts} successful, ${validationErrors.length} failed`);
+    console.log(`Job completed: ${successfulInserts} successful, ${validationErrors.length} failed, ${duplicatesSkipped} duplicates skipped`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         processed: jsonData.length,
         successful: successfulInserts,
-        failed: validationErrors.length
+        failed: validationErrors.length,
+        duplicates_skipped: duplicatesSkipped
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -270,41 +290,157 @@ function validateProvider(row: any, rowNumber: number, errors: ValidationError[]
 
 function validateCompany(row: any, rowNumber: number, errors: ValidationError[]) {
   const data: any = {};
+  
+  console.log(`Row ${rowNumber} company data:`, JSON.stringify(row, null, 2));
 
-  // Required fields
-  if (!row.name || row.name.trim() === '') {
-    errors.push({ row: rowNumber, field: 'name', value: row.name, message: 'Name is required' });
+  // Smart company name detection
+  const companyName = row.name || row['Company Name'] || row['Company name'] || 
+                     row['business-name'] || row['Company Name'] || row.company_name ||
+                     row.business_name || row.organization_name;
+  
+  if (!companyName || companyName.toString().trim() === '') {
+    console.log(`Available columns in row ${rowNumber}:`, Object.keys(row));
+    errors.push({ row: rowNumber, field: 'name', value: companyName, message: 'Company name is required' });
   } else {
-    data.name = row.name.trim();
+    data.name = companyName.toString().trim();
   }
 
-  if (!row.company_type || row.company_type.trim() === '') {
-    errors.push({ row: rowNumber, field: 'company_type', value: row.company_type, message: 'Company type is required' });
-  } else {
-    data.company_type = row.company_type.trim();
-  }
-
-  // Optional fields
-  if (row.description) data.description = row.description.toString().trim();
-  if (row.website) data.website = row.website.toString().trim();
-  if (row.founded_year) {
-    const year = parseInt(row.founded_year);
-    if (!isNaN(year)) data.founded_year = year;
-  }
-  if (row.employee_count) {
-    const count = parseInt(row.employee_count);
-    if (!isNaN(count)) data.employee_count = count;
-  }
-
-  // Parse arrays
-  if (row.services) {
-    const services = row.services.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
-    if (services.length > 0) data.services = services;
+  // Smart company type detection with defaults
+  let companyType = row.company_type || row['Company Type'] || row.type || 
+                   row.industry || row.Industry || row.categories ||
+                   row['SIC Code Description'] || row.business_type;
+  
+  // Clean up company type
+  if (companyType) {
+    companyType = companyType.toString().trim();
+    // Handle multiple categories separated by commas - take the first one
+    if (companyType.includes(',')) {
+      companyType = companyType.split(',')[0].trim();
+    }
+    // Handle URLs in categories (from scraped data)
+    if (companyType.includes('http')) {
+      companyType = companyType.replace(/https?:\/\/[^\s]+/g, '').trim();
+    }
   }
   
-  if (row.company_locations) {
-    const locations = row.company_locations.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
-    if (locations.length > 0) data.company_locations = locations;
+  if (!companyType || companyType === '') {
+    // Default based on context clues
+    if (data.name && (data.name.toLowerCase().includes('physical therapy') || 
+                     data.name.toLowerCase().includes('pt ') ||
+                     data.name.toLowerCase().includes('rehab'))) {
+      companyType = 'Physical Therapy';
+    } else if (data.name && data.name.toLowerCase().includes('hospital')) {
+      companyType = 'Healthcare';
+    } else {
+      companyType = 'Healthcare Services'; // Default
+    }
+  }
+  data.company_type = companyType;
+
+  // Smart location parsing
+  const address = row.address || row['Mailing Address'] || row['street-address'] || 
+                 row.location || row['Location (s)'] || row.Location;
+  const city = row.city || row.City || row['Mailing City'] || row.locality;
+  const state = row.state || row.State || row['Mailing State'] || row.region;
+  const zip = row.zip || row.Zip || row['Mailing Zip Code'] || row.zipcode || row.postal_code;
+
+  // Build location string for duplicate detection
+  let locationString = '';
+  if (city && state) {
+    locationString = `${city.toString().trim()}, ${state.toString().trim()}`;
+    if (zip) locationString += ` ${zip.toString().trim()}`;
+  } else if (address) {
+    locationString = address.toString().trim();
+  }
+  
+  // Store location data for duplicate checking
+  if (locationString) {
+    data._location_key = locationString.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+  }
+
+  // Employee count parsing with range handling
+  let employeeCount = row.employee_count || row['# of EEs'] || row.employees || 
+                     row['Location Employee Size Range'] || row.size;
+  if (employeeCount) {
+    const empStr = employeeCount.toString().toLowerCase();
+    // Handle ranges like "10 to 19", "1001 to 5000 employees"
+    if (empStr.includes(' to ')) {
+      const range = empStr.match(/(\d+)\s*to\s*(\d+)/);
+      if (range) {
+        const min = parseInt(range[1]);
+        const max = parseInt(range[2]);
+        employeeCount = Math.floor((min + max) / 2); // Use midpoint
+      }
+    } else {
+      const numMatch = empStr.match(/(\d+)/);
+      if (numMatch) {
+        employeeCount = parseInt(numMatch[1]);
+      }
+    }
+    
+    if (!isNaN(employeeCount) && employeeCount > 0) {
+      data.employee_count = employeeCount;
+    }
+  }
+
+  // Website detection
+  const website = row.website || row.Website || row['track-visit-website href'] || 
+                 row.url || row.homepage || row.web_address;
+  if (website && website.toString().trim() !== '' && website.toString().trim() !== 'Not Available') {
+    let websiteUrl = website.toString().trim();
+    // Ensure proper URL format
+    if (!websiteUrl.startsWith('http')) {
+      websiteUrl = 'https://' + websiteUrl;
+    }
+    data.website = websiteUrl;
+  }
+
+  // Description/bio detection
+  const description = row.description || row.Description || row.bio || row.body || 
+                     row.about || row.summary || row.notes;
+  if (description && description.toString().trim() !== '') {
+    data.description = description.toString().trim();
+  }
+
+  // Services/specializations detection
+  let services = row.services || row.Services || row.specializations || 
+                row.categories || row['categories 2'] || row.offerings;
+  if (services) {
+    let serviceList = [];
+    if (typeof services === 'string') {
+      serviceList = services.split(',').map((s: string) => s.trim()).filter(Boolean);
+    } else if (Array.isArray(services)) {
+      serviceList = services.map((s: any) => s.toString().trim()).filter(Boolean);
+    }
+    if (serviceList.length > 0) {
+      data.services = serviceList;
+    }
+  }
+
+  // Phone number detection
+  const phone = row.phone || row.Phone || row['phone-column'] || row.phones || 
+               row['Phone Number Combined'] || row.telephone || row.contact_phone;
+  if (phone && phone.toString().trim() !== '' && phone.toString().trim() !== 'Not Available') {
+    // Store phone in services array if no dedicated phone field in companies table
+    if (!data.services) data.services = [];
+    data.services.push(`Phone: ${phone.toString().trim()}`);
+  }
+
+  // Founded year detection
+  const founded = row.founded_year || row.founded || row.established || row['years-in-business'];
+  if (founded) {
+    const yearMatch = founded.toString().match(/(\d{4})/);
+    if (yearMatch) {
+      const year = parseInt(yearMatch[1]);
+      if (year > 1800 && year <= new Date().getFullYear()) {
+        data.founded_year = year;
+      }
+    }
+  }
+
+  // Store locations in company_locations array
+  if (locationString && !data.company_locations) {
+    data.company_locations = [locationString];
   }
 
   return data;
