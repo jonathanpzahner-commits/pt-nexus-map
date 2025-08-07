@@ -30,23 +30,47 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b border-border p-4">
-        <div className="flex justify-between items-center max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold text-foreground">PT Ecosystem</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">
-              Welcome, {user.email}
-            </span>
-            <Button variant="outline" onClick={signOut}>
-              Sign Out
-            </Button>
+    <div className="min-h-screen bg-gradient-mesh">
+      {/* Modern Header */}
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
+        <div className="flex justify-between items-center max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shadow-glow">
+              <span className="text-white font-bold text-lg">PT</span>
+            </div>
+            <div>
+              <h1 className="text-2xl font-display font-bold text-foreground">PT Ecosystem</h1>
+              <p className="text-xs text-muted-foreground">Your comprehensive platform</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-6">
+              <span className="text-sm text-muted-foreground px-3 py-1 rounded-full bg-secondary/50">
+                Beta Platform
+              </span>
+            </nav>
+            
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <span className="text-sm font-medium text-foreground block">
+                  {user.email?.split('@')[0]}
+                </span>
+                <span className="text-xs text-muted-foreground">Administrator</span>
+              </div>
+              <Button variant="outline" onClick={signOut} className="shadow-soft">
+                Sign Out
+              </Button>
+            </div>
           </div>
         </div>
       </header>
       
-      <main className="p-6 max-w-7xl mx-auto">
-        <Dashboard />
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto p-6">
+        <div className="animate-fade-in">
+          <Dashboard />
+        </div>
       </main>
     </div>
   );
