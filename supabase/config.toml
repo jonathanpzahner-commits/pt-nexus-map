@@ -22,3 +22,6 @@ verify_jwt = false
 
 [functions.batch-geocode-providers]
 verify_jwt = false
+
+[functions.enrich-school-data]
+verify_jwt = true

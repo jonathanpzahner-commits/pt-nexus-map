@@ -307,23 +307,43 @@ function validateCompany(row: any, rowNumber: number, errors: ValidationError[])
 function validateSchool(row: any, rowNumber: number, errors: ValidationError[]) {
   const data: any = {};
 
-  // Required fields
-  if (!row.name || row.name.trim() === '') {
-    errors.push({ row: rowNumber, field: 'name', value: row.name, message: 'Name is required' });
+  // Try different column name variations for school name
+  const schoolName = row.name || row.school_name || row.institution || row.school || row['School Name'] || row['Institution'];
+  if (!schoolName || schoolName.toString().trim() === '') {
+    errors.push({ row: rowNumber, field: 'name', value: schoolName, message: 'School name is required' });
   } else {
-    data.name = row.name.trim();
+    data.name = schoolName.toString().trim();
   }
 
-  if (!row.city || row.city.trim() === '') {
-    errors.push({ row: rowNumber, field: 'city', value: row.city, message: 'City is required' });
+  // Try to parse address into city and state if provided as single field
+  const address = row.address || row.location || row['Address'] || row['Location'];
+  const city = row.city || row['City'];
+  const state = row.state || row['State'];
+  
+  if (address && !city && !state) {
+    // Try to parse address like "City, State" or "City, State ZIP"
+    const addressParts = address.toString().split(',');
+    if (addressParts.length >= 2) {
+      data.city = addressParts[0].trim();
+      // Extract state from "State ZIP" format
+      const stateZip = addressParts[1].trim().split(' ');
+      data.state = stateZip[0].trim();
+    } else {
+      errors.push({ row: rowNumber, field: 'address', value: address, message: 'Cannot parse city and state from address' });
+    }
   } else {
-    data.city = row.city.trim();
-  }
+    // Use separate city and state fields
+    if (!city || city.toString().trim() === '') {
+      errors.push({ row: rowNumber, field: 'city', value: city, message: 'City is required' });
+    } else {
+      data.city = city.toString().trim();
+    }
 
-  if (!row.state || row.state.trim() === '') {
-    errors.push({ row: rowNumber, field: 'state', value: row.state, message: 'State is required' });
-  } else {
-    data.state = row.state.trim();
+    if (!state || state.toString().trim() === '') {
+      errors.push({ row: rowNumber, field: 'state', value: state, message: 'State is required' });
+    } else {
+      data.state = state.toString().trim();
+    }
   }
 
   // Optional fields

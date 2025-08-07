@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { AddSchoolDialog } from '@/components/forms/AddSchoolDialog';
 import { NotesSection } from '@/components/notes/NotesSection';
+import { SchoolDataEnricher } from './SchoolDataEnricher';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -100,6 +101,9 @@ export const SchoolsTab = () => {
           )}
         </div>
       </div>
+
+      {/* Data Enrichment Section */}
+      <SchoolDataEnricher />
 
       {/* Search and Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-4">
