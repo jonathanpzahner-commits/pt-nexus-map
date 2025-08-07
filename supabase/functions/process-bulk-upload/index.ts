@@ -306,44 +306,57 @@ function validateCompany(row: any, rowNumber: number, errors: ValidationError[])
 
 function validateSchool(row: any, rowNumber: number, errors: ValidationError[]) {
   const data: any = {};
+  
+  console.log(`Row ${rowNumber} data:`, JSON.stringify(row, null, 2));
 
   // Try different column name variations for school name
-  const schoolName = row.name || row.school_name || row.institution || row.school || row['School Name'] || row['Institution'];
+  const schoolName = row.name || row.school_name || row.institution || row.school || 
+                    row['School Name'] || row['Institution'] || row['Program Name'] || 
+                    row['University'] || row['College'];
+  
   if (!schoolName || schoolName.toString().trim() === '') {
+    console.log(`Available columns in row ${rowNumber}:`, Object.keys(row));
     errors.push({ row: rowNumber, field: 'name', value: schoolName, message: 'School name is required' });
   } else {
     data.name = schoolName.toString().trim();
   }
 
-  // Try to parse address into city and state if provided as single field
-  const address = row.address || row.location || row['Address'] || row['Location'];
+  // Try to get address components
+  const address = row.address || row.location || row['Address'] || row['Location'] || 
+                 row['Street Address'] || row['Full Address'];
   const city = row.city || row['City'];
   const state = row.state || row['State'];
   
-  if (address && !city && !state) {
-    // Try to parse address like "City, State" or "City, State ZIP"
-    const addressParts = address.toString().split(',');
-    if (addressParts.length >= 2) {
-      data.city = addressParts[0].trim();
-      // Extract state from "State ZIP" format
-      const stateZip = addressParts[1].trim().split(' ');
-      data.state = stateZip[0].trim();
+  // If we have separate city and state, use those
+  if (city && state) {
+    data.city = city.toString().trim();
+    data.state = state.toString().trim();
+  } 
+  // If we have an address, try to extract city and state from the end
+  else if (address) {
+    const addressStr = address.toString().trim();
+    console.log(`Parsing address: "${addressStr}"`);
+    
+    // Look for state abbreviation pattern at the end (e.g., "NY 11549", "CA 90210")
+    const stateZipMatch = addressStr.match(/\b([A-Z]{2})\s+\d{5}(-\d{4})?\s*$/);
+    if (stateZipMatch) {
+      const stateAbbr = stateZipMatch[1];
+      // Extract city from the part before state
+      const beforeState = addressStr.substring(0, stateZipMatch.index).trim();
+      // Get the last word/phrase as city
+      const cityMatch = beforeState.match(/([^0-9]+)\s*$/);
+      if (cityMatch) {
+        data.city = cityMatch[1].trim();
+        data.state = stateAbbr;
+        console.log(`Extracted: City="${data.city}", State="${data.state}"`);
+      } else {
+        errors.push({ row: rowNumber, field: 'address', value: address, message: 'Cannot extract city from address' });
+      }
     } else {
-      errors.push({ row: rowNumber, field: 'address', value: address, message: 'Cannot parse city and state from address' });
+      errors.push({ row: rowNumber, field: 'address', value: address, message: 'Cannot parse city and state from address format' });
     }
   } else {
-    // Use separate city and state fields
-    if (!city || city.toString().trim() === '') {
-      errors.push({ row: rowNumber, field: 'city', value: city, message: 'City is required' });
-    } else {
-      data.city = city.toString().trim();
-    }
-
-    if (!state || state.toString().trim() === '') {
-      errors.push({ row: rowNumber, field: 'state', value: state, message: 'State is required' });
-    } else {
-      data.state = state.toString().trim();
-    }
+    errors.push({ row: rowNumber, field: 'location', value: '', message: 'Address, city, or state information is required' });
   }
 
   // Optional fields
