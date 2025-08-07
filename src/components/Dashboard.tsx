@@ -13,6 +13,8 @@ import { InteractiveMapView } from './map/InteractiveMapView';
 import { GlobalSearch } from './search/GlobalSearch';
 import { BulkUploadDialog } from './upload/BulkUploadDialog';
 import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
+import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
+import { toast } from 'sonner';
 
 const Dashboard = () => {
   const [isBulkUploadOpen, setIsBulkUploadOpen] = useState(false);
@@ -40,6 +42,18 @@ const Dashboard = () => {
   const handleUploadComplete = () => {
     // Refetch stats when upload completes
     refetchStats();
+  };
+
+  const handleMigrateLocations = async () => {
+    try {
+      toast.info('Starting company location migration...');
+      const result = await migrateCompanyLocations();
+      toast.success(`Migration completed: ${result.migrated} companies updated`);
+      refetchStats();
+    } catch (error) {
+      console.error('Migration failed:', error);
+      toast.error('Migration failed. Please try again.');
+    }
   };
 
   const summaryCards = [
@@ -77,10 +91,16 @@ const Dashboard = () => {
           <h2 className="text-2xl font-bold text-foreground">Dashboard Overview</h2>
           <p className="text-muted-foreground">Manage your PT ecosystem data</p>
         </div>
-        <Button onClick={() => setIsBulkUploadOpen(true)} className="flex items-center gap-2">
-          <Upload className="h-4 w-4" />
-          Bulk Upload Data
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleMigrateLocations} variant="outline" className="flex items-center gap-2">
+            <Map className="h-4 w-4" />
+            Migrate Locations
+          </Button>
+          <Button onClick={() => setIsBulkUploadOpen(true)} className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Bulk Upload Data
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}

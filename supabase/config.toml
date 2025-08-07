@@ -28,3 +28,6 @@ verify_jwt = true
 
 [functions.import-schools-with-locations]
 verify_jwt = false
+
+[functions.migrate-company-locations]
+verify_jwt = false

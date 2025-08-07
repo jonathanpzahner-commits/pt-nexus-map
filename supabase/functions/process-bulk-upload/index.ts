@@ -291,15 +291,20 @@ function validateProvider(row: any, rowNumber: number, errors: ValidationError[]
 function validateCompany(row: any, rowNumber: number, errors: ValidationError[]) {
   const data: any = {};
   
-  console.log(`Row ${rowNumber} company data:`, JSON.stringify(row, null, 2));
-  console.log(`Available columns in row ${rowNumber}:`, Object.keys(row));
+  // Debug logging for first few rows
+  if (rowNumber <= 5) {
+    console.log(`Row ${rowNumber} company data:`, JSON.stringify(row, null, 2));
+    console.log(`Available columns in row ${rowNumber}:`, Object.keys(row));
+  }
 
-  // Smart company name detection
+  // Smart company name detection with more variations
   let companyName = row.name || row['Company Name'] || row['Company name'] || 
                    row.company || row['business-name'] || row.company_name ||
                    row.business_name || row.organization_name || row['Organization Name'] ||
                    row['Organization'] || row['Client'] || row['Business Name'] ||
-                   row['Firm Name'] || row['Practice Name'] || row['Clinic Name'];
+                   row['Firm Name'] || row['Practice Name'] || row['Clinic Name'] ||
+                   row['Business'] || row['Employer'] || row['Practice'] || row['Facility'] ||
+                   row['Clinic'] || row['Hospital'] || row['Center'] || row['Institute'];
   
   // If no company name found in expected columns, try to find any non-empty string value
   if (!companyName) {
@@ -309,7 +314,8 @@ function validateCompany(row: any, rowNumber: number, errors: ValidationError[])
       typeof val === 'string' && 
       val.toString().trim().length > 2 &&
       !val.toString().match(/^\d+$/) && // Not just numbers
-      !val.toString().match(/^[A-Z]{2}$/) // Not just state codes
+      !val.toString().match(/^[A-Z]{2}$/) && // Not just state codes
+      !val.toString().match(/^\d{5}(-\d{4})?$/) // Not zip codes
     );
   }
   
