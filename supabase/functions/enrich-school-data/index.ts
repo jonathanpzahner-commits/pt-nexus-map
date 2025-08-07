@@ -84,8 +84,7 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Add delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        // Removed artificial delay since we're not making external API calls
         
       } catch (error) {
         console.error(`Error enriching school ${school.id}:`, error)
