@@ -335,14 +335,23 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     markers.forEach(marker => marker.remove());
 
     const dataToShow = searchCenter ? filteredData : {
-      companies: companies.slice(0, 1000),
-      schools: schools.slice(0, 1000), 
-      providers: providers.slice(0, 1000),
-      jobListings: jobListings.slice(0, 1000)
+      companies: companies.slice(0, 100), // Reduce initial load for performance
+      schools: schools.slice(0, 100), 
+      providers: providers.slice(0, 100),
+      jobListings: jobListings.slice(0, 50)
     };
 
     // Add markers for each category
     const addMarkers = async () => {
+      console.log('Starting to add markers:', {
+        companies: dataToShow.companies.length,
+        schools: dataToShow.schools.length,
+        providers: dataToShow.providers.length,
+        jobListings: dataToShow.jobListings.length
+      });
+      
+      let markersAdded = 0;
+      
       // Companies
       for (const company of dataToShow.companies) {
         let coords = company._coords;
@@ -368,6 +377,9 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         }
         
         if (coords) {
+          markersAdded++;
+          console.log(`Company marker ${markersAdded} added:`, company.name, coords);
+          
           const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
             `<div class="p-2">
               <h3 class="font-semibold text-sm">${company.name}</h3>
@@ -386,6 +398,8 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           });
 
           marker.getElement().style.cursor = 'pointer';
+        } else {
+          console.log('Failed to geocode company:', company.name, company.company_locations);
         }
       }
 
@@ -447,6 +461,8 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           marker.getElement().style.cursor = 'pointer';
         }
       }
+      
+      console.log(`Total markers added to map: ${markersAdded}`);
     };
 
     addMarkers();
