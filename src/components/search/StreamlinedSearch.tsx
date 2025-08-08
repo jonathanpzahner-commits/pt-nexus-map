@@ -242,12 +242,12 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                 {(!contextTypes || contextTypes.some(type => ['companies', 'consultant_companies', 'equipment_companies'].includes(type))) && (
                   <div>
                     <Label className="text-sm font-medium">Company Type</Label>
-                    <Select value={filters.companyType || ""} onValueChange={(value) => updateFilters({ companyType: value })}>
+                    <Select value={filters.companyType || "all"} onValueChange={(value) => updateFilters({ companyType: value === "all" ? "" : value })}>
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Any type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any type</SelectItem>
+                        <SelectItem value="all">Any type</SelectItem>
                         <SelectItem value="Private Practice">Private Practice</SelectItem>
                         <SelectItem value="Hospital System">Hospital System</SelectItem>
                         <SelectItem value="Rehabilitation Center">Rehabilitation Center</SelectItem>
@@ -262,12 +262,12 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                 {(!contextTypes || contextTypes.includes('job_listings')) && (
                   <div>
                     <Label className="text-sm font-medium">Employment Type</Label>
-                    <Select value={filters.employmentType || ""} onValueChange={(value) => updateFilters({ employmentType: value })}>
+                    <Select value={filters.employmentType || "all"} onValueChange={(value) => updateFilters({ employmentType: value === "all" ? "" : value })}>
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Any type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any type</SelectItem>
+                        <SelectItem value="all">Any type</SelectItem>
                         <SelectItem value="Full-time">Full-time</SelectItem>
                         <SelectItem value="Part-time">Part-time</SelectItem>
                         <SelectItem value="Contract">Contract</SelectItem>
@@ -281,12 +281,12 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                 {(!contextTypes || contextTypes.some(type => ['providers', 'job_listings'].includes(type))) && (
                   <div>
                     <Label className="text-sm font-medium">Experience Level</Label>
-                    <Select value={filters.experienceLevel || ""} onValueChange={(value) => updateFilters({ experienceLevel: value })}>
+                    <Select value={filters.experienceLevel || "all"} onValueChange={(value) => updateFilters({ experienceLevel: value === "all" ? "" : value })}>
                       <SelectTrigger className="mt-1">
                         <SelectValue placeholder="Any level" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Any level</SelectItem>
+                        <SelectItem value="all">Any level</SelectItem>
                         <SelectItem value="Entry Level">Entry Level</SelectItem>
                         <SelectItem value="Mid Level">Mid Level</SelectItem>
                         <SelectItem value="Senior Level">Senior Level</SelectItem>
