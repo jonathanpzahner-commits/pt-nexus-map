@@ -1,8 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Search } from 'lucide-react';
-import { GlobalSearch } from '../search/GlobalSearch';
+import { StreamlinedSearch } from '../search/StreamlinedSearch';
 
 interface SearchOnlyTabProps {
   title: string;
@@ -24,32 +21,17 @@ export const SearchOnlyTab = ({ title, description, icon: Icon }: SearchOnlyTabP
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <Card className="bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <Icon className="h-8 w-8 text-primary" />
-            <div>
-              <CardTitle className="text-2xl">{title}</CardTitle>
-              <p className="text-muted-foreground mt-1">{description}</p>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Alert>
-            <Search className="h-4 w-4" />
-            <AlertDescription>
-              <strong>Focused Search:</strong> This section is pre-filtered to show only {title.toLowerCase()}. 
-              Use the search and filters below to find exactly what you need.
-            </AlertDescription>
-          </Alert>
-        </CardContent>
-      </Card>
-
-      {/* Focused Search with Pre-filtered Context */}
-      <div className="space-y-4">
-        <GlobalSearch contextTypes={entityTypes} />
+      {/* Clean Header */}
+      <div className="flex items-center gap-3 pb-4 border-b">
+        <Icon className="h-8 w-8 text-primary" />
+        <div>
+          <h1 className="text-2xl font-semibold">{title}</h1>
+          <p className="text-muted-foreground">{description}</p>
+        </div>
       </div>
+
+      {/* Streamlined Search */}
+      <StreamlinedSearch contextTypes={entityTypes} />
     </div>
   );
 };
