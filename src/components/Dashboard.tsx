@@ -26,7 +26,7 @@ import { JobListingsTab } from './dashboard/JobListingsTab';
 import { InteractiveMapView } from './map/InteractiveMapView';
 import { GlobalSearch } from './search/GlobalSearch';
 import { BulkUploadDialog } from './upload/BulkUploadDialog';
-import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
+
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
 import { SearchOnlyTab } from './dashboard/SearchOnlyTab';
@@ -120,7 +120,7 @@ const Dashboard = () => {
         </Button>
       </div>
 
-      <BackgroundProcessStatus />
+      
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
