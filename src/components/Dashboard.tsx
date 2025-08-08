@@ -16,7 +16,8 @@ import {
   Home,
   MessageSquare,
   Headphones,
-  DollarSign
+  DollarSign,
+  Handshake
 } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
@@ -29,6 +30,7 @@ import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
 import { SearchOnlyTab } from './dashboard/SearchOnlyTab';
+import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
 import { toast } from 'sonner';
 
@@ -122,7 +124,7 @@ const Dashboard = () => {
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8 h-12">
+        <TabsList className="grid w-full grid-cols-9 h-12">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -146,6 +148,10 @@ const Dashboard = () => {
           <TabsTrigger value="jobs" className="flex items-center gap-2">
             <Briefcase className="h-4 w-4" />
             <span className="hidden sm:inline">Jobs</span>
+          </TabsTrigger>
+          <TabsTrigger value="partnerships" className="flex items-center gap-2">
+            <Handshake className="h-4 w-4" />
+            <span className="hidden sm:inline">Partners</span>
           </TabsTrigger>
           <TabsTrigger value="map" className="flex items-center gap-2">
             <Map className="h-4 w-4" />
@@ -201,6 +207,10 @@ const Dashboard = () => {
             description="Find PT positions by employment type, experience level, salary range, location, and remote options"
             icon={Briefcase}
           />
+        </TabsContent>
+        
+        <TabsContent value="partnerships" className="space-y-4">
+          <PartnershipDashboard />
         </TabsContent>
         
         <TabsContent value="map" className="space-y-4">
