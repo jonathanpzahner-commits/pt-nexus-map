@@ -27,6 +27,7 @@ import { GlobalSearch } from './search/GlobalSearch';
 import { BulkUploadDialog } from './upload/BulkUploadDialog';
 import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
+import { CommunityHub } from './community/CommunityHub';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
 import { toast } from 'sonner';
 
@@ -220,27 +221,7 @@ const Dashboard = () => {
         </TabsContent>
 
         <TabsContent value="community" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">PT Community</h2>
-            </div>
-            <Card className="p-8 text-center">
-              <CardContent>
-                <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Community Coming Soon</h3>
-                <p className="text-muted-foreground mb-4">
-                  Connect with fellow PTs, share insights, and build professional relationships
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  <span className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">Forum Discussions</span>
-                  <span className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">Mentorship</span>
-                  <span className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">Career Advice</span>
-                  <span className="px-3 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">Industry News</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <CommunityHub />
         </TabsContent>
       </Tabs>
 
