@@ -76,12 +76,12 @@ const About = () => {
               From Recruitment Expert to Industry Unifier
             </Badge>
             <h1 className="text-5xl font-display font-bold text-foreground leading-tight">
-              The Fragmentation Discovery
+              The Missing Network Discovery
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
               After 15 years in healthcare recruitment, I thought I knew the PT industry. 
-              Six months into my own agency, I discovered something shocking: our field is completely fragmented. 
-              No one knows all the players, and that's a problem we can solve together.
+              Six months into my own agency, I discovered something crucial: everyone knows our field is fragmented, 
+              but there's no all-encompassing network that brings everyone together in one place.
             </p>
           </div>
         </section>
@@ -95,7 +95,7 @@ const About = () => {
                 <h2 className="text-3xl font-display font-bold text-foreground">Jon's Journey</h2>
               </div>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Hi, I'm Jon Holland. For 15 years, I built a successful career in healthcare recruitment, 
+                Hi, I'm Jon Zahner. For 15 years, I built a successful career in healthcare recruitment, 
                 eventually scaling therapy groups and working in corporate environments. I thought I knew the industry inside and out.
               </p>
             </div>
@@ -108,13 +108,13 @@ const About = () => {
                   That's when I discovered something that frustrated and inspired me in equal measure.
                 </p>
                 <p>
-                  <strong className="text-foreground">Our industry is completely fragmented.</strong> There's no central hub 
-                  where you can see all the providers, schools, companies, and opportunities. As someone who spent 
-                  15 years in this space, if I don't know all the players, how can anyone else?
+                  <strong className="text-foreground">Everyone knows our industry is fragmented.</strong> But what I discovered 
+                  is that all the existing services are fragmented too. There's no single, all-encompassing network 
+                  where everyone in the field can connect, discover, and collaborate.
                 </p>
                 <p>
                   This realization shifted everything. What started as a business opportunity became a passionate obsession: 
-                  <em>How do we defragment the PT industry?</em>
+                  <em>How do we create the comprehensive network our industry deserves?</em>
                 </p>
               </div>
             </div>
@@ -131,8 +131,8 @@ const About = () => {
                     connect with the right opportunities.
                   </p>
                   <p>
-                    Henry Holland Health (named after my sons Henry and Holland) isn't just a company—it's 
-                    our family's commitment to solving real problems in healthcare.
+                    Henry Holland Health isn't just a company—it's our commitment to building the comprehensive 
+                    network that our industry has been missing.
                   </p>
                 </div>
               </CardContent>
@@ -145,8 +145,8 @@ const About = () => {
           <div className="text-center space-y-3">
             <h2 className="text-3xl font-display font-bold text-foreground">From Problem to Passion</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              PT Ecosystem isn't just another platform—it's my response to the fragmentation crisis I discovered. 
-              Here's how we're solving the problem that keeps me up at night.
+              PT Ecosystem isn't just another platform—it's my response to the missing network I discovered. 
+              Here's how we're building the all-encompassing solution our industry needs.
             </p>
           </div>
           
@@ -156,12 +156,12 @@ const About = () => {
                 <div className="w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center">
                   <Users className="w-6 h-6 text-white" />
                 </div>
-                <CardTitle className="text-xl">Making the Invisible Visible</CardTitle>
+                <CardTitle className="text-xl">The Complete Network</CardTitle>
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-base leading-relaxed">
-                  Every provider, school, and company in one searchable ecosystem. No more wondering "Who else is out there?" 
-                  If they exist in PT, you'll find them here.
+                  Every provider, school, and company in one comprehensive ecosystem. Finally, the all-encompassing 
+                  network that brings together everyone in PT—no more scattered, incomplete solutions.
                 </CardDescription>
               </CardContent>
             </Card>
@@ -220,16 +220,16 @@ const About = () => {
               <h2 className="text-2xl font-display font-bold text-foreground">Why This Obsession?</h2>
               <p className="text-muted-foreground leading-relaxed">
                 I've spent 15 years watching talented people struggle to find the right opportunities, 
-                and companies struggle to find the right people. Not because they don't exist—but because 
-                no one knows they exist.
+                and companies struggle to find the right people. Not because the connections don't exist—but because 
+                all the existing tools are fragmented and incomplete.
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 PT Ecosystem is my solution to the problem that frustrated me as a recruiter: 
-                <strong className="text-foreground">How do you connect people when you don't know all the players?</strong>
+                <strong className="text-foreground">How do you build a comprehensive network when all the tools are scattered?</strong>
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                This platform represents everything I wish I'd had in my 15 years of recruitment. 
-                It's built by an industry insider, for industry insiders who are tired of operating in the dark.
+                This platform represents the all-encompassing network I wish I'd had in my 15 years of recruitment. 
+                It's built by an industry insider, for industry insiders who are tired of working with incomplete information.
               </p>
             </div>
             
@@ -237,12 +237,12 @@ const About = () => {
               <h3 className="text-lg font-semibold text-foreground">The Mission Continues</h3>
               <div className="space-y-3 text-muted-foreground">
                 <p>
-                  Henry Holland Health isn't just a company—it's our family's commitment to solving real problems. 
-                  Named after my sons, this represents our investment in building a better future for healthcare professionals.
+                  Henry Holland Health represents our commitment to solving real problems with comprehensive solutions. 
+                  This isn't about creating another fragmented tool—it's about building the network our industry deserves.
                 </p>
                 <p>
-                  Every feature we build, every connection we facilitate, every "aha!" moment when someone 
-                  discovers a provider they never knew existed—that's what drives this obsession.
+                  Every feature we build, every connection we facilitate, every moment when someone 
+                  discovers exactly what they were looking for—that's what drives this mission.
                 </p>
               </div>
             </div>
@@ -251,10 +251,10 @@ const About = () => {
 
         {/* Call to Action */}
         <section className="text-center py-12 space-y-6">
-          <h2 className="text-3xl font-display font-bold text-foreground">Join the Defragmentation Mission</h2>
+          <h2 className="text-3xl font-display font-bold text-foreground">Join the Network Revolution</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Help us solve the problem that's been frustrating us all: a fragmented industry where great people 
-            and opportunities remain invisible to each other. Let's change that together.
+            Help us build the comprehensive network our industry has been missing. Let's create the all-encompassing 
+            solution that brings everyone in PT together in one place.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
@@ -265,7 +265,7 @@ const About = () => {
               Start Exploring
             </Button>
             <p className="text-sm text-muted-foreground">
-              Discover who you didn't know existed in your area
+              Discover the comprehensive network you've been looking for
             </p>
           </div>
         </section>
