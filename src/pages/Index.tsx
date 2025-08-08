@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import Dashboard from '@/components/Dashboard';
+import { User, Settings } from 'lucide-react';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -58,6 +59,17 @@ const Index = () => {
                 </span>
                 <span className="text-xs text-muted-foreground">Administrator</span>
               </div>
+              
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/profile')}
+                className="gap-2"
+              >
+                <User className="h-4 w-4" />
+                Profile
+              </Button>
+              
               <Button variant="outline" onClick={signOut} className="shadow-soft">
                 Sign Out
               </Button>
