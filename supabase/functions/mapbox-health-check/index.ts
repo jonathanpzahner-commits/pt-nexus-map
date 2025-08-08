@@ -49,12 +49,33 @@ serve(async (req) => {
     }
 
     if (response.status === 200) {
+      // Check if token has expiration info in JWT payload
+      const tokenParts = mapboxToken.split('.');
+      let expirationWarning = "";
+      
+      try {
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          if (payload.exp) {
+            const expirationDate = new Date(payload.exp * 1000);
+            const daysUntilExpiration = Math.ceil((expirationDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            
+            if (daysUntilExpiration <= 30) {
+              expirationWarning = `⚠️ Token expires in ${daysUntilExpiration} days (${expirationDate.toDateString()})`;
+            }
+          }
+        }
+      } catch (e) {
+        // Ignore JWT parsing errors
+      }
+
       return new Response(
         JSON.stringify({ 
           status: "healthy", 
           message: "Token is valid and working",
           healthy: true,
-          tokenPrefix: mapboxToken.substring(0, 10) + "..."
+          tokenPrefix: mapboxToken.substring(0, 10) + "...",
+          expirationWarning
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
