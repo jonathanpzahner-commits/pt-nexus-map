@@ -73,15 +73,24 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
 
   const fetchLocationSuggestions = async (query: string) => {
     try {
-      const { data } = await supabase.functions.invoke('location-autocomplete', {
+      const { data, error } = await supabase.functions.invoke('location-autocomplete', {
         body: { query }
       });
+      if (error) {
+        console.error('Location autocomplete error:', error);
+        return;
+      }
       if (data?.features) {
         setSuggestions(data.features.slice(0, 5));
         setShowSuggestions(true);
       }
     } catch (error) {
       console.error('Location search error:', error);
+      toast({
+        title: "Location search unavailable",
+        description: "Please configure Mapbox token in edge function secrets",
+        variant: "destructive"
+      });
     }
   };
 
