@@ -16,7 +16,7 @@ interface BulkUploadDialogProps {
   onUploadComplete?: () => void;
 }
 
-type EntityType = 'providers' | 'companies' | 'schools' | 'job_listings';
+type EntityType = 'providers' | 'companies' | 'schools' | 'job_listings' | 'equipment_companies' | 'sales_consultants' | 'pe_firms';
 
 interface UploadJob {
   id: string;
@@ -49,6 +49,9 @@ export const BulkUploadDialog = ({ open, onOpenChange, onUploadComplete }: BulkU
     { value: 'companies', label: 'Companies' },
     { value: 'schools', label: 'Schools' },
     { value: 'job_listings', label: 'Job Listings' },
+    { value: 'equipment_companies', label: 'Equipment Companies' },
+    { value: 'sales_consultants', label: 'Sales Consultants' },
+    { value: 'pe_firms', label: 'PE Firms' },
   ];
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,6 +199,21 @@ export const BulkUploadDialog = ({ open, onOpenChange, onUploadComplete }: BulkU
         filename: 'job_listings_template.csv',
         headers: 'title,city,state,description,requirements,employment_type,experience_level,salary_min,salary_max,is_remote,company_id',
         sample: 'Physical Therapist,Los Angeles,CA,PT position,DPT required,Full-time,Mid Level,80000,100000,false,'
+      },
+      equipment_companies: {
+        filename: 'equipment_companies_template.csv',
+        headers: 'name,company_type,description,website,founded_year,employee_count,equipment_categories,product_lines,target_markets,certifications,address,city,state,zip_code,phone,email',
+        sample: 'MedTech Solutions,Equipment Manufacturer,Leading PT equipment manufacturer,https://medtech.com,2005,150,"Exercise Equipment, Therapy Tables","ProFit Series, TherapyPro Line","Clinics, Hospitals","FDA, ISO 13485",123 Tech Blvd,Austin,TX,78701,555-9876,sales@medtech.com'
+      },
+      sales_consultants: {
+        filename: 'sales_consultants_template.csv',
+        headers: 'first_name,last_name,email,phone,company,title,specializations,industries,territories,years_experience,city,state,zip_code,website,linkedin_url,certifications',
+        sample: 'Jane,Doe,jane.doe@sales.com,555-3456,Healthcare Sales Pro,Senior Consultant,"Medical Equipment, Software","Healthcare, PT Clinics","West Coast, Southwest",8,San Francisco,CA,94102,https://salesexpert.com,https://linkedin.com/in/janedoe,"Certified Sales Professional, Healthcare Sales Specialist"'
+      },
+      pe_firms: {
+        filename: 'pe_firms_template.csv',
+        headers: 'name,firm_type,description,website,founded_year,total_aum,healthcare_focus,investment_stage,typical_deal_size_min,typical_deal_size_max,geographic_focus,sector_focus,portfolio_companies,address,city,state,phone,email',
+        sample: 'HealthVest Partners,Private Equity,Healthcare-focused PE firm,https://healthvest.com,2015,2500000000,true,"Growth, Buyout",10000000,500000000,"North America, Europe","Healthcare Services, Medical Devices","ABC Therapy Group, MedTech Inc",100 Investment St,New York,NY,555-7890,info@healthvest.com'
       }
     };
 

@@ -237,6 +237,15 @@ function validateAndTransformRecord(row: any, entityType: string, rowNumber: num
     case 'job_listings':
       data = validateJobListing(row, rowNumber, errors);
       break;
+    case 'equipment_companies':
+      data = validateEquipmentCompany(row, rowNumber, errors);
+      break;
+    case 'sales_consultants':
+      data = validateSalesConsultant(row, rowNumber, errors);
+      break;
+    case 'pe_firms':
+      data = validatePeFirm(row, rowNumber, errors);
+      break;
     default:
       errors.push({
         row: rowNumber,
@@ -615,6 +624,192 @@ function validateJobListing(row: any, rowNumber: number, errors: ValidationError
   if (row.company_id) {
     data.company_id = row.company_id.toString().trim();
   }
+
+  return data;
+}
+
+function validateEquipmentCompany(row: any, rowNumber: number, errors: ValidationError[]) {
+  const data: any = {};
+
+  // Required: name
+  if (!row.name || row.name.toString().trim() === '') {
+    errors.push({ row: rowNumber, field: 'name', value: row.name, message: 'Company name is required' });
+  } else {
+    data.name = row.name.toString().trim();
+  }
+
+  // Map fields with flexible column matching
+  if (row.company_type) data.company_type = row.company_type.toString().trim();
+  if (row.description) data.description = row.description.toString().trim();
+  if (row.website) data.website = row.website.toString().trim();
+  if (row.founded_year) {
+    const year = parseInt(row.founded_year);
+    if (!isNaN(year) && year > 1800 && year <= new Date().getFullYear()) {
+      data.founded_year = year;
+    }
+  }
+  if (row.employee_count) {
+    const count = parseInt(row.employee_count);
+    if (!isNaN(count) && count > 0) data.employee_count = count;
+  }
+
+  // Parse arrays
+  if (row.equipment_categories) {
+    const categories = row.equipment_categories.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (categories.length > 0) data.equipment_categories = categories;
+  }
+  if (row.product_lines) {
+    const lines = row.product_lines.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (lines.length > 0) data.product_lines = lines;
+  }
+  if (row.target_markets) {
+    const markets = row.target_markets.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (markets.length > 0) data.target_markets = markets;
+  }
+  if (row.certifications) {
+    const certs = row.certifications.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (certs.length > 0) data.certifications = certs;
+  }
+
+  // Location fields
+  if (row.address) data.address = row.address.toString().trim();
+  if (row.city) data.city = row.city.toString().trim();
+  if (row.state) data.state = row.state.toString().trim();
+  if (row.zip_code) data.zip_code = row.zip_code.toString().trim();
+  if (row.phone) data.phone = row.phone.toString().trim();
+  if (row.email) data.email = row.email.toString().trim();
+  if (row.linkedin_url) data.linkedin_url = row.linkedin_url.toString().trim();
+
+  return data;
+}
+
+function validateSalesConsultant(row: any, rowNumber: number, errors: ValidationError[]) {
+  const data: any = {};
+
+  // Name handling - flexible for different formats
+  if (row.first_name || row.last_name) {
+    if (row.first_name) data.first_name = row.first_name.toString().trim();
+    if (row.last_name) data.last_name = row.last_name.toString().trim();
+    data.name = `${data.first_name || ''} ${data.last_name || ''}`.trim();
+  } else if (row.name) {
+    data.name = row.name.toString().trim();
+    const nameParts = data.name.split(' ');
+    if (nameParts.length >= 2) {
+      data.first_name = nameParts[0];
+      data.last_name = nameParts.slice(1).join(' ');
+    }
+  } else {
+    errors.push({ row: rowNumber, field: 'name', value: '', message: 'Name is required' });
+  }
+
+  // Contact info
+  if (row.email) data.email = row.email.toString().trim();
+  if (row.phone) data.phone = row.phone.toString().trim();
+  if (row.company) data.company = row.company.toString().trim();
+  if (row.title) data.title = row.title.toString().trim();
+
+  // Experience
+  if (row.years_experience) {
+    const exp = parseInt(row.years_experience);
+    if (!isNaN(exp) && exp >= 0) data.years_experience = exp;
+  }
+  if (row.bio) data.bio = row.bio.toString().trim();
+
+  // Arrays
+  if (row.specializations) {
+    const specs = row.specializations.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (specs.length > 0) data.specializations = specs;
+  }
+  if (row.industries) {
+    const industries = row.industries.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (industries.length > 0) data.industries = industries;
+  }
+  if (row.territories) {
+    const territories = row.territories.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (territories.length > 0) data.territories = territories;
+  }
+  if (row.certifications) {
+    const certs = row.certifications.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (certs.length > 0) data.certifications = certs;
+  }
+
+  // Location
+  if (row.city) data.city = row.city.toString().trim();
+  if (row.state) data.state = row.state.toString().trim();
+  if (row.zip_code) data.zip_code = row.zip_code.toString().trim();
+  if (row.website) data.website = row.website.toString().trim();
+  if (row.linkedin_url) data.linkedin_url = row.linkedin_url.toString().trim();
+
+  return data;
+}
+
+function validatePeFirm(row: any, rowNumber: number, errors: ValidationError[]) {
+  const data: any = {};
+
+  // Required: name
+  if (!row.name || row.name.toString().trim() === '') {
+    errors.push({ row: rowNumber, field: 'name', value: row.name, message: 'Firm name is required' });
+  } else {
+    data.name = row.name.toString().trim();
+  }
+
+  // Basic info
+  if (row.firm_type) data.firm_type = row.firm_type.toString().trim();
+  if (row.description) data.description = row.description.toString().trim();
+  if (row.website) data.website = row.website.toString().trim();
+  
+  if (row.founded_year) {
+    const year = parseInt(row.founded_year);
+    if (!isNaN(year) && year > 1800 && year <= new Date().getFullYear()) {
+      data.founded_year = year;
+    }
+  }
+
+  // Financial info
+  if (row.total_aum) {
+    const aum = parseFloat(row.total_aum);
+    if (!isNaN(aum) && aum > 0) data.total_aum = aum;
+  }
+  if (row.typical_deal_size_min) {
+    const min = parseFloat(row.typical_deal_size_min);
+    if (!isNaN(min) && min > 0) data.typical_deal_size_min = min;
+  }
+  if (row.typical_deal_size_max) {
+    const max = parseFloat(row.typical_deal_size_max);
+    if (!isNaN(max) && max > 0) data.typical_deal_size_max = max;
+  }
+
+  // Boolean fields
+  if (row.healthcare_focus !== undefined) {
+    data.healthcare_focus = row.healthcare_focus === true || row.healthcare_focus === 'true' || row.healthcare_focus === 'TRUE' || row.healthcare_focus === 1;
+  }
+
+  // Arrays
+  if (row.investment_stage) {
+    const stages = row.investment_stage.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (stages.length > 0) data.investment_stage = stages;
+  }
+  if (row.geographic_focus) {
+    const geo = row.geographic_focus.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (geo.length > 0) data.geographic_focus = geo;
+  }
+  if (row.sector_focus) {
+    const sectors = row.sector_focus.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (sectors.length > 0) data.sector_focus = sectors;
+  }
+  if (row.portfolio_companies) {
+    const companies = row.portfolio_companies.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (companies.length > 0) data.portfolio_companies = companies;
+  }
+
+  // Location
+  if (row.address) data.address = row.address.toString().trim();
+  if (row.city) data.city = row.city.toString().trim();
+  if (row.state) data.state = row.state.toString().trim();
+  if (row.zip_code) data.zip_code = row.zip_code.toString().trim();
+  if (row.phone) data.phone = row.phone.toString().trim();
+  if (row.email) data.email = row.email.toString().trim();
+  if (row.linkedin_url) data.linkedin_url = row.linkedin_url.toString().trim();
 
   return data;
 }
