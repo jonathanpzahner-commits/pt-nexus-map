@@ -486,46 +486,19 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     }
   };
 
-  if (!mapboxToken && !token) {
+  if (!mapboxToken) {
     return (
       <div className="p-6 max-w-md mx-auto">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
-              Setup Interactive Map
+              Interactive Map Unavailable
             </CardTitle>
             <CardDescription>
-              Enter your Mapbox public token to view the interactive PT ecosystem map.
-              Get your token from{' '}
-              <a 
-                href="https://mapbox.com/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                mapbox.com
-              </a>
+              Interactive map service is currently unavailable. Please contact support if this persists.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <form onSubmit={handleTokenSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="token">Mapbox Public Token</Label>
-                <Input
-                  id="token"
-                  type="text"
-                  placeholder="pk.eyJ1..."
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full">
-                Initialize Interactive Map
-              </Button>
-            </form>
-          </CardContent>
         </Card>
       </div>
     );
