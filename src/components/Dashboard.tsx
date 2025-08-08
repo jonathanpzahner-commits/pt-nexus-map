@@ -30,7 +30,7 @@ import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
 import { SearchOnlyTab } from './dashboard/SearchOnlyTab';
-import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
+// import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
 import { toast } from 'sonner';
 
@@ -210,7 +210,10 @@ const Dashboard = () => {
         </TabsContent>
         
         <TabsContent value="partnerships" className="space-y-4">
-          <PartnershipDashboard />
+          <div className="p-8 text-center">
+            <h3 className="text-lg font-semibold mb-2">Partnership Management</h3>
+            <p className="text-muted-foreground">Partnership features will be available once the database migration is applied.</p>
+          </div>
         </TabsContent>
         
         <TabsContent value="map" className="space-y-4">

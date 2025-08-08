@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, X, Filter } from 'lucide-react';
 import { useState } from 'react';
-import { SearchFilters as SearchFiltersType } from '@/hooks/useSearch';
+import { SearchFilters as SearchFiltersType } from '@/hooks/useServerSearch';
 
 interface SearchFiltersProps {
   filters: SearchFiltersType;
@@ -30,6 +30,10 @@ export const SearchFilters = ({
     { id: 'schools', label: 'Schools', color: 'bg-green-500' },
     { id: 'providers', label: 'Providers', color: 'bg-amber-500' },
     { id: 'job_listings', label: 'Job Listings', color: 'bg-red-500' },
+    { id: 'consultant_companies', label: 'Consultants', color: 'bg-purple-500' },
+    { id: 'equipment_companies', label: 'Equipment', color: 'bg-orange-500' },
+    { id: 'pe_firms', label: 'PE Firms', color: 'bg-gray-500' },
+    { id: 'profiles', label: 'Professionals', color: 'bg-pink-500' },
   ];
 
   const companyTypes = [
@@ -74,7 +78,7 @@ export const SearchFilters = ({
     filters.companyType,
     filters.employmentType,
     filters.experienceLevel,
-  ].filter(Boolean).length + (4 - filters.entityTypes.length);
+  ].filter(Boolean).length + (8 - filters.entityTypes.length);
 
   return (
     <Card>
@@ -106,7 +110,7 @@ export const SearchFilters = ({
             {/* Entity Types */}
             <div>
               <Label className="text-sm font-medium">Show</Label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
                 {entityTypeOptions.map(option => (
                   <div key={option.id} className="flex items-center space-x-2">
                     <Checkbox

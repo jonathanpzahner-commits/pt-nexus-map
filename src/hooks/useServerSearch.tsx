@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SearchFilters {
-  entityTypes: ('companies' | 'schools' | 'providers' | 'job_listings')[];
+  entityTypes: ('companies' | 'schools' | 'providers' | 'job_listings' | 'consultant_companies' | 'equipment_companies' | 'pe_firms' | 'profiles')[];
   location: string;
   specialization: string;
   companyType: string;
@@ -16,7 +16,7 @@ export interface SearchFilters {
 
 export interface SearchResult {
   id: string;
-  type: 'company' | 'school' | 'provider' | 'job_listing';
+  type: 'company' | 'school' | 'provider' | 'job_listing' | 'consultant_company' | 'equipment_company' | 'pe_firm' | 'profile';
   title: string;
   subtitle: string;
   location: string;
@@ -25,7 +25,7 @@ export interface SearchResult {
 }
 
 const defaultFilters: SearchFilters = {
-  entityTypes: ['companies', 'schools', 'providers', 'job_listings'],
+  entityTypes: ['companies', 'schools', 'providers', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'],
   location: '',
   specialization: '',
   companyType: '',
@@ -234,6 +234,157 @@ export const useServerSearch = () => {
               location,
               description: job.description,
               data: job,
+            });
+          });
+          totalCount += count || 0;
+        }
+      }
+
+      // Search consultant companies
+      if (filters.entityTypes.includes('consultant_companies') && currentPage === 1) {
+        let query = supabase
+          .from('consultant_companies')
+          .select('*', { count: 'exact' })
+          .limit(RESULTS_PER_PAGE);
+
+        if (searchQuery.trim()) {
+          const searchTerm = searchQuery.toLowerCase();
+          query = query.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,company.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+        }
+
+        if (filters.location.trim()) {
+          const locationTerm = filters.location.toLowerCase();
+          query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
+        }
+
+        const { data: consultants, error, count } = await query;
+        if (error) throw error;
+
+        if (consultants) {
+          consultants.forEach(consultant => {
+            const location = consultant.city && consultant.state ? `${consultant.city}, ${consultant.state}` : '';
+            const title = consultant.name || `${consultant.first_name} ${consultant.last_name}`;
+            results.push({
+              id: consultant.id,
+              type: 'consultant_company',
+              title,
+              subtitle: consultant.company || 'Healthcare Consultant',
+              location,
+              description: consultant.bio,
+              data: consultant,
+            });
+          });
+          totalCount += count || 0;
+        }
+      }
+
+      // Search equipment companies
+      if (filters.entityTypes.includes('equipment_companies') && currentPage === 1) {
+        let query = supabase
+          .from('equipment_companies')
+          .select('*', { count: 'exact' })
+          .limit(RESULTS_PER_PAGE);
+
+        if (searchQuery.trim()) {
+          const searchTerm = searchQuery.toLowerCase();
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+        }
+
+        if (filters.location.trim()) {
+          const locationTerm = filters.location.toLowerCase();
+          query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
+        }
+
+        const { data: equipment, error, count } = await query;
+        if (error) throw error;
+
+        if (equipment) {
+          equipment.forEach(company => {
+            const location = company.city && company.state ? `${company.city}, ${company.state}` : '';
+            results.push({
+              id: company.id,
+              type: 'equipment_company',
+              title: company.name,
+              subtitle: company.company_type || 'Equipment Company',
+              location,
+              description: company.description,
+              data: company,
+            });
+          });
+          totalCount += count || 0;
+        }
+      }
+
+      // Search PE firms
+      if (filters.entityTypes.includes('pe_firms') && currentPage === 1) {
+        let query = supabase
+          .from('pe_firms')
+          .select('*', { count: 'exact' })
+          .limit(RESULTS_PER_PAGE);
+
+        if (searchQuery.trim()) {
+          const searchTerm = searchQuery.toLowerCase();
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+        }
+
+        if (filters.location.trim()) {
+          const locationTerm = filters.location.toLowerCase();
+          query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
+        }
+
+        const { data: firms, error, count } = await query;
+        if (error) throw error;
+
+        if (firms) {
+          firms.forEach(firm => {
+            const location = firm.city && firm.state ? `${firm.city}, ${firm.state}` : '';
+            results.push({
+              id: firm.id,
+              type: 'pe_firm',
+              title: firm.name,
+              subtitle: firm.firm_type || 'Private Equity',
+              location,
+              description: firm.description,
+              data: firm,
+            });
+          });
+          totalCount += count || 0;
+        }
+      }
+
+      // Search public profiles
+      if (filters.entityTypes.includes('profiles') && currentPage === 1) {
+        let query = supabase
+          .from('profiles')
+          .select('*', { count: 'exact' })
+          .eq('is_public', true)
+          .limit(RESULTS_PER_PAGE);
+
+        if (searchQuery.trim()) {
+          const searchTerm = searchQuery.toLowerCase();
+          query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,current_position.ilike.%${searchTerm}%,about_me.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+        }
+
+        if (filters.location.trim()) {
+          const locationTerm = filters.location.toLowerCase();
+          query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%,location.ilike.%${locationTerm}%`);
+        }
+
+        const { data: profiles, error, count } = await query;
+        if (error) throw error;
+
+        if (profiles) {
+          profiles.forEach(profile => {
+            const location = profile.city && profile.state ? `${profile.city}, ${profile.state}` : profile.location || '';
+            const title = `${profile.first_name} ${profile.last_name}`;
+            results.push({
+              id: profile.id,
+              type: 'profile',
+              title,
+              subtitle: profile.current_position || 'Professional',
+              location,
+              description: profile.about_me,
+              data: profile,
             });
           });
           totalCount += count || 0;

@@ -147,7 +147,7 @@ export const GlobalSearch = () => {
       )}
 
       {/* Results */}
-      <SearchResults results={results} isLoading={isLoading} />
+      <SearchResults results={results as any} isLoading={isLoading} />
 
       {/* Enhanced Pagination */}
       {totalPages > 1 && (
