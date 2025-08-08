@@ -10,7 +10,11 @@ import { NPIBackgroundProcessor } from '../admin/NPIBackgroundProcessor';
 import { useServerSearch } from '@/hooks/useServerSearch';
 import { useState } from 'react';
 
-export const GlobalSearch = () => {
+interface GlobalSearchProps {
+  contextTypes?: string[];
+}
+
+export const GlobalSearch = ({ contextTypes }: GlobalSearchProps) => {
   const [currentLocationName, setCurrentLocationName] = useState<string>('');
   
   const {
@@ -28,7 +32,7 @@ export const GlobalSearch = () => {
     prevPage,
     hasNextPage,
     hasPrevPage,
-  } = useServerSearch();
+  } = useServerSearch(contextTypes as any);
 
   const handleLocationSet = (latitude: number, longitude: number, address: string) => {
     updateFilters({
@@ -40,57 +44,82 @@ export const GlobalSearch = () => {
 
   return (
     <div className="space-y-8">
-      {/* Enhanced Search Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 p-8 border border-primary/20">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-display font-bold text-foreground mb-2">
-              Intelligent PT Ecosystem Search
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Discover connections across {totalResults.toLocaleString()}+ providers, companies, schools, and opportunities
-            </p>
-          </div>
-          
-          {/* Main Search Bar */}
-          <div className="relative max-w-2xl mx-auto">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-            <Input
-              placeholder="Search therapists, companies, schools, jobs, specializations..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 pr-12 h-14 text-base bg-white/80 backdrop-blur-sm border-primary/20 focus:border-primary shadow-lg"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            )}
-          </div>
+      {/* Enhanced Search Header - Only show for global search */}
+      {!contextTypes && (
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/10 via-accent/10 to-primary/5 p-8 border border-primary/20">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-6">
+              <h1 className="text-3xl font-display font-bold text-foreground mb-2">
+                Intelligent PT Ecosystem Search
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Discover connections across {totalResults.toLocaleString()}+ providers, companies, schools, and opportunities
+              </p>
+            </div>
+            
+            {/* Main Search Bar */}
+            <div className="relative max-w-2xl mx-auto">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+              <Input
+                placeholder="Search therapists, companies, schools, jobs, specializations..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-12 pr-12 h-14 text-base bg-white/80 backdrop-blur-sm border-primary/20 focus:border-primary shadow-lg"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              )}
+            </div>
 
-          {/* Quick Search Suggestions */}
-          <div className="flex flex-wrap gap-2 justify-center mt-4">
-            {['Orthopedic Specialists', 'Sports Medicine', 'Pediatric PT', 'Travel Positions', 'DPT Programs'].map((suggestion) => (
-              <button
-                key={suggestion}
-                onClick={() => setSearchQuery(suggestion)}
-                className="px-3 py-1 bg-white/60 hover:bg-white/80 text-foreground rounded-full text-sm border border-primary/20 transition-all"
-              >
-                {suggestion}
-              </button>
-            ))}
+            {/* Quick Search Suggestions */}
+            <div className="flex flex-wrap gap-2 justify-center mt-4">
+              {['Orthopedic Specialists', 'Sports Medicine', 'Pediatric PT', 'Travel Positions', 'DPT Programs'].map((suggestion) => (
+                <button
+                  key={suggestion}
+                  onClick={() => setSearchQuery(suggestion)}
+                  className="px-3 py-1 bg-white/60 hover:bg-white/80 text-foreground rounded-full text-sm border border-primary/20 transition-all"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Admin Tools */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <NPIBackgroundProcessor />
-        <GeocodingManager />
-      </div>
+      {/* Focused Search Bar for context-specific searches */}
+      {contextTypes && (
+        <div className="relative max-w-2xl mx-auto">
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+          <Input
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-12 pr-12 h-12 text-base border-border/50 focus:border-primary"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Admin Tools - Only show for global search */}
+      {!contextTypes && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <NPIBackgroundProcessor />
+          <GeocodingManager />
+        </div>
+      )}
 
       {/* Advanced Search Controls */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -111,6 +140,7 @@ export const GlobalSearch = () => {
             onFiltersChange={updateFilters}
             onClearFilters={clearFilters}
             totalResults={totalResults}
+            contextTypes={contextTypes}
           />
         </div>
       </div>

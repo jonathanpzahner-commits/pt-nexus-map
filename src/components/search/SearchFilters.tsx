@@ -15,17 +15,19 @@ interface SearchFiltersProps {
   onFiltersChange: (filters: Partial<SearchFiltersType>) => void;
   onClearFilters: () => void;
   totalResults: number;
+  contextTypes?: string[]; // Optional context for filtering available options
 }
 
 export const SearchFilters = ({ 
   filters, 
   onFiltersChange, 
   onClearFilters,
-  totalResults 
+  totalResults,
+  contextTypes 
 }: SearchFiltersProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const entityTypeOptions = [
+  const allEntityTypeOptions = [
     { id: 'companies', label: 'Companies', color: 'bg-blue-500' },
     { id: 'schools', label: 'Schools', color: 'bg-green-500' },
     { id: 'providers', label: 'Providers', color: 'bg-amber-500' },
@@ -35,6 +37,11 @@ export const SearchFilters = ({
     { id: 'pe_firms', label: 'PE Firms', color: 'bg-gray-500' },
     { id: 'profiles', label: 'Professionals', color: 'bg-pink-500' },
   ];
+
+  // Filter entity types based on context if provided
+  const entityTypeOptions = contextTypes 
+    ? allEntityTypeOptions.filter(option => contextTypes.includes(option.id))
+    : allEntityTypeOptions;
 
   const companyTypes = [
     'Private Practice',
@@ -159,62 +166,68 @@ export const SearchFilters = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Company Type */}
-              <div>
-                <Label className="text-sm font-medium">Company Type</Label>
-                <Select 
-                  value={filters.companyType || "all"} 
-                  onValueChange={(value) => onFiltersChange({ companyType: value === "all" ? "" : value })}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Any type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any type</SelectItem>
-                    {companyTypes.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Show company type filter only for relevant contexts */}
+              {(!contextTypes || contextTypes.some(type => ['companies', 'consultant_companies', 'equipment_companies'].includes(type))) && (
+                <div>
+                  <Label className="text-sm font-medium">Company Type</Label>
+                  <Select 
+                    value={filters.companyType || "all"} 
+                    onValueChange={(value) => onFiltersChange({ companyType: value === "all" ? "" : value })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Any type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border shadow-lg z-50">
+                      <SelectItem value="all">Any type</SelectItem>
+                      {companyTypes.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-              {/* Employment Type */}
-              <div>
-                <Label className="text-sm font-medium">Employment Type</Label>
-                <Select 
-                  value={filters.employmentType || "all"} 
-                  onValueChange={(value) => onFiltersChange({ employmentType: value === "all" ? "" : value })}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Any type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any type</SelectItem>
-                    {employmentTypes.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Show employment type filter only for job-related contexts */}
+              {(!contextTypes || contextTypes.includes('job_listings')) && (
+                <div>
+                  <Label className="text-sm font-medium">Employment Type</Label>
+                  <Select 
+                    value={filters.employmentType || "all"} 
+                    onValueChange={(value) => onFiltersChange({ employmentType: value === "all" ? "" : value })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Any type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border shadow-lg z-50">
+                      <SelectItem value="all">Any type</SelectItem>
+                      {employmentTypes.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
-              {/* Experience Level */}
-              <div>
-                <Label className="text-sm font-medium">Experience Level</Label>
-                <Select 
-                  value={filters.experienceLevel || "all"} 
-                  onValueChange={(value) => onFiltersChange({ experienceLevel: value === "all" ? "" : value })}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Any level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any level</SelectItem>
-                    {experienceLevels.map(level => (
-                      <SelectItem key={level} value={level}>{level}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Show experience level filter only for provider/job contexts */}
+              {(!contextTypes || contextTypes.some(type => ['providers', 'job_listings'].includes(type))) && (
+                <div>
+                  <Label className="text-sm font-medium">Experience Level</Label>
+                  <Select 
+                    value={filters.experienceLevel || "all"} 
+                    onValueChange={(value) => onFiltersChange({ experienceLevel: value === "all" ? "" : value })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Any level" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-background border-border shadow-lg z-50">
+                      <SelectItem value="all">Any level</SelectItem>
+                      {experienceLevels.map(level => (
+                        <SelectItem key={level} value={level}>{level}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
 
             {/* Clear Filters */}

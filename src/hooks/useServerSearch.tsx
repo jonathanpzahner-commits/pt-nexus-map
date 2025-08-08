@@ -24,8 +24,8 @@ export interface SearchResult {
   data: any;
 }
 
-const defaultFilters: SearchFilters = {
-  entityTypes: ['companies', 'schools', 'providers', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'],
+const createDefaultFilters = (preselectedTypes?: SearchFilters['entityTypes']): SearchFilters => ({
+  entityTypes: preselectedTypes || ['companies', 'schools', 'providers', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'],
   location: '',
   specialization: '',
   companyType: '',
@@ -34,13 +34,13 @@ const defaultFilters: SearchFilters = {
   radius: 50, // 50 miles default
   userLatitude: undefined,
   userLongitude: undefined,
-};
+});
 
 const RESULTS_PER_PAGE = 50;
 
-export const useServerSearch = () => {
+export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes']) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filters, setFilters] = useState<SearchFilters>(defaultFilters);
+  const [filters, setFilters] = useState<SearchFilters>(() => createDefaultFilters(preselectedTypes));
   const [currentPage, setCurrentPage] = useState(1);
 
   // Server-side search with pagination
@@ -407,10 +407,10 @@ export const useServerSearch = () => {
   }, []);
 
   const clearFilters = useCallback(() => {
-    setFilters(defaultFilters);
+    setFilters(createDefaultFilters(preselectedTypes));
     setSearchQuery('');
     setCurrentPage(1);
-  }, []);
+  }, [preselectedTypes]);
 
   const goToPage = useCallback((page: number) => {
     setCurrentPage(page);
