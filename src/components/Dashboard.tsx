@@ -28,6 +28,7 @@ import { BulkUploadDialog } from './upload/BulkUploadDialog';
 import BackgroundProcessStatus from './dashboard/BackgroundProcessStatus';
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
+import { SearchOnlyTab } from './dashboard/SearchOnlyTab';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
 import { toast } from 'sonner';
 
@@ -171,43 +172,35 @@ const Dashboard = () => {
         </TabsContent>
         
         <TabsContent value="providers" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Users className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">Physical Therapists</h2>
-            </div>
-            <ProvidersTab />
-          </div>
+          <SearchOnlyTab 
+            title="Physical Therapists & Providers"
+            description="Search for PTs by specialty, experience, location, license state, and current employer"
+            icon={Users}
+          />
         </TabsContent>
         
         <TabsContent value="companies" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Building className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">PT Companies</h2>
-            </div>
-            <CompaniesTab />
-          </div>
+          <SearchOnlyTab 
+            title="PT Companies & Practices"
+            description="Find PT clinics, hospitals, and healthcare companies by type, size, location, and services"
+            icon={Building}
+          />
         </TabsContent>
         
         <TabsContent value="schools" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <GraduationCap className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">Education Programs</h2>
-            </div>
-            <SchoolsTab />
-          </div>
+          <SearchOnlyTab 
+            title="PT Education Programs"
+            description="Search DPT programs by accreditation, tuition, location, program type, and specializations"
+            icon={GraduationCap}
+          />
         </TabsContent>
         
         <TabsContent value="jobs" className="space-y-4">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Briefcase className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">Career Opportunities</h2>
-            </div>
-            <JobListingsTab />
-          </div>
+          <SearchOnlyTab 
+            title="PT Job Opportunities"
+            description="Find PT positions by employment type, experience level, salary range, location, and remote options"
+            icon={Briefcase}
+          />
         </TabsContent>
         
         <TabsContent value="map" className="space-y-4">
