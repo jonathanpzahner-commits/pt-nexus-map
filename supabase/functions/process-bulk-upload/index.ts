@@ -240,8 +240,8 @@ function validateAndTransformRecord(row: any, entityType: string, rowNumber: num
     case 'equipment_companies':
       data = validateEquipmentCompany(row, rowNumber, errors);
       break;
-    case 'sales_consultants':
-      data = validateSalesConsultant(row, rowNumber, errors);
+    case 'consultant_companies':
+      data = validateConsultantCompany(row, rowNumber, errors);
       break;
     case 'pe_firms':
       data = validatePeFirm(row, rowNumber, errors);
@@ -683,7 +683,7 @@ function validateEquipmentCompany(row: any, rowNumber: number, errors: Validatio
   return data;
 }
 
-function validateSalesConsultant(row: any, rowNumber: number, errors: ValidationError[]) {
+function validateConsultantCompany(row: any, rowNumber: number, errors: ValidationError[]) {
   const data: any = {};
 
   // Name handling - flexible for different formats
@@ -715,10 +715,10 @@ function validateSalesConsultant(row: any, rowNumber: number, errors: Validation
   }
   if (row.bio) data.bio = row.bio.toString().trim();
 
-  // Arrays
-  if (row.specializations) {
-    const specs = row.specializations.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
-    if (specs.length > 0) data.specializations = specs;
+  // Arrays - consulting_categories instead of specializations
+  if (row.consulting_categories) {
+    const categories = row.consulting_categories.toString().split(',').map((s: string) => s.trim()).filter(Boolean);
+    if (categories.length > 0) data.consulting_categories = categories;
   }
   if (row.industries) {
     const industries = row.industries.toString().split(',').map((s: string) => s.trim()).filter(Boolean);

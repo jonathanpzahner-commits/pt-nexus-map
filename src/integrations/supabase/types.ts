@@ -125,6 +125,84 @@ export type Database = {
         }
         Relationships: []
       }
+      consultant_companies: {
+        Row: {
+          bio: string | null
+          certifications: string[] | null
+          city: string | null
+          company: string | null
+          consulting_categories: string[] | null
+          created_at: string
+          email: string | null
+          first_name: string | null
+          id: string
+          industries: string[] | null
+          last_name: string | null
+          latitude: number | null
+          linkedin_url: string | null
+          longitude: number | null
+          name: string | null
+          phone: string | null
+          state: string | null
+          territories: string[] | null
+          title: string | null
+          updated_at: string
+          website: string | null
+          years_experience: number | null
+          zip_code: string | null
+        }
+        Insert: {
+          bio?: string | null
+          certifications?: string[] | null
+          city?: string | null
+          company?: string | null
+          consulting_categories?: string[] | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          industries?: string[] | null
+          last_name?: string | null
+          latitude?: number | null
+          linkedin_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          phone?: string | null
+          state?: string | null
+          territories?: string[] | null
+          title?: string | null
+          updated_at?: string
+          website?: string | null
+          years_experience?: number | null
+          zip_code?: string | null
+        }
+        Update: {
+          bio?: string | null
+          certifications?: string[] | null
+          city?: string | null
+          company?: string | null
+          consulting_categories?: string[] | null
+          created_at?: string
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          industries?: string[] | null
+          last_name?: string | null
+          latitude?: number | null
+          linkedin_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          phone?: string | null
+          state?: string | null
+          territories?: string[] | null
+          title?: string | null
+          updated_at?: string
+          website?: string | null
+          years_experience?: number | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       equipment_companies: {
         Row: {
           address: string | null
@@ -501,84 +579,6 @@ export type Database = {
           source?: string | null
           specializations?: string[] | null
           state?: string | null
-          updated_at?: string
-          website?: string | null
-          years_experience?: number | null
-          zip_code?: string | null
-        }
-        Relationships: []
-      }
-      sales_consultants: {
-        Row: {
-          bio: string | null
-          certifications: string[] | null
-          city: string | null
-          company: string | null
-          created_at: string
-          email: string | null
-          first_name: string | null
-          id: string
-          industries: string[] | null
-          last_name: string | null
-          latitude: number | null
-          linkedin_url: string | null
-          longitude: number | null
-          name: string | null
-          phone: string | null
-          specializations: string[] | null
-          state: string | null
-          territories: string[] | null
-          title: string | null
-          updated_at: string
-          website: string | null
-          years_experience: number | null
-          zip_code: string | null
-        }
-        Insert: {
-          bio?: string | null
-          certifications?: string[] | null
-          city?: string | null
-          company?: string | null
-          created_at?: string
-          email?: string | null
-          first_name?: string | null
-          id?: string
-          industries?: string[] | null
-          last_name?: string | null
-          latitude?: number | null
-          linkedin_url?: string | null
-          longitude?: number | null
-          name?: string | null
-          phone?: string | null
-          specializations?: string[] | null
-          state?: string | null
-          territories?: string[] | null
-          title?: string | null
-          updated_at?: string
-          website?: string | null
-          years_experience?: number | null
-          zip_code?: string | null
-        }
-        Update: {
-          bio?: string | null
-          certifications?: string[] | null
-          city?: string | null
-          company?: string | null
-          created_at?: string
-          email?: string | null
-          first_name?: string | null
-          id?: string
-          industries?: string[] | null
-          last_name?: string | null
-          latitude?: number | null
-          linkedin_url?: string | null
-          longitude?: number | null
-          name?: string | null
-          phone?: string | null
-          specializations?: string[] | null
-          state?: string | null
-          territories?: string[] | null
-          title?: string | null
           updated_at?: string
           website?: string | null
           years_experience?: number | null

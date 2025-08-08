@@ -16,7 +16,7 @@ interface BulkUploadDialogProps {
   onUploadComplete?: () => void;
 }
 
-type EntityType = 'providers' | 'companies' | 'schools' | 'job_listings' | 'equipment_companies' | 'sales_consultants' | 'pe_firms';
+type EntityType = 'providers' | 'companies' | 'schools' | 'job_listings' | 'equipment_companies' | 'consultant_companies' | 'pe_firms';
 
 interface UploadJob {
   id: string;
@@ -50,7 +50,7 @@ export const BulkUploadDialog = ({ open, onOpenChange, onUploadComplete }: BulkU
     { value: 'schools', label: 'Schools' },
     { value: 'job_listings', label: 'Job Listings' },
     { value: 'equipment_companies', label: 'Equipment Companies' },
-    { value: 'sales_consultants', label: 'Sales Consultants' },
+    { value: 'consultant_companies', label: 'Consultant Companies' },
     { value: 'pe_firms', label: 'PE Firms' },
   ];
 
@@ -205,10 +205,10 @@ export const BulkUploadDialog = ({ open, onOpenChange, onUploadComplete }: BulkU
         headers: 'name,company_type,description,website,founded_year,employee_count,equipment_categories,product_lines,target_markets,certifications,address,city,state,zip_code,phone,email',
         sample: 'MedTech Solutions,Equipment Manufacturer,Leading PT equipment manufacturer,https://medtech.com,2005,150,"Exercise Equipment, Therapy Tables","ProFit Series, TherapyPro Line","Clinics, Hospitals","FDA, ISO 13485",123 Tech Blvd,Austin,TX,78701,555-9876,sales@medtech.com'
       },
-      sales_consultants: {
-        filename: 'sales_consultants_template.csv',
-        headers: 'first_name,last_name,email,phone,company,title,specializations,industries,territories,years_experience,city,state,zip_code,website,linkedin_url,certifications',
-        sample: 'Jane,Doe,jane.doe@sales.com,555-3456,Healthcare Sales Pro,Senior Consultant,"Medical Equipment, Software","Healthcare, PT Clinics","West Coast, Southwest",8,San Francisco,CA,94102,https://salesexpert.com,https://linkedin.com/in/janedoe,"Certified Sales Professional, Healthcare Sales Specialist"'
+      consultant_companies: {
+        filename: 'consultant_companies_template.csv',
+        headers: 'first_name,last_name,name,email,phone,company,title,consulting_categories,industries,territories,years_experience,city,state,zip_code,website,linkedin_url,certifications',
+        sample: 'Jane,Doe,Doe Consulting,jane.doe@consulting.com,555-3456,Healthcare Consulting Solutions,Senior Consultant,"Human Resources, Recruiting - Travel PT","Healthcare, PT Clinics","West Coast, Southwest",8,San Francisco,CA,94102,https://consultingexpert.com,https://linkedin.com/in/janedoe,"Certified Consultant, Healthcare Specialist"'
       },
       pe_firms: {
         filename: 'pe_firms_template.csv',
