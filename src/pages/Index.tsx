@@ -40,7 +40,7 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-2xl font-display font-bold text-foreground">PT Ecosystem</h1>
-              <p className="text-xs text-muted-foreground">Your comprehensive platform</p>
+              <p className="text-xs text-muted-foreground">A Henry Holland Health Company</p>
             </div>
           </div>
           
