@@ -55,6 +55,14 @@ const Index = () => {
               >
                 About
               </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/pricing')}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Pricing
+              </Button>
               <span className="text-sm text-muted-foreground px-3 py-1 rounded-full bg-secondary/50">
                 Beta Platform
               </span>
