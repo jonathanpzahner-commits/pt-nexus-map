@@ -23,7 +23,7 @@ import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
 import { SchoolsTab } from './dashboard/SchoolsTab';
 import { JobListingsTab } from './dashboard/JobListingsTab';
-import { InteractiveMapView } from './map/InteractiveMapView';
+import { MapContainer } from './map/MapContainer';
 import { GlobalSearch } from './search/GlobalSearch';
 import { BulkUploadDialog } from './upload/BulkUploadDialog';
 
@@ -222,7 +222,7 @@ const Dashboard = () => {
               <Map className="h-6 w-6 text-primary" />
               <h2 className="text-2xl font-bold text-foreground">Interactive PT Ecosystem Map</h2>
             </div>
-            <InteractiveMapView />
+            <MapContainer />
           </div>
         </TabsContent>
 

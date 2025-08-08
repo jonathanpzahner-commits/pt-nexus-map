@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapView } from './MapView';
+import { InteractiveMapView } from './InteractiveMapView';
 import { supabase } from '@/integrations/supabase/client';
 
 export const MapContainer = () => {
@@ -42,7 +42,7 @@ export const MapContainer = () => {
   }
 
   return (
-    <MapView 
+    <InteractiveMapView 
       mapboxToken={mapboxToken} 
       onTokenSubmit={() => {}} // No longer needed
     />
