@@ -47,6 +47,14 @@ const Index = () => {
           
           <div className="flex items-center gap-6">
             <nav className="hidden md:flex items-center gap-6">
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/about')}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                About
+              </Button>
               <span className="text-sm text-muted-foreground px-3 py-1 rounded-full bg-secondary/50">
                 Beta Platform
               </span>
