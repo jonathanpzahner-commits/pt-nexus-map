@@ -505,6 +505,102 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          about_me: string | null
+          available_for_collaboration: boolean | null
+          available_for_mentoring: boolean | null
+          certifications: string[] | null
+          city: string | null
+          created_at: string
+          current_employer: string | null
+          current_position: string | null
+          education: string[] | null
+          email: string | null
+          first_name: string | null
+          id: string
+          interests: string[] | null
+          is_public: boolean | null
+          last_name: string | null
+          linkedin_url: string | null
+          location: string | null
+          phone: string | null
+          preferred_contact_method: string | null
+          profile_photo_url: string | null
+          research_interests: string[] | null
+          resume_url: string | null
+          sme_areas: string[] | null
+          specializations: string[] | null
+          state: string | null
+          updated_at: string
+          user_id: string
+          website: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          about_me?: string | null
+          available_for_collaboration?: boolean | null
+          available_for_mentoring?: boolean | null
+          certifications?: string[] | null
+          city?: string | null
+          created_at?: string
+          current_employer?: string | null
+          current_position?: string | null
+          education?: string[] | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          interests?: string[] | null
+          is_public?: boolean | null
+          last_name?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          preferred_contact_method?: string | null
+          profile_photo_url?: string | null
+          research_interests?: string[] | null
+          resume_url?: string | null
+          sme_areas?: string[] | null
+          specializations?: string[] | null
+          state?: string | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          about_me?: string | null
+          available_for_collaboration?: boolean | null
+          available_for_mentoring?: boolean | null
+          certifications?: string[] | null
+          city?: string | null
+          created_at?: string
+          current_employer?: string | null
+          current_position?: string | null
+          education?: string[] | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          interests?: string[] | null
+          is_public?: boolean | null
+          last_name?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          preferred_contact_method?: string | null
+          profile_photo_url?: string | null
+          research_interests?: string[] | null
+          resume_url?: string | null
+          sme_areas?: string[] | null
+          specializations?: string[] | null
+          state?: string | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       providers: {
         Row: {
           additional_info: string | null
