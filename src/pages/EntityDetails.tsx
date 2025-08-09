@@ -48,69 +48,160 @@ const EntityDetails = () => {
     switch (type) {
       case 'providers':
         return (
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2 mb-4">
-              {(entity as any).specializations?.map((spec: string) => (
-                <Badge key={spec} variant="secondary">{spec}</Badge>
-              ))}
+          <div className="space-y-6">
+            {/* Name and Basic Info */}
+            <div className="border-b pb-4">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h2 className="text-xl font-bold">
+                    {(entity as any).first_name && (entity as any).last_name 
+                      ? `${(entity as any).first_name} ${(entity as any).last_name}`
+                      : (entity as any).name}
+                  </h2>
+                  {(entity as any).current_job_title && (
+                    <p className="text-lg text-muted-foreground">{(entity as any).current_job_title}</p>
+                  )}
+                </div>
+                {(entity as any).source && (
+                  <Badge variant="outline">Source: {(entity as any).source}</Badge>
+                )}
+              </div>
+              
+              {/* Specializations */}
+              {(entity as any).specializations?.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {(entity as any).specializations.map((spec: string) => (
+                    <Badge key={spec} variant="secondary">{spec}</Badge>
+                  ))}
+                </div>
+              )}
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-semibold mb-2">Contact Information</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Contact Information */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-base border-b pb-1">Contact Information</h3>
                 <div className="space-y-2 text-sm">
                   {(entity as any).email && (
                     <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
-                      <span>{(entity as any).email}</span>
+                      <Mail className="h-4 w-4 text-muted-foreground" />
+                      <a href={`mailto:${(entity as any).email}`} className="text-primary hover:underline">
+                        {(entity as any).email}
+                      </a>
                     </div>
                   )}
                   {(entity as any).phone && (
                     <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4" />
-                      <span>{(entity as any).phone}</span>
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <a href={`tel:${(entity as any).phone}`} className="hover:underline">
+                        {(entity as any).phone}
+                      </a>
                     </div>
                   )}
                   {(entity as any).website && (
                     <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4" />
+                      <Globe className="h-4 w-4 text-muted-foreground" />
                       <a href={(entity as any).website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                         Website
                       </a>
                     </div>
                   )}
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
-                    <span>{(entity as any).city}, {(entity as any).state} {(entity as any).zip_code}</span>
+                  {(entity as any).linkedin_url && (
+                    <div className="flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      <a href={(entity as any).linkedin_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        LinkedIn Profile
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Location & Address */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-base border-b pb-1">Location</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                    <div>
+                      {(entity as any).city && (entity as any).state && (
+                        <div>{(entity as any).city}, {(entity as any).state}</div>
+                      )}
+                      {(entity as any).zip_code && (
+                        <div className="text-muted-foreground">{(entity as any).zip_code}</div>
+                      )}
+                      {(entity as any).latitude && (entity as any).longitude && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Coordinates: {parseFloat((entity as any).latitude).toFixed(4)}, {parseFloat((entity as any).longitude).toFixed(4)}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-              
-              <div>
-                <h3 className="font-semibold mb-2">Professional Details</h3>
+
+              {/* Professional Details */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-base border-b pb-1">Professional Details</h3>
                 <div className="space-y-2 text-sm">
                   {(entity as any).license_number && (
-                    <p><span className="font-medium">License:</span> {(entity as any).license_number} ({(entity as any).license_state})</p>
+                    <div>
+                      <span className="font-medium">License:</span> {(entity as any).license_number}
+                      {(entity as any).license_state && (
+                        <span className="text-muted-foreground"> ({(entity as any).license_state})</span>
+                      )}
+                    </div>
                   )}
                   {(entity as any).years_experience && (
-                    <p><span className="font-medium">Experience:</span> {(entity as any).years_experience} years</p>
+                    <div>
+                      <span className="font-medium">Experience:</span> {(entity as any).years_experience} years
+                    </div>
                   )}
                   {(entity as any).current_employer && (
-                    <p><span className="font-medium">Employer:</span> {(entity as any).current_employer}</p>
-                  )}
-                  {(entity as any).current_job_title && (
-                    <p><span className="font-medium">Title:</span> {(entity as any).current_job_title}</p>
+                    <div>
+                      <span className="font-medium">Current Employer:</span> {(entity as any).current_employer}
+                    </div>
                   )}
                 </div>
               </div>
             </div>
-            
+
+            {/* Biography */}
             {(entity as any).bio && (
-              <div>
-                <h3 className="font-semibold mb-2">Biography</h3>
-                <p className="text-sm">{(entity as any).bio}</p>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-base border-b pb-1">Biography</h3>
+                <p className="text-sm leading-relaxed">{(entity as any).bio}</p>
               </div>
             )}
+
+            {/* Additional Information */}
+            {(entity as any).additional_info && (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-base border-b pb-1">Additional Information</h3>
+                <p className="text-sm leading-relaxed">{(entity as any).additional_info}</p>
+              </div>
+            )}
+
+            {/* Data Source & Technical Info */}
+            <div className="border-t pt-4 space-y-3">
+              <h3 className="font-semibold text-base">Data Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-muted-foreground">
+                <div>
+                  <div><span className="font-medium">Provider ID:</span> {(entity as any).id}</div>
+                  {(entity as any).source && (
+                    <div><span className="font-medium">Data Source:</span> {(entity as any).source}</div>
+                  )}
+                </div>
+                <div>
+                  {(entity as any).created_at && (
+                    <div><span className="font-medium">Added:</span> {new Date((entity as any).created_at).toLocaleDateString()}</div>
+                  )}
+                  {(entity as any).updated_at && (
+                    <div><span className="font-medium">Updated:</span> {new Date((entity as any).updated_at).toLocaleDateString()}</div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         );
         
