@@ -168,6 +168,16 @@ async function processNPIWithDuckDB(supabase: any, jobId: string, fileUrl?: stri
         column_06 as provider_last_name,
         column_07 as provider_first_name,
         column_09 as provider_credential,
+        column_11 as provider_enumeration_date,
+        column_12 as provider_last_update_date,
+        column_13 as npi_deactivation_reason_code,
+        column_14 as npi_deactivation_date,
+        column_15 as npi_reactivation_date,
+        column_16 as provider_gender_code,
+        column_17 as authorized_official_last_name,
+        column_18 as authorized_official_first_name,
+        column_19 as authorized_official_middle_name,
+        column_20 as authorized_official_title_or_position,
         column_21 as provider_business_mailing_address_city_name,
         column_22 as provider_business_mailing_address_state_name,
         column_23 as provider_business_mailing_address_postal_code,
@@ -186,9 +196,11 @@ async function processNPIWithDuckDB(supabase: any, jobId: string, fileUrl?: stri
         compression='gzip'
       )
       WHERE 
-        column_48 IN (${taxonomyCodes}) OR
-        column_52 IN (${taxonomyCodes}) OR
-        column_56 IN (${taxonomyCodes})
+        (column_48 IN (${taxonomyCodes}) OR
+         column_52 IN (${taxonomyCodes}) OR
+         column_56 IN (${taxonomyCodes}))
+        AND column_13 IS NULL
+        AND column_14 IS NULL
     `;
 
     await updateJobProgress(supabase, jobId, 'running', 40, 'Executing DuckDB query...', {});
@@ -213,14 +225,10 @@ async function processNPIWithDuckDB(supabase: any, jobId: string, fileUrl?: stri
         provider_last_name: row.provider_last_name,
         provider_first_name: row.provider_first_name,
         provider_credential: row.provider_credential,
-        provider_business_mailing_address_city_name: row.provider_business_mailing_address_city_name,
-        provider_business_mailing_address_state_name: row.provider_business_mailing_address_state_name,
-        provider_business_mailing_address_postal_code: row.provider_business_mailing_address_postal_code,
-        provider_business_mailing_address_telephone_number: row.provider_business_mailing_address_telephone_number,
+        provider_enumeration_date: row.provider_enumeration_date,
         provider_business_practice_location_address_city_name: row.provider_business_practice_location_address_city_name,
         provider_business_practice_location_address_state_name: row.provider_business_practice_location_address_state_name,
         provider_business_practice_location_address_postal_code: row.provider_business_practice_location_address_postal_code,
-        provider_business_practice_location_address_telephone_number: row.provider_business_practice_location_address_telephone_number,
         healthcare_provider_taxonomy_code_1: row.healthcare_provider_taxonomy_code_1,
         healthcare_provider_taxonomy_code_2: row.healthcare_provider_taxonomy_code_2,
         healthcare_provider_taxonomy_code_3: row.healthcare_provider_taxonomy_code_3,
@@ -323,6 +331,7 @@ function transformToProvider(record: any) {
     name: name || null,
     first_name: firstName || null,
     last_name: lastName || null,
+    current_employer: isIndividual ? null : (record.provider_organization_name || null),
     city: city || null,
     state: state || null,
     zip_code: zipCode ? zipCode.slice(0, 10) : null,
@@ -331,7 +340,7 @@ function transformToProvider(record: any) {
     license_number: record.provider_license_number_1 || null,
     license_state: record.provider_license_number_state_code_1 || null,
     source: "NPI Registry (DuckDB)",
-    additional_info: `NPI: ${record.npi}${record.provider_credential ? `, Credentials: ${record.provider_credential}` : ""}`
+    additional_info: `NPI: ${record.npi}, Enumeration Date: ${record.provider_enumeration_date || 'Unknown'}${record.provider_credential ? `, Credentials: ${record.provider_credential}` : ""}`
   };
 }
 
