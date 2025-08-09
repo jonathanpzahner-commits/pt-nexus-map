@@ -23,17 +23,23 @@ serve(async (req) => {
       );
     }
 
-    // Get Mapbox token
-    const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
+    // Get Mapbox token from different possible env vars
+    const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN") || 
+                       Deno.env.get("MAPBOX_ACCESS_TOKEN") || 
+                       Deno.env.get("MAPBOX_TOKEN");
     console.log("Mapbox token available:", !!mapboxToken);
+    console.log("Available env vars:", Object.keys(Deno.env.toObject()).filter(key => key.includes('MAPBOX')));
     
     if (!mapboxToken) {
-      console.error("Mapbox token not configured");
+      console.error("Mapbox token not configured - please add MAPBOX_PUBLIC_TOKEN to Supabase Edge Function Secrets");
       return new Response(
-        JSON.stringify({ error: "Mapbox token not configured", features: [] }),
+        JSON.stringify({ 
+          error: "Mapbox token not configured. Please add your Mapbox public token to Supabase Edge Function Secrets as MAPBOX_PUBLIC_TOKEN", 
+          features: [] 
+        }),
         { 
           headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 500
+          status: 200
         }
       );
     }
