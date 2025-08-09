@@ -234,10 +234,12 @@ async function processNPIWithStreaming(supabase: any, jobId: string, fileUrl?: s
                   await processBatchSafely(supabase, currentBatch, jobId);
                   currentBatch = [];
                   
-                  const progress = Math.min(90, 30 + (totalProcessed / 1000 * 60));
+                  // Update progress more frequently - every batch
+                  const progress = Math.min(90, 30 + (totalProcessed / 10000 * 60));
                   await updateJobProgress(supabase, jobId, 'running', progress, 
-                    `Processed ${totalProcessed} PT/PTA providers`, {
-                      processedCount: totalProcessed
+                    `Added batch of ${batchSize} providers. Total: ${totalProcessed} PT/PTA providers`, {
+                      processedCount: totalProcessed,
+                      batchesCompleted: Math.floor(totalProcessed / batchSize)
                     });
                 }
               }
