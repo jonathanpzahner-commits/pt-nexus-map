@@ -156,43 +156,35 @@ async function parseFileStreamed(fileData: Blob, entityType: string): Promise<an
   const sizeMB = fileData.size / 1024 / 1024;
   console.log(`Parsing file: ${sizeMB.toFixed(2)}MB`);
   
-  // For large files, process in smaller memory chunks
-  if (sizeMB > 15) {
-    console.log('Large file detected, using memory-efficient parsing...');
+  try {
+    // Simplified parsing - always use direct arrayBuffer approach
+    console.log('Starting Excel parsing...');
+    const arrayBuffer = await fileData.arrayBuffer();
+    console.log(`ArrayBuffer loaded: ${arrayBuffer.byteLength} bytes`);
     
-    // Read file in smaller buffer
-    const reader = new ReadableStream({
-      start(controller) {
-        const fileReader = new FileReader();
-        fileReader.onload = () => {
-          controller.enqueue(fileReader.result);
-          controller.close();
-        };
-        fileReader.onerror = () => controller.error(fileReader.error);
-        fileReader.readAsArrayBuffer(fileData);
-      }
-    });
-    
-    const response = new Response(reader);
-    const arrayBuffer = await response.arrayBuffer();
-    
-    // Use dense format and minimal options for memory efficiency  
+    // Use minimal XLSX options for better performance
     const workbook = XLSX.read(arrayBuffer, { 
       type: 'array',
-      dense: true,
       cellDates: false,
       cellNF: false,
       cellText: false,
-      sheetStubs: false
+      sheetStubs: false,
+      bookDeps: false,
+      bookFiles: false,
+      bookProps: false,
+      bookSheets: false,
+      bookVBA: false
     });
     
+    console.log(`Workbook loaded with ${workbook.SheetNames.length} sheets`);
     const firstSheet = workbook.SheetNames[0];
+    
     if (!firstSheet) throw new Error('No worksheets found in file');
     
     const worksheet = workbook.Sheets[firstSheet];
-    console.log('Processing rows in small batches to avoid memory issues...');
+    console.log('Converting worksheet to JSON...');
     
-    // Convert to JSON with minimal memory footprint
+    // Convert to JSON with row-by-row processing for memory efficiency
     const jsonData = XLSX.utils.sheet_to_json(worksheet, {
       header: 1,
       blankrows: false,
@@ -200,22 +192,29 @@ async function parseFileStreamed(fileData: Blob, entityType: string): Promise<an
       raw: false
     });
     
+    console.log(`Raw data extracted: ${jsonData.length} rows`);
+    
     if (!jsonData || jsonData.length < 2) {
       throw new Error('File appears to be empty or has no data rows');
     }
     
     const headers = jsonData[0] as string[];
-    const records = [];
+    console.log(`Headers found: ${headers.length} columns`);
+    console.log(`Headers: ${headers.slice(0, 10).join(', ')}${headers.length > 10 ? '...' : ''}`);
     
-    // Process one row at a time to minimize memory usage
+    const records = [];
+    const totalRows = jsonData.length - 1;
+    
+    // Process rows with progress logging
     for (let i = 1; i < jsonData.length; i++) {
       const row = jsonData[i] as any[];
       const record: any = {};
       
+      // Map row data to headers
       for (let j = 0; j < headers.length && j < row.length; j++) {
         const header = headers[j];
         if (header && row[j] !== undefined && row[j] !== null && row[j] !== '') {
-          record[header.trim()] = row[j];
+          record[header.trim()] = String(row[j]).trim();
         }
       }
       
@@ -224,32 +223,18 @@ async function parseFileStreamed(fileData: Blob, entityType: string): Promise<an
         records.push(record);
       }
       
-      // Log progress and try to free memory every 1000 rows
-      if (i % 1000 === 0) {
-        console.log(`Processed ${i}/${jsonData.length - 1} rows, ${records.length} valid records`);
+      // Log progress every 500 rows to prevent timeout
+      if (i % 500 === 0) {
+        console.log(`Processed ${i}/${totalRows} rows, ${records.length} valid records so far`);
       }
     }
     
-    console.log(`Successfully parsed ${records.length} records from ${jsonData.length - 1} total rows`);
+    console.log(`Parsing complete: ${records.length} valid records from ${totalRows} total rows`);
     return records;
     
-  } else {
-    // For smaller files, use the standard approach
-    const arrayBuffer = await fileData.arrayBuffer();
-    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-    const firstSheet = workbook.SheetNames[0];
-    
-    if (!firstSheet) throw new Error('No worksheets found in file');
-    
-    const worksheet = workbook.Sheets[firstSheet];
-    const data = XLSX.utils.sheet_to_json(worksheet, {
-      defval: '',
-      raw: false,
-      blankrows: false
-    });
-    
-    console.log(`Successfully parsed ${data.length} records`);
-    return data;
+  } catch (error) {
+    console.error('Excel parsing failed:', error);
+    throw new Error(`Failed to parse Excel file: ${error.message}`);
   }
 }
 
