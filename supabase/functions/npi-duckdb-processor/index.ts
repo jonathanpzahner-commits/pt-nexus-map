@@ -163,7 +163,7 @@ async function processNPIWithStreaming(supabase: any, jobId: string, fileUrl?: s
 
     let totalProcessed = 0;
     let currentBatch: any[] = [];
-    const batchSize = 500;
+    const batchSize = 100;
     let headerProcessed = false;
     let headers: string[] = [];
     let buffer = '';
