@@ -742,6 +742,118 @@ export type Database = {
         Args: { lat1: number; lon1: number; lat2: number; lon2: number }
         Returns: number
       }
+      companies_within_radius: {
+        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Returns: {
+          id: string
+          name: string
+          company_type: string
+          description: string
+          website: string
+          address: string
+          city: string
+          state: string
+          zip_code: string
+          founded_year: number
+          employee_count: number
+          company_locations: string[]
+          services: string[]
+          latitude: number
+          longitude: number
+          created_at: string
+          updated_at: string
+          distance_miles: number
+        }[]
+      }
+      consultant_companies_within_radius: {
+        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Returns: {
+          id: string
+          name: string
+          first_name: string
+          last_name: string
+          email: string
+          phone: string
+          website: string
+          company: string
+          title: string
+          bio: string
+          years_experience: number
+          consulting_categories: string[]
+          industries: string[]
+          territories: string[]
+          certifications: string[]
+          linkedin_url: string
+          city: string
+          state: string
+          zip_code: string
+          latitude: number
+          longitude: number
+          created_at: string
+          updated_at: string
+          distance_miles: number
+        }[]
+      }
+      equipment_companies_within_radius: {
+        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Returns: {
+          id: string
+          name: string
+          company_type: string
+          description: string
+          website: string
+          phone: string
+          email: string
+          address: string
+          city: string
+          state: string
+          zip_code: string
+          founded_year: number
+          employee_count: number
+          equipment_categories: string[]
+          product_lines: string[]
+          target_markets: string[]
+          certifications: string[]
+          linkedin_url: string
+          latitude: number
+          longitude: number
+          created_at: string
+          updated_at: string
+          distance_miles: number
+        }[]
+      }
+      pe_firms_within_radius: {
+        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Returns: {
+          id: string
+          name: string
+          firm_type: string
+          description: string
+          website: string
+          founded_year: number
+          total_aum: number
+          healthcare_focus: boolean
+          typical_deal_size_min: number
+          typical_deal_size_max: number
+          investment_stage: string[]
+          geographic_focus: string[]
+          sector_focus: string[]
+          portfolio_companies: string[]
+          key_contacts: Json
+          address: string
+          city: string
+          state: string
+          zip_code: string
+          phone: string
+          email: string
+          linkedin_url: string
+          latitude: number
+          longitude: number
+          created_at: string
+          updated_at: string
+          distance_miles: number
+        }[]
+      }
       providers_within_radius: {
         Args: { user_lat: number; user_lng: number; radius_miles: number }
         Returns: {
