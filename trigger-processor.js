@@ -21,4 +21,10 @@ async function triggerProcessor() {
   }
 }
 
-triggerProcessor();
+triggerProcessor().then(() => {
+  console.log('Trigger completed');
+  process.exit(0);
+}).catch(err => {
+  console.error('Trigger failed:', err);
+  process.exit(1);
+});
