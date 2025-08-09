@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -43,6 +43,60 @@ export const BulkUploadDialog = ({ open, onOpenChange, onUploadComplete }: BulkU
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
   const { user } = useAuth();
+
+  // Real-time subscription for job updates
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('bulk-upload-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'bulk_upload_jobs',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          const updatedJob = payload.new as UploadJob;
+          setCurrentJob(updatedJob);
+          
+          // Calculate progress
+          if (updatedJob.total_rows && updatedJob.processed_rows) {
+            const progress = (updatedJob.processed_rows / updatedJob.total_rows) * 100;
+            setUploadProgress(progress);
+          }
+
+          // Show completion notifications
+          if (updatedJob.status === 'completed') {
+            setIsUploading(false);
+            toast({
+              title: "✅ Upload completed!",
+              description: `Successfully processed ${updatedJob.successful_rows || 0} records from ${updatedJob.file_name}`,
+            });
+            onUploadComplete?.();
+          } else if (updatedJob.status === 'failed') {
+            setIsUploading(false);
+            toast({
+              title: "❌ Upload failed",
+              description: `Error processing ${updatedJob.file_name}. Check file format and try again.`,
+              variant: "destructive",
+            });
+          } else if (updatedJob.status === 'processing' && updatedJob.total_rows) {
+            toast({
+              title: "📊 Processing update",
+              description: `Processing ${updatedJob.file_name}: ${updatedJob.processed_rows || 0}/${updatedJob.total_rows} rows complete`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, toast, onUploadComplete]);
 
   const entityTypeOptions = [
     { value: 'providers', label: 'Physical Therapists (Providers)' },
