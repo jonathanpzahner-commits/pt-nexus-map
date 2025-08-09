@@ -51,11 +51,35 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Update job status to processing
+    // Update job status to processing and start background job
     await supabase
       .from('bulk_upload_jobs')
       .update({ status: 'processing' })
       .eq('id', jobId);
+
+    // Start background processing
+    EdgeRuntime.waitUntil(processFileInBackground(supabase, job, jobId));
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        message: 'Processing started in background',
+        jobId: jobId
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});
+
+async function processFileInBackground(supabase: any, job: any, jobId: string) {
+  try {
 
     // Download file from storage
     const { data: fileData, error: downloadError } = await supabase.storage
@@ -82,12 +106,42 @@ Deno.serve(async (req) => {
     const arrayBuffer = await fileData.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
     
-    // Process all sheets and combine data
+    // Process all sheets and combine data with robust header handling
     let allJsonData: any[] = [];
+    let sheetIndex = 0;
+    
     for (const sheetName of workbook.SheetNames) {
-      const worksheet = workbook.Sheets[sheetName];
-      const sheetData = XLSX.utils.sheet_to_json(worksheet);
-      allJsonData = allJsonData.concat(sheetData);
+      try {
+        console.log(`Processing sheet ${sheetIndex + 1}/${workbook.SheetNames.length}: "${sheetName}"`);
+        const worksheet = workbook.Sheets[sheetName];
+        
+        // Check if sheet has any data
+        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:A1');
+        if (range.e.r < 1) {
+          console.log(`Skipping empty sheet: ${sheetName}`);
+          continue;
+        }
+        
+        const sheetData = XLSX.utils.sheet_to_json(worksheet, { 
+          defval: '', // Set default value for empty cells
+          raw: false, // Convert dates and numbers to strings for consistency
+          blankrows: false // Skip completely blank rows
+        });
+        
+        if (sheetData.length > 0) {
+          console.log(`Sheet "${sheetName}" has ${sheetData.length} rows`);
+          console.log(`Sample headers from ${sheetName}:`, Object.keys(sheetData[0] || {}));
+          allJsonData = allJsonData.concat(sheetData);
+        } else {
+          console.log(`Sheet "${sheetName}" has no data rows`);
+        }
+        
+        sheetIndex++;
+      } catch (sheetError) {
+        console.error(`Error processing sheet "${sheetName}":`, sheetError);
+        // Continue with other sheets even if one fails
+        continue;
+      }
     }
     
     const jsonData = allJsonData;
@@ -207,25 +261,17 @@ Deno.serve(async (req) => {
 
     console.log(`Job completed: ${successfulInserts} successful, ${validationErrors.length} failed, ${duplicatesSkipped} duplicates skipped`);
 
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        processed: jsonData.length,
-        successful: successfulInserts,
-        failed: validationErrors.length,
-        duplicates_skipped: duplicatesSkipped
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
-    console.error('Unexpected error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    console.error('Background processing error:', error);
+    await supabase
+      .from('bulk_upload_jobs')
+      .update({ 
+        status: 'failed', 
+        error_details: { message: error.message }
+      })
+      .eq('id', jobId);
   }
-});
+}
 
 function validateAndTransformRecord(row: any, entityType: string, rowNumber: number) {
   const errors: ValidationError[] = [];
