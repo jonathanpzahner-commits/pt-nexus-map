@@ -35,6 +35,8 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
   const [showSearchSuggestions, setShowSearchSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const searchSuggestionsRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
   const {
@@ -47,6 +49,29 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
     isLoading,
     totalResults,
   } = useServerSearch(contextTypes as any);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target as Node) &&
+        !inputRef.current?.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+      if (
+        searchSuggestionsRef.current &&
+        !searchSuggestionsRef.current.contains(event.target as Node) &&
+        !searchInputRef.current?.contains(event.target as Node)
+      ) {
+        setShowSearchSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const allEntityTypes = [
     { id: 'providers', label: 'Providers', color: 'bg-amber-500' },
@@ -66,7 +91,8 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
   // Debounced location search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (locationInput.trim().length > 2) {
+      if (locationInput.trim().length > 1) { // Reduced from 2 to 1
+        console.log("Triggering location search for:", locationInput.trim());
         fetchLocationSuggestions(locationInput.trim());
       } else {
         setSuggestions([]);
@@ -91,19 +117,26 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
 
   const fetchLocationSuggestions = async (query: string) => {
     try {
+      console.log("Fetching location suggestions for:", query);
       const { data, error } = await supabase.functions.invoke('location-autocomplete', {
         body: { query }
       });
+      
+      console.log("Location autocomplete response:", data, error);
+      
       if (error) {
         console.error('Location autocomplete error:', error);
         setSuggestions([]);
         setShowSuggestions(false);
         return;
       }
-      if (data?.features && data.features.length > 0) {
+      
+      if (data?.features && Array.isArray(data.features) && data.features.length > 0) {
+        console.log("Setting suggestions:", data.features);
         setSuggestions(data.features.slice(0, 8));
         setShowSuggestions(true);
       } else {
+        console.log("No features in response or empty array");
         setSuggestions([]);
         setShowSuggestions(false);
       }
@@ -231,6 +264,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
   };
 
   const setLocation = (suggestion: LocationSuggestion) => {
+    console.log("Setting location from suggestion:", suggestion);
     const [longitude, latitude] = suggestion.center;
     setLocationInput(suggestion.place_name);
     setShowSuggestions(false);
@@ -239,9 +273,14 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
       userLongitude: longitude,
       location: suggestion.place_name
     });
+    toast({
+      title: "Location set",
+      description: `Searching within ${filters.radius || 25} miles of ${suggestion.place_name}`,
+    });
   };
 
   const selectSearchSuggestion = (suggestion: any) => {
+    console.log("Search suggestion selected:", suggestion);
     if (suggestion.type === 'specialization') {
       updateFilters({ specialization: suggestion.title });
       setSearchQuery('');
@@ -339,24 +378,36 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                 ref={inputRef}
                 placeholder="Location..."
                 value={locationInput}
-                onChange={(e) => setLocationInput(e.target.value)}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                onChange={(e) => {
+                  console.log("Location input changed:", e.target.value);
+                  setLocationInput(e.target.value);
+                }}
+                onFocus={() => {
+                  console.log("Location input focused, suggestions available:", suggestions.length);
+                  if (suggestions.length > 0) setShowSuggestions(true);
+                }}
                 className="pl-10 h-10"
               />
               
               {/* Location Suggestions */}
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                <div 
+                  ref={suggestionsRef}
+                  className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-64 overflow-y-auto"
+                >
                   {suggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
                       className="w-full px-4 py-3 text-left hover:bg-accent text-sm transition-colors flex items-center gap-2"
-                      onClick={() => setLocation(suggestion)}
+                      onClick={() => {
+                        console.log("Location suggestion selected:", suggestion);
+                        setLocation(suggestion);
+                      }}
                     >
                       <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <div className="font-medium truncate">{suggestion.place_name}</div>
-                        {suggestion.place_type && (
+                        {suggestion.place_type && suggestion.place_type.length > 0 && (
                           <div className="text-xs text-muted-foreground capitalize">
                             {suggestion.place_type.join(', ')}
                           </div>
@@ -403,7 +454,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
 
       {/* Example Profile Placeholder */}
       {!searchQuery && results.length === 0 && !isLoading && (
-        <Card className="opacity-50">
+        <Card className="opacity-60 pointer-events-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
@@ -412,7 +463,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
               <div className="flex-1">
                 <h3 className="font-medium text-muted-foreground">Dr. Sarah Johnson</h3>
                 <p className="text-sm text-muted-foreground">Physical Therapist • Sports Medicine</p>
-                <p className="text-xs text-muted-foreground">New York, NY • 5.2 miles away</p>
+                <p className="text-xs text-muted-foreground">New York, NY • Example result</p>
               </div>
               <Badge variant="secondary" className="opacity-50">Example</Badge>
             </div>
