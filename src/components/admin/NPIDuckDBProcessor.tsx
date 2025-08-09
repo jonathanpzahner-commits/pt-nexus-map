@@ -258,7 +258,7 @@ export const NPIDuckDBProcessor = () => {
                     <p className="text-sm text-muted-foreground">
                       {currentJob.progress_data.message}
                     </p>
-                    {currentJob.progress_data.processedCount && (
+                    {currentJob.progress_data.processedCount && typeof currentJob.progress_data.processedCount === 'number' && (
                       <p className="text-sm font-medium">
                         Processed: {currentJob.progress_data.processedCount.toLocaleString()} providers
                       </p>
@@ -272,7 +272,7 @@ export const NPIDuckDBProcessor = () => {
                       ✅ {currentJob.result_data.message}
                     </p>
                     <p className="text-sm text-green-600">
-                      Total processed: {currentJob.result_data.totalProcessed.toLocaleString()} providers
+                      Total processed: {currentJob.result_data.totalProcessed && typeof currentJob.result_data.totalProcessed === 'number' ? currentJob.result_data.totalProcessed.toLocaleString() : 'Unknown'} providers
                     </p>
                     <p className="text-xs text-green-500">
                       Method: {currentJob.result_data.method}
