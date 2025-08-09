@@ -301,45 +301,16 @@ export const NPIDuckDBProcessor = () => {
         )}
 
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* File Upload Section */}
-            <div className="space-y-2">
-              <Label htmlFor="fileUpload">Upload NPI File (.zip or .csv)</Label>
-              <div className="space-y-2">
-                <Input
-                  id="fileUpload"
-                  type="file"
-                  accept=".zip,.csv"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
-                  disabled={currentJob?.status === 'running' || currentJob?.status === 'pending' || uploading}
-                />
-                {file && (
-                  <div className="flex items-center gap-2 p-2 bg-muted rounded">
-                    <FileText className="h-4 w-4" />
-                    <span className="text-sm">{file.name}</span>
-                  </div>
-                )}
-                <Button
-                  onClick={uploadFile}
-                  disabled={!file || uploading || currentJob?.status === 'running' || currentJob?.status === 'pending'}
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  {uploading ? "Uploading..." : "Upload File"}
-                </Button>
-              </div>
-            </div>
-
-            {/* OR Divider */}
-            <div className="flex items-center justify-center">
-              <div className="text-muted-foreground text-sm font-medium">OR</div>
-            </div>
-          </div>
+          <Alert>
+            <FileText className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Note:</strong> NPI files are typically 7GB+ and too large for browser upload. 
+              Please use a direct URL to the file (like the CMS download link) or host your file somewhere accessible via URL.
+            </AlertDescription>
+          </Alert>
 
           <div className="space-y-2">
-            <Label htmlFor="fileUrl">NPI File URL</Label>
+            <Label htmlFor="fileUrl">NPI File URL (Required)</Label>
             <Input
               id="fileUrl"
               type="url"
@@ -348,6 +319,9 @@ export const NPIDuckDBProcessor = () => {
               onChange={(e) => setFileUrl(e.target.value)}
               disabled={currentJob?.status === 'running' || currentJob?.status === 'pending'}
             />
+            <p className="text-sm text-muted-foreground">
+              For the latest NPI file, visit: <a href="https://download.cms.gov/nppes/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">CMS NPPES Downloads</a>
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -368,7 +342,7 @@ export const NPIDuckDBProcessor = () => {
               loading ||
               currentJob?.status === 'running' ||
               currentJob?.status === 'pending' ||
-              (!uploadedFileUrl && !fileUrl.trim())
+              !fileUrl.trim()
             }
             className="w-full"
           >
