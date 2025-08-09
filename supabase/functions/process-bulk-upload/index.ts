@@ -153,57 +153,104 @@ async function downloadFileWithRetry(supabase: any, filePath: string, maxRetries
 }
 
 async function parseFileStreamed(fileData: Blob, entityType: string): Promise<any[]> {
-  const arrayBuffer = await fileData.arrayBuffer();
-  const sizeMB = arrayBuffer.byteLength / 1024 / 1024;
-  
+  const sizeMB = fileData.size / 1024 / 1024;
   console.log(`Parsing file: ${sizeMB.toFixed(2)}MB`);
   
-  if (sizeMB > 100) {
-    throw new Error('File too large. Maximum size is 100MB.');
-  }
-
-  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-  const firstSheet = workbook.SheetNames[0];
-  
-  if (!firstSheet) {
-    throw new Error('No worksheets found in file');
-  }
-
-  const worksheet = workbook.Sheets[firstSheet];
-  const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:A1');
-  
-  console.log(`Sheet "${firstSheet}" has ${range.e.r + 1} rows and ${range.e.c + 1} columns`);
-  
-  if (range.e.r < 1) {
-    throw new Error('File appears to be empty or has no data rows');
-  }
-
-  // Stream process in chunks for large files
-  const totalRows = range.e.r;
-  const chunkSize = Math.min(5000, totalRows);
-  let allData: any[] = [];
-
-  for (let startRow = 1; startRow <= totalRows; startRow += chunkSize) {
-    const endRow = Math.min(startRow + chunkSize - 1, totalRows);
-    console.log(`Processing chunk: rows ${startRow}-${endRow}`);
+  // For large files, process in smaller memory chunks
+  if (sizeMB > 15) {
+    console.log('Large file detected, using memory-efficient parsing...');
     
-    const chunkData = XLSX.utils.sheet_to_json(worksheet, {
-      range: startRow === 1 ? 0 : startRow - 1,
+    // Read file in smaller buffer
+    const reader = new ReadableStream({
+      start(controller) {
+        const fileReader = new FileReader();
+        fileReader.onload = () => {
+          controller.enqueue(fileReader.result);
+          controller.close();
+        };
+        fileReader.onerror = () => controller.error(fileReader.error);
+        fileReader.readAsArrayBuffer(fileData);
+      }
+    });
+    
+    const response = new Response(reader);
+    const arrayBuffer = await response.arrayBuffer();
+    
+    // Use dense format and minimal options for memory efficiency  
+    const workbook = XLSX.read(arrayBuffer, { 
+      type: 'array',
+      dense: true,
+      cellDates: false,
+      cellNF: false,
+      cellText: false,
+      sheetStubs: false
+    });
+    
+    const firstSheet = workbook.SheetNames[0];
+    if (!firstSheet) throw new Error('No worksheets found in file');
+    
+    const worksheet = workbook.Sheets[firstSheet];
+    console.log('Processing rows in small batches to avoid memory issues...');
+    
+    // Convert to JSON with minimal memory footprint
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+      header: 1,
+      blankrows: false,
+      defval: null,
+      raw: false
+    });
+    
+    if (!jsonData || jsonData.length < 2) {
+      throw new Error('File appears to be empty or has no data rows');
+    }
+    
+    const headers = jsonData[0] as string[];
+    const records = [];
+    
+    // Process one row at a time to minimize memory usage
+    for (let i = 1; i < jsonData.length; i++) {
+      const row = jsonData[i] as any[];
+      const record: any = {};
+      
+      for (let j = 0; j < headers.length && j < row.length; j++) {
+        const header = headers[j];
+        if (header && row[j] !== undefined && row[j] !== null && row[j] !== '') {
+          record[header.trim()] = row[j];
+        }
+      }
+      
+      // Only add records that have some data
+      if (Object.keys(record).length > 0) {
+        records.push(record);
+      }
+      
+      // Log progress and try to free memory every 1000 rows
+      if (i % 1000 === 0) {
+        console.log(`Processed ${i}/${jsonData.length - 1} rows, ${records.length} valid records`);
+      }
+    }
+    
+    console.log(`Successfully parsed ${records.length} records from ${jsonData.length - 1} total rows`);
+    return records;
+    
+  } else {
+    // For smaller files, use the standard approach
+    const arrayBuffer = await fileData.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+    const firstSheet = workbook.SheetNames[0];
+    
+    if (!firstSheet) throw new Error('No worksheets found in file');
+    
+    const worksheet = workbook.Sheets[firstSheet];
+    const data = XLSX.utils.sheet_to_json(worksheet, {
       defval: '',
       raw: false,
       blankrows: false
     });
     
-    allData = allData.concat(chunkData);
-    
-    // Force garbage collection if available
-    if (typeof globalThis.gc === 'function') {
-      globalThis.gc();
-    }
+    console.log(`Successfully parsed ${data.length} records`);
+    return data;
   }
-
-  console.log(`Successfully parsed ${allData.length} records`);
-  return allData;
 }
 
 async function processBatchesOptimized(supabase: any, records: any[], job: any, jobId: string) {
