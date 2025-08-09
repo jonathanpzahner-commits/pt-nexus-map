@@ -69,7 +69,7 @@ serve(async (req) => {
     const { action, user_id, email, file_url } = await req.json();
 
     if (action === "start") {
-      console.log("Starting NPI DuckDB processing job...");
+      console.log("Starting NPI CSV processing job...");
       
       // Create job record
       const { data: jobData, error: jobError } = await supabaseAdmin
@@ -88,11 +88,11 @@ serve(async (req) => {
       const jobId = jobData.id;
 
       // Start the background processing
-      EdgeRuntime.waitUntil(processNPIWithDuckDB(supabaseAdmin, jobId, file_url, email));
+      EdgeRuntime.waitUntil(processNPIWithStreaming(supabaseAdmin, jobId, file_url, email));
 
       return new Response(
         JSON.stringify({ 
-          message: "NPI DuckDB processing job started",
+          message: "NPI CSV processing job started",
           jobId,
           status: "processing"
         }),
@@ -126,7 +126,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in NPI DuckDB processor:', error);
+    console.error('Error in NPI processor:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -137,137 +137,133 @@ serve(async (req) => {
   }
 });
 
-async function processNPIWithDuckDB(supabase: any, jobId: string, fileUrl?: string, email?: string) {
+async function processNPIWithStreaming(supabase: any, jobId: string, fileUrl?: string, email?: string) {
   try {
-    console.log(`Starting DuckDB NPI processing for job ${jobId}`);
+    console.log(`Starting CSV NPI processing for job ${jobId}`);
     
-    await updateJobProgress(supabase, jobId, 'running', 10, 'Initializing DuckDB...', {});
+    await updateJobProgress(supabase, jobId, 'running', 10, 'Initializing CSV processing...', {});
 
-    // Import DuckDB
-    const { Database } = await import("https://esm.sh/@duckdb/duckdb-wasm@1.28.0");
+    const npiUrl = fileUrl || "https://download.cms.gov/nppes/NPPES_Data_Dissemination_January_2025.zip";
     
-    await updateJobProgress(supabase, jobId, 'running', 20, 'Setting up DuckDB connection...', {});
+    await updateJobProgress(supabase, jobId, 'running', 20, 'Downloading NPI file...', {});
 
-    // Initialize DuckDB
-    const db = new Database();
-    const conn = db.connect();
+    // Download and process the file
+    const response = await fetch(npiUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to download file: ${response.status} ${response.statusText}`);
+    }
 
-    const npiUrl = fileUrl || "https://download.cms.gov/nppes/NPPES_Data_Dissemination_December_2024.zip";
+    await updateJobProgress(supabase, jobId, 'running', 30, 'Processing CSV data...', {});
+
+    // Get the response stream and process it
+    const stream = response.body;
+    if (!stream) {
+      throw new Error('Failed to get response stream');
+    }
+
+    let totalProcessed = 0;
+    let currentBatch: any[] = [];
+    const batchSize = 500;
+    let headerProcessed = false;
+    let headers: string[] = [];
+    let buffer = '';
     
-    await updateJobProgress(supabase, jobId, 'running', 30, 'Creating DuckDB query for PT/PTA providers...', {});
+    // Create a text decoder that can handle encoding issues
+    const decoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: false });
+    const reader = stream.getReader();
 
-    // Create the taxonomy codes as a SQL array for the WHERE clause
-    const taxonomyCodes = PT_TAXONOMY_CODES.map(code => `'${code}'`).join(', ');
-
-    // Use DuckDB's built-in CSV reading capabilities with filtering
-    const query = `
-      SELECT 
-        column_01 as npi,
-        column_02 as entity_type_code,
-        column_05 as provider_organization_name,
-        column_06 as provider_last_name,
-        column_07 as provider_first_name,
-        column_09 as provider_credential,
-        column_11 as provider_enumeration_date,
-        column_12 as provider_last_update_date,
-        column_13 as npi_deactivation_reason_code,
-        column_14 as npi_deactivation_date,
-        column_15 as npi_reactivation_date,
-        column_16 as provider_gender_code,
-        column_17 as authorized_official_last_name,
-        column_18 as authorized_official_first_name,
-        column_19 as authorized_official_middle_name,
-        column_20 as authorized_official_title_or_position,
-        column_21 as provider_business_mailing_address_city_name,
-        column_22 as provider_business_mailing_address_state_name,
-        column_23 as provider_business_mailing_address_postal_code,
-        column_25 as provider_business_mailing_address_telephone_number,
-        column_29 as provider_business_practice_location_address_city_name,
-        column_30 as provider_business_practice_location_address_state_name,
-        column_31 as provider_business_practice_location_address_postal_code,
-        column_33 as provider_business_practice_location_address_telephone_number,
-        column_48 as healthcare_provider_taxonomy_code_1,
-        column_52 as healthcare_provider_taxonomy_code_2,
-        column_56 as healthcare_provider_taxonomy_code_3,
-        column_60 as provider_license_number_1,
-        column_61 as provider_license_number_state_code_1
-      FROM read_csv('${npiUrl}', 
-        header=true,
-        compression='gzip'
-      )
-      WHERE 
-        (column_48 IN (${taxonomyCodes}) OR
-         column_52 IN (${taxonomyCodes}) OR
-         column_56 IN (${taxonomyCodes}))
-        AND column_13 IS NULL
-        AND column_14 IS NULL
-    `;
-
-    await updateJobProgress(supabase, jobId, 'running', 40, 'Executing DuckDB query...', {});
-
-    // Execute the query
-    const result = conn.query(query);
-    
-    await updateJobProgress(supabase, jobId, 'running', 60, 'Processing query results...', {});
-
-    const providers = [];
-    let processedCount = 0;
-
-    // Process results
-    while (true) {
-      const row = result.fetchOne();
-      if (!row) break;
-
-      const record = {
-        npi: row.npi,
-        entity_type_code: row.entity_type_code,
-        provider_organization_name: row.provider_organization_name,
-        provider_last_name: row.provider_last_name,
-        provider_first_name: row.provider_first_name,
-        provider_credential: row.provider_credential,
-        provider_enumeration_date: row.provider_enumeration_date,
-        provider_business_practice_location_address_city_name: row.provider_business_practice_location_address_city_name,
-        provider_business_practice_location_address_state_name: row.provider_business_practice_location_address_state_name,
-        provider_business_practice_location_address_postal_code: row.provider_business_practice_location_address_postal_code,
-        healthcare_provider_taxonomy_code_1: row.healthcare_provider_taxonomy_code_1,
-        healthcare_provider_taxonomy_code_2: row.healthcare_provider_taxonomy_code_2,
-        healthcare_provider_taxonomy_code_3: row.healthcare_provider_taxonomy_code_3,
-        provider_license_number_1: row.provider_license_number_1,
-        provider_license_number_state_code_1: row.provider_license_number_state_code_1,
-      };
-
-      const transformedProvider = transformToProvider(record);
-      providers.push(transformedProvider);
-      processedCount++;
-
-      // Process in batches of 1000
-      if (providers.length >= 1000) {
-        await processBatch(supabase, providers, jobId);
-        providers.length = 0; // Clear array
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
         
-        await updateJobProgress(supabase, jobId, 'running', 60 + (processedCount / 10000 * 30), 
-          `Processed ${processedCount} PT/PTA providers`, {
-            processedCount
-          });
+        if (done) {
+          // Process any remaining data in buffer
+          if (buffer.trim()) {
+            const row = parseCSVRowSafely(buffer, headers);
+            if (row && isPTProvider(row)) {
+              const provider = transformToProvider(row);
+              if (provider && isValidProvider(provider)) {
+                currentBatch.push(provider);
+              }
+            }
+          }
+          break;
+        }
+
+        // Decode chunk with error handling
+        let chunk;
+        try {
+          chunk = decoder.decode(value, { stream: true });
+        } catch (decodingError) {
+          console.warn('Encoding issue detected, attempting recovery:', decodingError);
+          // Try with replacement characters for corrupted bytes
+          const replacementDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: false });
+          chunk = replacementDecoder.decode(value, { stream: true });
+        }
+
+        buffer += chunk;
+
+        // Process complete lines
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue; // Skip empty lines
+
+          try {
+            if (!headerProcessed) {
+              headers = parseCSVRowSafely(trimmedLine);
+              headerProcessed = true;
+              console.log(`Found ${headers.length} columns in CSV header`);
+              continue;
+            }
+
+            const row = parseCSVRowSafely(trimmedLine, headers);
+            if (!row) continue;
+
+            // Check if this is a PT/PTA provider
+            if (isPTProvider(row)) {
+              const provider = transformToProvider(row);
+              if (provider && isValidProvider(provider)) {
+                currentBatch.push(provider);
+                totalProcessed++;
+
+                // Process batch when full
+                if (currentBatch.length >= batchSize) {
+                  await processBatchSafely(supabase, currentBatch, jobId);
+                  currentBatch = [];
+                  
+                  const progress = Math.min(90, 30 + (totalProcessed / 1000 * 60));
+                  await updateJobProgress(supabase, jobId, 'running', progress, 
+                    `Processed ${totalProcessed} PT/PTA providers`, {
+                      processedCount: totalProcessed
+                    });
+                }
+              }
+            }
+          } catch (rowError) {
+            console.warn('Error processing row, skipping:', rowError.message);
+            continue; // Skip problematic rows
+          }
+        }
       }
+    } finally {
+      reader.releaseLock();
     }
 
-    // Process remaining providers
-    if (providers.length > 0) {
-      await processBatch(supabase, providers, jobId);
+    // Process final batch
+    if (currentBatch.length > 0) {
+      await processBatchSafely(supabase, currentBatch, jobId);
     }
 
-    await updateJobProgress(supabase, jobId, 'running', 95, 'Cleaning up...', {});
-
-    // Close DuckDB connection
-    conn.close();
-    db.close();
+    await updateJobProgress(supabase, jobId, 'running', 95, 'Finalizing import...', {});
 
     // Complete the job
     const jobResult = {
-      totalProcessed: processedCount,
-      message: 'NPI import completed successfully with DuckDB',
-      method: 'DuckDB'
+      totalProcessed,
+      message: 'NPI import completed successfully with CSV streaming',
+      method: 'CSV Streaming'
     };
 
     await completeJob(supabase, jobId, jobResult);
@@ -283,65 +279,185 @@ async function processNPIWithDuckDB(supabase: any, jobId: string, fileUrl?: stri
       }
     }
 
-    console.log(`DuckDB NPI processing completed. Total processed: ${processedCount}`);
+    console.log(`CSV NPI processing completed. Total processed: ${totalProcessed}`);
     
   } catch (error) {
-    console.error('Error in DuckDB NPI processing:', error);
+    console.error('Error in CSV NPI processing:', error);
     await failJob(supabase, jobId, error.message);
   }
 }
 
-function transformToProvider(record: any) {
-  const isIndividual = record.entity_type_code === "1";
+function parseCSVRowSafely(line: string, headers?: string[]): any {
+  try {
+    const values = [];
+    let current = '';
+    let inQuotes = false;
+    let quoteChar = '';
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      const nextChar = line[i + 1];
+      
+      if (!inQuotes && (char === '"' || char === "'")) {
+        inQuotes = true;
+        quoteChar = char;
+      } else if (inQuotes && char === quoteChar) {
+        if (nextChar === quoteChar) {
+          // Escaped quote
+          current += char;
+          i++; // Skip next quote
+        } else {
+          inQuotes = false;
+          quoteChar = '';
+        }
+      } else if (!inQuotes && char === ',') {
+        values.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    // Add the last value
+    values.push(current.trim());
+    
+    // If we have headers, create an object
+    if (headers && headers.length > 0) {
+      const row: any = {};
+      for (let i = 0; i < Math.min(values.length, headers.length); i++) {
+        const header = headers[i] || `column_${i + 1}`;
+        row[header] = values[i] || '';
+      }
+      return row;
+    }
+    
+    return values;
+  } catch (error) {
+    console.warn('CSV parsing error:', error);
+    return null;
+  }
+}
+
+function isPTProvider(row: any): boolean {
+  if (!row) return false;
   
-  let name, firstName, lastName;
-  if (isIndividual) {
-    firstName = record.provider_first_name || "";
-    lastName = record.provider_last_name || "";
-    name = `${firstName} ${lastName}`.trim();
-  } else {
-    name = record.provider_organization_name || "";
-    firstName = "";
-    lastName = "";
+  // Check taxonomy codes in multiple columns
+  const taxonomyColumns = [
+    'Healthcare Provider Taxonomy Code_1',
+    'Healthcare Provider Taxonomy Code_2', 
+    'Healthcare Provider Taxonomy Code_3',
+    // Fallback column names
+    'column_48', 'column_52', 'column_56'
+  ];
+  
+  for (const col of taxonomyColumns) {
+    const code = row[col];
+    if (code && PT_TAXONOMY_CODES.includes(code)) {
+      return true;
+    }
   }
+  
+  return false;
+}
 
-  const city = record.provider_business_practice_location_address_city_name || 
-                record.provider_business_mailing_address_city_name || "";
-  const state = record.provider_business_practice_location_address_state_name || 
-                record.provider_business_mailing_address_state_name || "";
-  const zipCode = record.provider_business_practice_location_address_postal_code || 
-                  record.provider_business_mailing_address_postal_code || "";
-  const phone = record.provider_business_practice_location_address_telephone_number || 
-                record.provider_business_mailing_address_telephone_number || "";
+function isValidProvider(provider: any): boolean {
+  if (!provider) return false;
+  
+  // Must have either name or first/last name
+  const hasName = provider.name || (provider.first_name && provider.last_name);
+  
+  // Must have location data
+  const hasLocation = provider.city && provider.state;
+  
+  return hasName && hasLocation;
+}
 
-  const specializations: string[] = [];
-  if (record.healthcare_provider_taxonomy_code_1) {
-    specializations.push(getTaxonomySpecialization(record.healthcare_provider_taxonomy_code_1));
-  }
-  if (record.healthcare_provider_taxonomy_code_2 && record.healthcare_provider_taxonomy_code_2 !== record.healthcare_provider_taxonomy_code_1) {
-    specializations.push(getTaxonomySpecialization(record.healthcare_provider_taxonomy_code_2));
-  }
-  if (record.healthcare_provider_taxonomy_code_3 && 
-      record.healthcare_provider_taxonomy_code_3 !== record.healthcare_provider_taxonomy_code_1 &&
-      record.healthcare_provider_taxonomy_code_3 !== record.healthcare_provider_taxonomy_code_2) {
-    specializations.push(getTaxonomySpecialization(record.healthcare_provider_taxonomy_code_3));
-  }
+function transformToProvider(record: any): any {
+  try {
+    // Determine if individual or organization
+    const entityTypeCol = record['Entity Type Code'] || record['column_02'] || '';
+    const isIndividual = entityTypeCol === "1";
+    
+    // Extract names with multiple possible column names
+    const orgName = record['Provider Organization Name (Legal Business Name)'] || 
+                   record['column_05'] || '';
+    const lastName = record['Provider Last Name (Legal Name)'] || 
+                    record['column_06'] || '';
+    const firstName = record['Provider First Name'] || 
+                     record['column_07'] || '';
+    
+    let name, finalFirstName, finalLastName;
+    if (isIndividual) {
+      finalFirstName = firstName;
+      finalLastName = lastName;
+      name = `${firstName} ${lastName}`.trim();
+    } else {
+      name = orgName;
+      finalFirstName = '';
+      finalLastName = '';
+    }
 
-  return {
-    name: name || null,
-    first_name: firstName || null,
-    last_name: lastName || null,
-    current_employer: isIndividual ? null : (record.provider_organization_name || null),
-    city: city || null,
-    state: state || null,
-    zip_code: zipCode ? zipCode.slice(0, 10) : null,
-    phone: phone || null,
-    specializations: specializations.filter(s => s && s !== "Physical Therapy"),
-    license_number: record.provider_license_number_1 || null,
-    license_state: record.provider_license_number_state_code_1 || null,
-    source: "NPI Registry (DuckDB)",
-    additional_info: `NPI: ${record.npi}, Enumeration Date: ${record.provider_enumeration_date || 'Unknown'}${record.provider_credential ? `, Credentials: ${record.provider_credential}` : ""}`
-  };
+    // Get location data with fallbacks
+    const practiceCity = record['Provider Business Practice Location Address City Name'] || 
+                        record['column_29'] || '';
+    const mailingCity = record['Provider Business Mailing Address City Name'] || 
+                       record['column_21'] || '';
+    const city = practiceCity || mailingCity;
+
+    const practiceState = record['Provider Business Practice Location Address State Name'] || 
+                         record['column_30'] || '';
+    const mailingState = record['Provider Business Mailing Address State Name'] || 
+                        record['column_22'] || '';
+    const state = practiceState || mailingState;
+
+    const practiceZip = record['Provider Business Practice Location Address Postal Code'] || 
+                       record['column_31'] || '';
+    const mailingZip = record['Provider Business Mailing Address Postal Code'] || 
+                      record['column_23'] || '';
+    const zipCode = practiceZip || mailingZip;
+
+    // Get additional data
+    const credential = record['Provider Credential Text'] || record['column_09'] || '';
+    const licenseNumber = record['Provider License Number_1'] || record['column_60'] || '';
+    const licenseState = record['Provider License Number State Code_1'] || record['column_61'] || '';
+    const npi = record['NPI'] || record['column_01'] || '';
+    const enumerationDate = record['Provider Enumeration Date'] || record['column_11'] || '';
+
+    // Extract specializations from taxonomy codes
+    const specializations: string[] = [];
+    const taxonomyColumns = [
+      { code: record['Healthcare Provider Taxonomy Code_1'] || record['column_48'], desc: record['Healthcare Provider Taxonomy Description_1'] || record['column_49'] },
+      { code: record['Healthcare Provider Taxonomy Code_2'] || record['column_52'], desc: record['Healthcare Provider Taxonomy Description_2'] || record['column_53'] },
+      { code: record['Healthcare Provider Taxonomy Code_3'] || record['column_56'], desc: record['Healthcare Provider Taxonomy Description_3'] || record['column_57'] }
+    ];
+
+    for (const taxonomy of taxonomyColumns) {
+      if (taxonomy.code && PT_TAXONOMY_CODES.includes(taxonomy.code)) {
+        const specialization = getTaxonomySpecialization(taxonomy.code);
+        if (specialization && specialization !== "Physical Therapy" && !specializations.includes(specialization)) {
+          specializations.push(specialization);
+        }
+      }
+    }
+
+    return {
+      name: name || null,
+      first_name: finalFirstName || null,
+      last_name: finalLastName || null,
+      current_employer: isIndividual ? null : (orgName || null),
+      city: city || null,
+      state: state || null,
+      zip_code: zipCode ? zipCode.substring(0, 10) : null,
+      specializations: specializations,
+      license_number: licenseNumber || null,
+      license_state: licenseState || null,
+      source: "NPI Registry",
+      additional_info: `NPI: ${npi}${enumerationDate ? `, Enumeration: ${enumerationDate}` : ''}${credential ? `, Credentials: ${credential}` : ''}`
+    };
+  } catch (error) {
+    console.warn('Error transforming provider record:', error);
+    return null;
+  }
 }
 
 function getTaxonomySpecialization(taxonomyCode: string): string {
@@ -360,18 +476,31 @@ function getTaxonomySpecialization(taxonomyCode: string): string {
   return specializations[taxonomyCode] || "Physical Therapy";
 }
 
-async function processBatch(supabase: any, providers: any[], jobId: string) {
+async function processBatchSafely(supabase: any, providers: any[], jobId: string) {
   if (providers.length === 0) return;
 
   try {
+    // Filter out any null providers
+    const validProviders = providers.filter(p => p && p.name);
+    
+    if (validProviders.length === 0) return;
+
     const { error } = await supabase
       .from('providers')
-      .insert(providers);
+      .insert(validProviders);
 
     if (error) {
       console.error('Error inserting batch:', error);
+      // Try inserting one by one to identify problematic records
+      for (const provider of validProviders) {
+        try {
+          await supabase.from('providers').insert([provider]);
+        } catch (individualError) {
+          console.warn('Failed to insert individual provider:', provider.name, individualError);
+        }
+      }
     } else {
-      console.log(`Successfully inserted batch of ${providers.length} providers`);
+      console.log(`Successfully inserted batch of ${validProviders.length} providers`);
     }
   } catch (error) {
     console.error('Error processing batch:', error);
