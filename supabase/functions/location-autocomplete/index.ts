@@ -13,7 +13,7 @@ serve(async (req) => {
   try {
     const { query } = await req.json();
     
-    if (!query || query.trim().length < 3) {
+    if (!query || query.trim().length < 2) {
       return new Response(
         JSON.stringify({ features: [] }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -23,16 +23,43 @@ serve(async (req) => {
     // Get Mapbox token
     const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
     if (!mapboxToken) {
-      throw new Error("Mapbox token not configured");
+      console.error("Mapbox token not configured");
+      return new Response(
+        JSON.stringify({ error: "Mapbox token not configured", features: [] }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500
+        }
+      );
     }
+
+    console.log("Searching for:", query);
 
     // Use Mapbox Search API for autocomplete suggestions
     const searchUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${mapboxToken}&country=US&types=place,postcode,locality,neighborhood,address&limit=10&autocomplete=true`;
     
+    console.log("Making request to Mapbox:", searchUrl.replace(mapboxToken, '[TOKEN]'));
+    
     const response = await fetch(searchUrl);
+    
+    if (!response.ok) {
+      console.error("Mapbox API error:", response.status, response.statusText);
+      const errorText = await response.text();
+      console.error("Mapbox API response:", errorText);
+      return new Response(
+        JSON.stringify({ error: `Mapbox API error: ${response.status}`, features: [] }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: response.status
+        }
+      );
+    }
+    
     const data = await response.json();
+    console.log("Mapbox response:", JSON.stringify(data, null, 2));
 
     if (!data.features) {
+      console.log("No features in response");
       return new Response(
         JSON.stringify({ features: [] }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -50,6 +77,8 @@ serve(async (req) => {
       properties: feature.properties
     }));
 
+    console.log(`Returning ${suggestions.length} suggestions`);
+
     return new Response(
       JSON.stringify({ features: suggestions }),
       {
@@ -62,7 +91,7 @@ serve(async (req) => {
       JSON.stringify({ error: error.message, features: [] }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
+        status: 500,
       }
     );
   }
