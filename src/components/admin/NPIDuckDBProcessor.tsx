@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle, Clock, AlertCircle, Play, Database } from "lucide-react";
+import { CheckCircle, Clock, AlertCircle, Play, Database, Upload, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ProcessingJob {
@@ -34,6 +34,9 @@ export const NPIDuckDBProcessor = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [fileUrl, setFileUrl] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFileUrl, setUploadedFileUrl] = useState("");
   const { toast } = useToast();
 
   // Check for existing jobs
@@ -85,11 +88,54 @@ export const NPIDuckDBProcessor = () => {
     }
   };
 
+  const uploadFile = async () => {
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `npi-files/${user.id}/${Date.now()}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('bulk-uploads')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('bulk-uploads')
+        .getPublicUrl(fileName);
+
+      setUploadedFileUrl(publicUrl);
+      setFileUrl(publicUrl);
+
+      toast({
+        title: "File Uploaded",
+        description: "Your NPI file has been uploaded successfully",
+      });
+
+    } catch (error: any) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Upload Error",
+        description: error.message || "Failed to upload file",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const startProcessing = async () => {
-    if (!fileUrl.trim()) {
+    const sourceUrl = uploadedFileUrl || fileUrl;
+    if (!sourceUrl.trim()) {
       toast({
         title: "Error",
-        description: "Please provide a file URL",
+        description: "Please provide a file URL or upload a file",
         variant: "destructive",
       });
       return;
@@ -106,7 +152,7 @@ export const NPIDuckDBProcessor = () => {
           action: 'start',
           user_id: user.id,
           email: email.trim() || undefined,
-          file_url: fileUrl.trim()
+          file_url: sourceUrl.trim()
         }
       });
 
@@ -255,6 +301,43 @@ export const NPIDuckDBProcessor = () => {
         )}
 
         <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* File Upload Section */}
+            <div className="space-y-2">
+              <Label htmlFor="fileUpload">Upload NPI File (.zip or .csv)</Label>
+              <div className="space-y-2">
+                <Input
+                  id="fileUpload"
+                  type="file"
+                  accept=".zip,.csv"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  disabled={currentJob?.status === 'running' || currentJob?.status === 'pending' || uploading}
+                />
+                {file && (
+                  <div className="flex items-center gap-2 p-2 bg-muted rounded">
+                    <FileText className="h-4 w-4" />
+                    <span className="text-sm">{file.name}</span>
+                  </div>
+                )}
+                <Button
+                  onClick={uploadFile}
+                  disabled={!file || uploading || currentJob?.status === 'running' || currentJob?.status === 'pending'}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  {uploading ? "Uploading..." : "Upload File"}
+                </Button>
+              </div>
+            </div>
+
+            {/* OR Divider */}
+            <div className="flex items-center justify-center">
+              <div className="text-muted-foreground text-sm font-medium">OR</div>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="fileUrl">NPI File URL</Label>
             <Input
@@ -285,7 +368,7 @@ export const NPIDuckDBProcessor = () => {
               loading ||
               currentJob?.status === 'running' ||
               currentJob?.status === 'pending' ||
-              !fileUrl.trim()
+              (!uploadedFileUrl && !fileUrl.trim())
             }
             className="w-full"
           >
