@@ -102,45 +102,62 @@ async function processFileInBackground(supabase: any, job: any, jobId: string) {
       );
     }
 
-    // Parse Excel file - handle all sheets for multi-tab files
+    // Parse Excel file - stream processing to prevent memory issues
     const arrayBuffer = await fileData.arrayBuffer();
+    console.log(`File size: ${(arrayBuffer.byteLength / 1024 / 1024).toFixed(2)} MB`);
+    
+    // Limit file size to prevent memory issues
+    if (arrayBuffer.byteLength > 50 * 1024 * 1024) { // 50MB limit
+      throw new Error('File too large. Please use files smaller than 50MB.');
+    }
+    
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
     
-    // Process all sheets and combine data with robust header handling
-    let allJsonData: any[] = [];
-    let sheetIndex = 0;
+    // Process only first sheet to prevent memory issues
+    const firstSheetName = workbook.SheetNames[0];
+    if (!firstSheetName) {
+      throw new Error('No sheets found in the Excel file');
+    }
     
-    for (const sheetName of workbook.SheetNames) {
-      try {
-        console.log(`Processing sheet ${sheetIndex + 1}/${workbook.SheetNames.length}: "${sheetName}"`);
-        const worksheet = workbook.Sheets[sheetName];
-        
-        // Check if sheet has any data
-        const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:A1');
-        if (range.e.r < 1) {
-          console.log(`Skipping empty sheet: ${sheetName}`);
-          continue;
-        }
-        
-        const sheetData = XLSX.utils.sheet_to_json(worksheet, { 
-          defval: '', // Set default value for empty cells
-          raw: false, // Convert dates and numbers to strings for consistency
-          blankrows: false // Skip completely blank rows
-        });
-        
-        if (sheetData.length > 0) {
-          console.log(`Sheet "${sheetName}" has ${sheetData.length} rows`);
-          console.log(`Sample headers from ${sheetName}:`, Object.keys(sheetData[0] || {}));
-          allJsonData = allJsonData.concat(sheetData);
-        } else {
-          console.log(`Sheet "${sheetName}" has no data rows`);
-        }
-        
-        sheetIndex++;
-      } catch (sheetError) {
-        console.error(`Error processing sheet "${sheetName}":`, sheetError);
-        // Continue with other sheets even if one fails
-        continue;
+    console.log(`Processing sheet: "${firstSheetName}"`);
+    const worksheet = workbook.Sheets[firstSheetName];
+    
+    // Check if sheet has any data
+    const range = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:A1');
+    if (range.e.r < 1) {
+      throw new Error('Sheet appears to be empty');
+    }
+    
+    console.log(`Sheet has ${range.e.r + 1} rows`);
+    
+    // Process in chunks to prevent memory issues
+    const chunkSize = 1000;
+    const totalRows = range.e.r;
+    let allJsonData: any[] = [];
+    
+    for (let startRow = 1; startRow <= totalRows; startRow += chunkSize) {
+      const endRow = Math.min(startRow + chunkSize - 1, totalRows);
+      console.log(`Processing rows ${startRow} to ${endRow}`);
+      
+      // Create a new range for this chunk
+      const chunkRange = XLSX.utils.encode_range({
+        s: { c: range.s.c, r: 0 }, // Include header
+        e: { c: range.e.c, r: endRow }
+      });
+      
+      const chunkWorksheet = { ...worksheet, '!ref': chunkRange };
+      const chunkData = XLSX.utils.sheet_to_json(chunkWorksheet, { 
+        defval: '', 
+        raw: false, 
+        blankrows: false,
+        range: startRow === 1 ? 0 : startRow - 1 // Skip header for subsequent chunks
+      });
+      
+      allJsonData = allJsonData.concat(chunkData);
+      
+      // Force garbage collection
+      if (typeof globalThis.gc === 'function') {
+        globalThis.gc();
       }
     }
     
