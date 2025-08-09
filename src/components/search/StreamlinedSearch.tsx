@@ -18,6 +18,8 @@ interface LocationSuggestion {
   id: string;
   place_name: string;
   center: [number, number];
+  place_type?: string[];
+  context?: Array<{ text: string; id: string }>;
 }
 
 interface StreamlinedSearchProps {
@@ -94,19 +96,21 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
       });
       if (error) {
         console.error('Location autocomplete error:', error);
+        setSuggestions([]);
+        setShowSuggestions(false);
         return;
       }
-      if (data?.features) {
-        setSuggestions(data.features.slice(0, 5));
+      if (data?.features && data.features.length > 0) {
+        setSuggestions(data.features.slice(0, 8));
         setShowSuggestions(true);
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
       }
     } catch (error) {
       console.error('Location search error:', error);
-      toast({
-        title: "Location search unavailable",
-        description: "Please configure Mapbox token in edge function secrets",
-        variant: "destructive"
-      });
+      setSuggestions([]);
+      setShowSuggestions(false);
     }
   };
 
@@ -115,12 +119,36 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
       const searchTerm = query.toLowerCase();
       const suggestions: any[] = [];
 
-      // Get company suggestions
+      // Enhanced search with location detection
+      const isLocationQuery = /\b(in|at|near|from)\s+([a-zA-Z\s,]+)$/i.test(query) || 
+                             /^[a-zA-Z\s,]+(?:,\s*[A-Z]{2})?$/.test(query);
+
+      if (isLocationQuery) {
+        // Fetch location suggestions directly
+        const { data: locationData } = await supabase.functions.invoke('location-autocomplete', {
+          body: { query: searchTerm }
+        });
+        
+        if (locationData?.features) {
+          locationData.features.slice(0, 5).forEach((location: any) => {
+            suggestions.push({
+              id: location.id,
+              type: 'location',
+              title: location.place_name,
+              subtitle: 'Location',
+              category: 'Locations',
+              locationData: location
+            });
+          });
+        }
+      }
+
+      // Get company suggestions with enhanced search
       const { data: companies } = await supabase
         .from('companies')
-        .select('id, name, company_type, city, state')
-        .or(`name.ilike.%${searchTerm}%,company_type.ilike.%${searchTerm}%`)
-        .limit(5);
+        .select('id, name, company_type, city, state, services')
+        .or(`name.ilike.%${searchTerm}%,company_type.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,services.cs.{${searchTerm}}`)
+        .limit(3);
 
       if (companies) {
         companies.forEach(company => {
@@ -128,42 +156,43 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
             id: company.id,
             type: 'company',
             title: company.name,
-            subtitle: company.company_type,
-            location: `${company.city}, ${company.state}`,
+            subtitle: company.company_type || 'Company',
+            location: company.city && company.state ? `${company.city}, ${company.state}` : '',
             category: 'Companies'
           });
         });
       }
 
-      // Get provider suggestions
+      // Get provider suggestions with better matching
       const { data: providers } = await supabase
         .from('providers')
-        .select('id, name, first_name, last_name, current_job_title, city, state, specializations')
-        .or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,current_job_title.ilike.%${searchTerm}%,specializations.cs.{${searchTerm}}`)
-        .limit(5);
+        .select('id, name, first_name, last_name, current_job_title, city, state, specializations, current_employer')
+        .or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,current_job_title.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,specializations.cs.{${searchTerm}}`)
+        .limit(3);
 
       if (providers) {
         providers.forEach(provider => {
           suggestions.push({
             id: provider.id,
             type: 'provider',
-            title: provider.name || `${provider.first_name} ${provider.last_name}`,
+            title: provider.name || `${provider.first_name || ''} ${provider.last_name || ''}`.trim(),
             subtitle: provider.current_job_title || 'Physical Therapist',
-            location: `${provider.city}, ${provider.state}`,
+            location: provider.city && provider.state ? `${provider.city}, ${provider.state}` : '',
             category: 'Providers'
           });
         });
       }
 
-      // Get specialization suggestions
+      // Enhanced specialization matching
       const specializations = [
-        'Orthopedic', 'Sports Medicine', 'Neurology', 'Geriatric', 'Pediatric',
+        'Orthopedic', 'Sports Medicine', 'Neurology', 'Neurological', 'Geriatric', 'Pediatric',
         'Cardiopulmonary', 'Aquatic Therapy', 'Manual Therapy', 'Women\'s Health',
-        'Vestibular', 'Hand Therapy', 'Wound Care'
+        'Vestibular', 'Hand Therapy', 'Wound Care', 'Pelvic Floor', 'Oncology',
+        'Lymphedema', 'Dry Needling', 'McKenzie', 'Balance Training'
       ];
       
       specializations.forEach(spec => {
-        if (spec.toLowerCase().includes(searchTerm)) {
+        if (spec.toLowerCase().includes(searchTerm) || searchTerm.includes(spec.toLowerCase())) {
           suggestions.push({
             id: spec,
             type: 'specialization',
@@ -174,7 +203,27 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
         }
       });
 
-      setSearchSuggestions(suggestions.slice(0, 8));
+      // Get job listings
+      const { data: jobs } = await supabase
+        .from('job_listings')
+        .select('id, title, city, state, employment_type')
+        .or(`title.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,employment_type.ilike.%${searchTerm}%`)
+        .limit(2);
+
+      if (jobs) {
+        jobs.forEach(job => {
+          suggestions.push({
+            id: job.id,
+            type: 'job_listing',
+            title: job.title,
+            subtitle: job.employment_type || 'Job Opening',
+            location: job.city && job.state ? `${job.city}, ${job.state}` : '',
+            category: 'Jobs'
+          });
+        });
+      }
+
+      setSearchSuggestions(suggestions.slice(0, 10));
       setShowSearchSuggestions(suggestions.length > 0);
     } catch (error) {
       console.error('Search suggestions error:', error);
@@ -196,11 +245,28 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
     if (suggestion.type === 'specialization') {
       updateFilters({ specialization: suggestion.title });
       setSearchQuery('');
+    } else if (suggestion.type === 'location') {
+      // Handle location selection
+      const [longitude, latitude] = suggestion.locationData.center;
+      setLocationInput(suggestion.title);
+      updateFilters({
+        userLatitude: latitude,
+        userLongitude: longitude,
+        location: suggestion.title
+      });
+      setSearchQuery('');
     } else {
       setSearchQuery(suggestion.title);
       // Navigate to entity details if it's a specific entity
-      if (suggestion.id && suggestion.type !== 'specialization') {
-        window.location.href = `/entity/${suggestion.type === 'provider' ? 'providers' : 'companies'}/${suggestion.id}`;
+      if (suggestion.id && !['specialization', 'location'].includes(suggestion.type)) {
+        const entityMap = {
+          'provider': 'providers',
+          'company': 'companies',
+          'job_listing': 'job_listings',
+          'school': 'schools'
+        };
+        const entityType = entityMap[suggestion.type as keyof typeof entityMap] || suggestion.type;
+        window.location.href = `/entity/${entityType}/${suggestion.id}`;
       }
     }
     setShowSearchSuggestions(false);
@@ -240,21 +306,24 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
               
               {/* Search Suggestions */}
               {showSearchSuggestions && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-64 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-80 overflow-y-auto">
                   {searchSuggestions.map((suggestion, index) => (
                     <button
                       key={`${suggestion.type}-${suggestion.id || index}`}
-                      className="w-full px-3 py-2 text-left hover:bg-accent text-sm border-b border-border last:border-b-0 flex items-center justify-between"
+                      className="w-full px-4 py-3 text-left hover:bg-accent text-sm border-b border-border last:border-b-0 flex items-center justify-between transition-colors"
                       onClick={() => selectSearchSuggestion(suggestion)}
                     >
-                      <div className="flex-1">
-                        <div className="font-medium">{suggestion.title}</div>
-                        <div className="text-xs text-muted-foreground">{suggestion.subtitle}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{suggestion.title}</div>
+                        <div className="text-xs text-muted-foreground truncate">{suggestion.subtitle}</div>
                         {suggestion.location && (
-                          <div className="text-xs text-muted-foreground">{suggestion.location}</div>
+                          <div className="text-xs text-muted-foreground truncate flex items-center gap-1">
+                            <MapPin className="h-3 w-3" />
+                            {suggestion.location}
+                          </div>
                         )}
                       </div>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs ml-2 flex-shrink-0">
                         {suggestion.category}
                       </Badge>
                     </button>
@@ -277,14 +346,22 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
               
               {/* Location Suggestions */}
               {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-64 overflow-y-auto">
                   {suggestions.map((suggestion) => (
                     <button
                       key={suggestion.id}
-                      className="w-full px-3 py-2 text-left hover:bg-accent text-sm"
+                      className="w-full px-4 py-3 text-left hover:bg-accent text-sm transition-colors flex items-center gap-2"
                       onClick={() => setLocation(suggestion)}
                     >
-                      {suggestion.place_name}
+                      <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium truncate">{suggestion.place_name}</div>
+                        {suggestion.place_type && (
+                          <div className="text-xs text-muted-foreground capitalize">
+                            {suggestion.place_type.join(', ')}
+                          </div>
+                        )}
+                      </div>
                     </button>
                   ))}
                 </div>
