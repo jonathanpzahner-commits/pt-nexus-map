@@ -59,43 +59,60 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
           .select('*', { count: 'exact' })
           .range(offset, offset + RESULTS_PER_PAGE - 1);
 
-        // Apply text search
+        // Apply text search across ALL provider fields
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,specializations.cs.{${searchTerm}}`);
+          query = query.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,license_number.ilike.%${searchTerm}%,license_state.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,website.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,current_job_title.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,additional_info.ilike.%${searchTerm}%,source.ilike.%${searchTerm}%,specializations.cs.{${searchTerm}}`);
         }
 
-        // Apply location filter with radius search
+        // Use radius search if coordinates are available
         if (filters.userLatitude && filters.userLongitude && filters.radius) {
-          // Use stored procedure for radius search
-          const { data: radiusResults, error: radiusError } = await supabase
-            .rpc('providers_within_radius', {
-              user_lat: filters.userLatitude,
-              user_lng: filters.userLongitude,
-              radius_miles: filters.radius
-            })
-            .range(offset, offset + RESULTS_PER_PAGE - 1);
-          
-          if (radiusError) throw radiusError;
-          
-          // Handle radius search results
-          if (radiusResults) {
-            radiusResults.forEach((provider: any) => {
-              const location = provider.city && provider.state ? `${provider.city}, ${provider.state}` : '';
-              results.push({
-                id: provider.id,
-                type: 'provider',
-                title: provider.name || `${provider.first_name} ${provider.last_name}`,
-                subtitle: `Physical Therapist (${provider.distance_miles?.toFixed(1)}mi away)`,
-                location,
-                description: provider.bio,
-                data: provider,
+          try {
+            let radiusQuery = supabase
+              .rpc('providers_within_radius', {
+                user_lat: filters.userLatitude,
+                user_lng: filters.userLongitude,
+                radius_miles: filters.radius
+              })
+              .range(offset, offset + RESULTS_PER_PAGE - 1);
+
+            // Apply text search to radius results if needed
+            if (searchQuery.trim()) {
+              const searchTerm = searchQuery.toLowerCase();
+              radiusQuery = radiusQuery.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,license_number.ilike.%${searchTerm}%,license_state.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,website.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,current_job_title.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,additional_info.ilike.%${searchTerm}%,source.ilike.%${searchTerm}%,specializations.cs.{${searchTerm}}`);
+            }
+
+            // Apply specialization filter
+            if (filters.specialization.trim()) {
+              radiusQuery = radiusQuery.contains('specializations', [filters.specialization]);
+            }
+
+            const { data: radiusResults, error: radiusError } = await radiusQuery;
+            
+            if (!radiusError && radiusResults) {
+              radiusResults.forEach((provider: any) => {
+                const location = provider.city && provider.state ? `${provider.city}, ${provider.state}` : '';
+                results.push({
+                  id: provider.id,
+                  type: 'provider',
+                  title: provider.name || `${provider.first_name} ${provider.last_name}`,
+                  subtitle: `Physical Therapist (${provider.distance_miles?.toFixed(1)}mi away)`,
+                  location,
+                  description: provider.bio,
+                  data: provider,
+                });
               });
-            });
-            totalCount += radiusResults.length;
+              totalCount += radiusResults.length;
+            } else {
+              console.warn('Radius search failed, falling back to regular search:', radiusError);
+              // Continue to regular search below
+            }
+          } catch (radiusError) {
+            console.warn('Radius search error, falling back to regular search:', radiusError);
+            // Continue to regular search below
           }
         } else {
-          // Regular provider search without radius
+          // Regular provider search when no location coordinates
           if (filters.location.trim()) {
             const locationTerm = filters.location.toLowerCase();
             query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
@@ -136,7 +153,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,company_type.ilike.%${searchTerm}%`);
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,company_type.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,website.ilike.%${searchTerm}%,services.cs.{${searchTerm}},company_locations.cs.{${searchTerm}}`);
         }
 
         if (filters.companyType.trim()) {
@@ -172,7 +189,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,accreditation.ilike.%${searchTerm}%,programs_offered.cs.{${searchTerm}},specializations.cs.{${searchTerm}}`);
         }
 
         if (filters.location.trim()) {
@@ -209,7 +226,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,requirements.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,employment_type.ilike.%${searchTerm}%,experience_level.ilike.%${searchTerm}%`);
         }
 
         if (filters.employmentType.trim()) {
@@ -249,7 +266,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,company.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+          query = query.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,company.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,title.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,website.ilike.%${searchTerm}%,linkedin_url.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,consulting_categories.cs.{${searchTerm}},industries.cs.{${searchTerm}},territories.cs.{${searchTerm}},certifications.cs.{${searchTerm}}`);
         }
 
         if (filters.location.trim()) {
@@ -287,7 +304,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,company_type.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,website.ilike.%${searchTerm}%,linkedin_url.ilike.%${searchTerm}%,equipment_categories.cs.{${searchTerm}},product_lines.cs.{${searchTerm}},target_markets.cs.{${searchTerm}},certifications.cs.{${searchTerm}}`);
         }
 
         if (filters.location.trim()) {
@@ -324,7 +341,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,firm_type.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,website.ilike.%${searchTerm}%,linkedin_url.ilike.%${searchTerm}%,investment_stage.cs.{${searchTerm}},geographic_focus.cs.{${searchTerm}},sector_focus.cs.{${searchTerm}},portfolio_companies.cs.{${searchTerm}}`);
         }
 
         if (filters.location.trim()) {
@@ -362,7 +379,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,current_position.ilike.%${searchTerm}%,about_me.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%`);
+          query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,current_position.ilike.%${searchTerm}%,about_me.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,location.ilike.%${searchTerm}%,website.ilike.%${searchTerm}%,linkedin_url.ilike.%${searchTerm}%,interests.cs.{${searchTerm}},research_interests.cs.{${searchTerm}},certifications.cs.{${searchTerm}},education.cs.{${searchTerm}},sme_areas.cs.{${searchTerm}},specializations.cs.{${searchTerm}}`);
         }
 
         if (filters.location.trim()) {
