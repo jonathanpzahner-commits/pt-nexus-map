@@ -78,12 +78,19 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Parse Excel file
+    // Parse Excel file - handle all sheets for multi-tab files
     const arrayBuffer = await fileData.arrayBuffer();
     const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-    const sheetName = workbook.SheetNames[0];
-    const worksheet = workbook.Sheets[sheetName];
-    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+    
+    // Process all sheets and combine data
+    let allJsonData: any[] = [];
+    for (const sheetName of workbook.SheetNames) {
+      const worksheet = workbook.Sheets[sheetName];
+      const sheetData = XLSX.utils.sheet_to_json(worksheet);
+      allJsonData = allJsonData.concat(sheetData);
+    }
+    
+    const jsonData = allJsonData;
 
     console.log(`Parsed ${jsonData.length} rows from Excel file`);
 
