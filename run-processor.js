@@ -8,7 +8,7 @@ const supabase = createClient(
 console.log('Triggering bulk upload processor with memory fix...');
 
 const { data, error } = await supabase.functions.invoke('process-bulk-upload', {
-  body: { jobId: 'ae601047-c2f6-4ea6-b38f-901456492e63' }
+  body: { jobId: 'bfe2b943-3203-4b26-b4c3-88a0e9b029e7' }
 });
 
 console.log('Response:', JSON.stringify(data, null, 2));
@@ -19,7 +19,7 @@ setTimeout(async () => {
   const { data: jobData } = await supabase
     .from('bulk_upload_jobs')
     .select('*')
-    .eq('id', 'ae601047-c2f6-4ea6-b38f-901456492e63')
+    .eq('id', 'bfe2b943-3203-4b26-b4c3-88a0e9b029e7')
     .single();
   
   console.log('Job status after 10 seconds:', jobData);
