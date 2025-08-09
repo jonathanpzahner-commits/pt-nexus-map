@@ -11,7 +11,18 @@ const { data, error } = await supabase.functions.invoke('process-bulk-upload', {
   body: { jobId: 'ae601047-c2f6-4ea6-b38f-901456492e63' }
 });
 
-console.log('Response:', data);
-if (error) console.error('Error:', error);
+console.log('Response:', JSON.stringify(data, null, 2));
+console.log('Error:', JSON.stringify(error, null, 2));
+
+// Check if there's a timeout issue
+setTimeout(async () => {
+  const { data: jobData } = await supabase
+    .from('bulk_upload_jobs')
+    .select('*')
+    .eq('id', 'ae601047-c2f6-4ea6-b38f-901456492e63')
+    .single();
+  
+  console.log('Job status after 10 seconds:', jobData);
+}, 10000);
 
 process.exit(0);
