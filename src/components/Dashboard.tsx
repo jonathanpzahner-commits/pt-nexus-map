@@ -25,7 +25,7 @@ import { SchoolsTab } from './dashboard/SchoolsTab';
 import { JobListingsTab } from './dashboard/JobListingsTab';
 import { MapContainer } from './map/MapContainer';
 import { GlobalSearch } from './search/GlobalSearch';
-import { BulkUploadDialog } from './upload/BulkUploadDialog';
+import { SimpleBulkUpload } from './upload/SimpleBulkUpload';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
@@ -234,7 +234,7 @@ const Dashboard = () => {
       </Tabs>
 
       {/* Bulk Upload Dialog */}
-      <BulkUploadDialog 
+      <SimpleBulkUpload 
         open={isBulkUploadOpen}
         onOpenChange={setIsBulkUploadOpen}
         onUploadComplete={handleUploadComplete}
