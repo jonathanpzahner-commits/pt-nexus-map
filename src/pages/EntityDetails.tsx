@@ -56,24 +56,32 @@ const EntityDetails = () => {
                   <h2 className="text-xl font-bold">
                     {(entity as any).first_name && (entity as any).last_name 
                       ? `${(entity as any).first_name} ${(entity as any).last_name}`
-                      : (entity as any).name}
+                      : (entity as any).name || "Unknown Name"}
                   </h2>
-                  {(entity as any).current_job_title && (
-                    <p className="text-lg text-muted-foreground">{(entity as any).current_job_title}</p>
-                  )}
+                  <p className="text-lg text-muted-foreground">
+                    {(entity as any).current_job_title || "Physical Therapist"}
+                  </p>
                 </div>
-                {(entity as any).source && (
-                  <Badge variant="outline">Source: {(entity as any).source}</Badge>
-                )}
+                <div className="flex flex-col gap-2">
+                  {(entity as any).source && (
+                    <Badge variant="outline">Source: {(entity as any).source}</Badge>
+                  )}
+                  <Badge variant="secondary">Provider</Badge>
+                </div>
               </div>
               
               {/* Specializations */}
-              {(entity as any).specializations?.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {(entity as any).specializations.map((spec: string) => (
-                    <Badge key={spec} variant="secondary">{spec}</Badge>
-                  ))}
+              {(entity as any).specializations?.length > 0 ? (
+                <div className="space-y-2">
+                  <h4 className="font-medium text-sm">Specializations</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {(entity as any).specializations.map((spec: string) => (
+                      <Badge key={spec} variant="secondary" className="text-xs">{spec}</Badge>
+                    ))}
+                  </div>
                 </div>
+              ) : (
+                <div className="text-sm text-muted-foreground">No specializations listed</div>
               )}
             </div>
 
@@ -81,39 +89,64 @@ const EntityDetails = () => {
               {/* Contact Information */}
               <div className="space-y-3">
                 <h3 className="font-semibold text-base border-b pb-1">Contact Information</h3>
-                <div className="space-y-2 text-sm">
-                  {(entity as any).email && (
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a href={`mailto:${(entity as any).email}`} className="text-primary hover:underline">
-                        {(entity as any).email}
-                      </a>
-                    </div>
-                  )}
-                  {(entity as any).phone && (
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <a href={`tel:${(entity as any).phone}`} className="hover:underline">
-                        {(entity as any).phone}
-                      </a>
-                    </div>
-                  )}
-                  {(entity as any).website && (
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <a href={(entity as any).website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        Website
-                      </a>
-                    </div>
-                  )}
-                  {(entity as any).linkedin_url && (
-                    <div className="flex items-center gap-2">
-                      <Globe className="h-4 w-4 text-muted-foreground" />
-                      <a href={(entity as any).linkedin_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        LinkedIn Profile
-                      </a>
-                    </div>
-                  )}
+                <div className="space-y-3 text-sm">
+                  <div className="space-y-2">
+                    {(entity as any).email ? (
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <a href={`mailto:${(entity as any).email}`} className="text-primary hover:underline">
+                          {(entity as any).email}
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">No email available</span>
+                      </div>
+                    )}
+                    
+                    {(entity as any).phone ? (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <a href={`tel:${(entity as any).phone}`} className="hover:underline">
+                          {(entity as any).phone}
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">No phone available</span>
+                      </div>
+                    )}
+                    
+                    {(entity as any).website ? (
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <a href={(entity as any).website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          Website
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">No website available</span>
+                      </div>
+                    )}
+                    
+                    {(entity as any).linkedin_url && (entity as any).linkedin_url !== 'N/A' ? (
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <a href={(entity as any).linkedin_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                          LinkedIn Profile
+                        </a>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">No LinkedIn profile</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -123,16 +156,26 @@ const EntityDetails = () => {
                 <div className="space-y-2 text-sm">
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      {(entity as any).city && (entity as any).state && (
-                        <div>{(entity as any).city}, {(entity as any).state}</div>
+                    <div className="space-y-1">
+                      {(entity as any).city || (entity as any).state ? (
+                        <>
+                          <div className="font-medium">
+                            {(entity as any).city ? (entity as any).city : "Unknown City"}
+                            {(entity as any).state ? `, ${(entity as any).state}` : ""}
+                          </div>
+                          {(entity as any).zip_code && (
+                            <div className="text-muted-foreground">{(entity as any).zip_code}</div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-muted-foreground">No location data</div>
                       )}
-                      {(entity as any).zip_code && (
-                        <div className="text-muted-foreground">{(entity as any).zip_code}</div>
-                      )}
+                      
                       {(entity as any).latitude && (entity as any).longitude && (
-                        <div className="text-xs text-muted-foreground mt-1">
-                          Coordinates: {parseFloat((entity as any).latitude).toFixed(4)}, {parseFloat((entity as any).longitude).toFixed(4)}
+                        <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted rounded">
+                          <div className="font-medium">Coordinates:</div>
+                          <div>Lat: {parseFloat((entity as any).latitude).toFixed(6)}</div>
+                          <div>Lng: {parseFloat((entity as any).longitude).toFixed(6)}</div>
                         </div>
                       )}
                     </div>
@@ -144,64 +187,85 @@ const EntityDetails = () => {
               <div className="space-y-3">
                 <h3 className="font-semibold text-base border-b pb-1">Professional Details</h3>
                 <div className="space-y-2 text-sm">
-                  {(entity as any).license_number && (
-                    <div>
-                      <span className="font-medium">License:</span> {(entity as any).license_number}
-                      {(entity as any).license_state && (
-                        <span className="text-muted-foreground"> ({(entity as any).license_state})</span>
-                      )}
-                    </div>
-                  )}
-                  {(entity as any).years_experience && (
-                    <div>
-                      <span className="font-medium">Experience:</span> {(entity as any).years_experience} years
-                    </div>
-                  )}
-                  {(entity as any).current_employer && (
-                    <div>
-                      <span className="font-medium">Current Employer:</span> {(entity as any).current_employer}
-                    </div>
-                  )}
+                  <div>
+                    <span className="font-medium">License:</span> 
+                    {(entity as any).license_number ? (
+                      <span> {(entity as any).license_number}
+                        {(entity as any).license_state && (
+                          <span className="text-muted-foreground"> ({(entity as any).license_state})</span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground"> Not available</span>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <span className="font-medium">Experience:</span> 
+                    {(entity as any).years_experience ? (
+                      <span> {(entity as any).years_experience} years</span>
+                    ) : (
+                      <span className="text-muted-foreground"> Not specified</span>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <span className="font-medium">Current Employer:</span> 
+                    {(entity as any).current_employer ? (
+                      <span> {(entity as any).current_employer}</span>
+                    ) : (
+                      <span className="text-muted-foreground"> Not available</span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Biography */}
-            {(entity as any).bio && (
-              <div className="space-y-3">
-                <h3 className="font-semibold text-base border-b pb-1">Biography</h3>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-base border-b pb-1">Biography</h3>
+              {(entity as any).bio && (entity as any).bio !== 'N/A' ? (
                 <p className="text-sm leading-relaxed">{(entity as any).bio}</p>
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-muted-foreground">No biography available</p>
+              )}
+            </div>
 
             {/* Additional Information */}
-            {(entity as any).additional_info && (
-              <div className="space-y-3">
-                <h3 className="font-semibold text-base border-b pb-1">Additional Information</h3>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-base border-b pb-1">Additional Information</h3>
+              {(entity as any).additional_info && (entity as any).additional_info !== 'N/A' ? (
                 <p className="text-sm leading-relaxed">{(entity as any).additional_info}</p>
-              </div>
-            )}
+              ) : (
+                <p className="text-sm text-muted-foreground">No additional information available</p>
+              )}
+            </div>
 
             {/* Data Source & Technical Info */}
             <div className="border-t pt-4 space-y-3">
               <h3 className="font-semibold text-base">Data Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-muted-foreground">
-                <div>
-                  <div><span className="font-medium">Provider ID:</span> {(entity as any).id}</div>
-                  {(entity as any).source && (
-                    <div><span className="font-medium">Data Source:</span> {(entity as any).source}</div>
-                  )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div className="space-y-1">
+                  <div><span className="font-medium">Provider ID:</span> <code className="bg-muted px-1 py-0.5 rounded">{(entity as any).id}</code></div>
+                  <div><span className="font-medium">Data Source:</span> {(entity as any).source || "Unknown"}</div>
                 </div>
-                <div>
-                  {(entity as any).created_at && (
-                    <div><span className="font-medium">Added:</span> {new Date((entity as any).created_at).toLocaleDateString()}</div>
-                  )}
-                  {(entity as any).updated_at && (
-                    <div><span className="font-medium">Updated:</span> {new Date((entity as any).updated_at).toLocaleDateString()}</div>
-                  )}
+                <div className="space-y-1">
+                  <div><span className="font-medium">Added:</span> {new Date((entity as any).created_at).toLocaleDateString()}</div>
+                  <div><span className="font-medium">Updated:</span> {new Date((entity as any).updated_at).toLocaleDateString()}</div>
                 </div>
               </div>
             </div>
+
+            {/* Data Completeness Warning */}
+            {(!((entity as any).email) && !((entity as any).license_number) && !((entity as any).bio)) && (
+              <div className="border border-yellow-200 bg-yellow-50 p-4 rounded-lg">
+                <h4 className="font-medium text-yellow-800 mb-2">Limited Data Available</h4>
+                <p className="text-sm text-yellow-700">
+                  This provider record has limited information available. The data source "{(entity as any).source || "Unknown"}" 
+                  may not include comprehensive professional details. Consider updating this record with additional information if available.
+                </p>
+              </div>
+            )}
           </div>
         );
         
