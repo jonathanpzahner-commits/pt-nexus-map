@@ -261,10 +261,19 @@ function validateAndTransformRecord(row: any, entityType: string, rowNumber: num
 function validateProvider(row: any, rowNumber: number, errors: ValidationError[]) {
   const data: any = {};
 
-  // Required fields - either use combined name or first/last name
-  const firstName = row['First Name']?.toString().trim() || '';
-  const lastName = row['Last Name']?.toString().trim() || '';
+  // Handle NPI Registry format columns
+  const npi = row['NPI']?.toString().trim() || '';
+  const firstName = row['Provider First Name']?.toString().trim() || row['First Name']?.toString().trim() || '';
+  const lastName = row['Provider Last Name (Legal Name)']?.toString().trim() || row['Last Name']?.toString().trim() || '';
+  const credentials = row['Provider Credential Text']?.toString().trim() || '';
+  const address = row['Provider First Line Business Practice Location Address']?.toString().trim() || '';
+  const city = row['Provider Business Practice Location Address City Name']?.toString().trim() || row['City']?.toString().trim() || '';
+  const state = row['Provider Business Practice Location Address State Name']?.toString().trim() || row['State/Province']?.toString().trim() || '';
+  const zipCode = row['Provider Business Practice Location Address Postal Code']?.toString().trim() || row['Zip']?.toString().trim() || '';
+  const taxonomyCode = row['Healthcare Provider Taxonomy Code_1']?.toString().trim() || '';
+  const licenseState = row['Provider License Number State Code_1']?.toString().trim() || '';
   
+  // Required fields - either use combined name or first/last name
   if (!firstName && !lastName) {
     errors.push({ row: rowNumber, field: 'name', value: '', message: 'First name or last name is required' });
   } else {
@@ -273,28 +282,60 @@ function validateProvider(row: any, rowNumber: number, errors: ValidationError[]
     data.name = `${firstName} ${lastName}`.trim(); // Create combined name for compatibility
   }
 
-  // Map user's column headers to database fields
+  // Map NPI Registry columns to database fields
+  if (city) data.city = city;
+  if (state) data.state = state;
+  if (zipCode) data.zip_code = zipCode.substring(0, 10); // Limit zip code length
+  if (credentials) data.additional_info = `Credentials: ${credentials}`;
+  if (npi) {
+    data.additional_info = data.additional_info ? `${data.additional_info}, NPI: ${npi}` : `NPI: ${npi}`;
+  }
+  if (licenseState) data.license_state = licenseState;
+  data.source = 'NPI Registry Bulk Upload';
+
+  // Handle specializations from taxonomy code
+  if (taxonomyCode) {
+    const specializations = getTaxonomySpecialization(taxonomyCode);
+    if (specializations) {
+      data.specializations = [specializations];
+    }
+  }
+
+  // Fallback to original column mappings for other formats
   if (row.Email) data.email = row.Email.toString().trim();
   if (row.Phone) data.phone = row.Phone.toString().trim();
-  if (row.City) data.city = row.City.toString().trim();
-  if (row['State/Province']) data.state = row['State/Province'].toString().trim();
-  if (row.Zip) data.zip_code = row.Zip.toString().trim();
   if (row['Current Employer']) data.current_employer = row['Current Employer'].toString().trim();
   if (row['Current Job Title']) data.current_job_title = row['Current Job Title'].toString().trim();
-  if (row['Additional Info']) {
+  if (row['Additional Info'] && !data.additional_info) {
     data.additional_info = row['Additional Info'].toString().trim();
     data.bio = row['Additional Info'].toString().trim(); // Also map to bio for compatibility
   }
-  if (row.Source) data.source = row.Source.toString().trim();
+  if (row.Source && !data.source) data.source = row.Source.toString().trim();
   if (row.LinkedIn) data.linkedin_url = row.LinkedIn.toString().trim();
 
-  // Parse skill set as specializations
-  if (row['Skill Set']) {
+  // Parse skill set as specializations (if not already set from taxonomy)
+  if (row['Skill Set'] && !data.specializations) {
     const skills = row['Skill Set'].toString().split(',').map((s: string) => s.trim()).filter(Boolean);
     if (skills.length > 0) data.specializations = skills;
   }
 
   return data;
+}
+
+function getTaxonomySpecialization(taxonomyCode: string): string | null {
+  const specializations: { [key: string]: string } = {
+    "225100000X": "Physical Therapy",
+    "2251C2600X": "Cardiopulmonary",
+    "2251E1300X": "Electrophysiology",
+    "2251G0304X": "Geriatrics",
+    "2251H1200X": "Hand Therapy",
+    "2251N0400X": "Neurology",
+    "2251P0200X": "Pediatrics",
+    "2251S0007X": "Sports Physical Therapy",
+    "2251X0800X": "Orthopedic",
+    "225200000X": "Physical Therapist Assistant",
+  };
+  return specializations[taxonomyCode] || null;
 }
 
 function validateCompany(row: any, rowNumber: number, errors: ValidationError[]) {
