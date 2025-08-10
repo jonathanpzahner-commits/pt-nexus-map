@@ -43,51 +43,124 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   });
   const navigate = useNavigate();
 
-  // Fetch all location data
+  // Fetch ALL location data - no limits
   const { data: companies = [], isLoading: companiesLoading, error: companiesError } = useQuery({
-    queryKey: ['companies'],
+    queryKey: ['companies-all'],
     queryFn: async () => {
-      console.log('Fetching companies...');
-      const { data, error } = await supabase.from('companies').select('*');
-      console.log('Companies query result:', { data: data?.length, error });
-      if (error) {
-        console.error('Companies query error:', error);
-        throw error;
+      console.log('Fetching ALL companies...');
+      let allCompanies = [];
+      let from = 0;
+      const limit = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from('companies')
+          .select('*')
+          .range(from, from + limit - 1);
+          
+        if (error) {
+          console.error('Companies query error:', error);
+          throw error;
+        }
+        
+        if (!data || data.length === 0) break;
+        
+        allCompanies.push(...data);
+        console.log(`Fetched ${data.length} companies, total: ${allCompanies.length}`);
+        
+        if (data.length < limit) break;
+        from += limit;
       }
-      return data || [];
+      
+      console.log(`Total companies fetched: ${allCompanies.length}`);
+      return allCompanies;
     },
   });
 
-  console.log('Companies state:', { 
-    data: companies?.length, 
-    isLoading: companiesLoading, 
-    error: companiesError 
-  });
-
   const { data: schools = [] } = useQuery({
-    queryKey: ['schools'],
+    queryKey: ['schools-all'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('schools').select('*');
-      if (error) throw error;
-      return data;
+      console.log('Fetching ALL schools...');
+      let allSchools = [];
+      let from = 0;
+      const limit = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from('schools')
+          .select('*')
+          .range(from, from + limit - 1);
+          
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allSchools.push(...data);
+        console.log(`Fetched ${data.length} schools, total: ${allSchools.length}`);
+        
+        if (data.length < limit) break;
+        from += limit;
+      }
+      
+      console.log(`Total schools fetched: ${allSchools.length}`);
+      return allSchools;
     },
   });
 
   const { data: providers = [] } = useQuery({
-    queryKey: ['providers'],
+    queryKey: ['providers-all'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('providers').select('*').not('latitude', 'is', null);
-      if (error) throw error;
-      return data;
+      console.log('Fetching ALL providers...');
+      let allProviders = [];
+      let from = 0;
+      const limit = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from('providers')
+          .select('*')
+          .range(from, from + limit - 1);
+          
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allProviders.push(...data);
+        console.log(`Fetched ${data.length} providers, total: ${allProviders.length}`);
+        
+        if (data.length < limit) break;
+        from += limit;
+      }
+      
+      console.log(`Total providers fetched: ${allProviders.length}`);
+      return allProviders;
     },
   });
 
   const { data: jobListings = [] } = useQuery({
-    queryKey: ['job-listings'],
+    queryKey: ['job-listings-all'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('job_listings').select('*');
-      if (error) throw error;
-      return data;
+      console.log('Fetching ALL job listings...');
+      let allJobs = [];
+      let from = 0;
+      const limit = 1000;
+      
+      while (true) {
+        const { data, error } = await supabase
+          .from('job_listings')
+          .select('*')
+          .range(from, from + limit - 1);
+          
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allJobs.push(...data);
+        console.log(`Fetched ${data.length} job listings, total: ${allJobs.length}`);
+        
+        if (data.length < limit) break;
+        from += limit;
+      }
+      
+      console.log(`Total job listings fetched: ${allJobs.length}`);
+      return allJobs;
     },
   });
 
@@ -360,10 +433,10 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     markers.forEach(marker => marker.remove());
 
     const dataToShow = searchCenter ? filteredData : {
-      companies: companies.slice(0, 100), // Reduce initial load for performance
-      schools: schools.slice(0, 100), 
-      providers: providers.slice(0, 100),
-      jobListings: jobListings.slice(0, 50)
+      companies: companies, // Show ALL companies
+      schools: schools,     // Show ALL schools  
+      providers: providers, // Show ALL providers
+      jobListings: jobListings // Show ALL job listings
     };
 
     // Add markers for each category
