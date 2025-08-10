@@ -92,18 +92,23 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   });
 
   const searchLocationSuggestions = async (query: string): Promise<void> => {
-    if (!token || query.length < 2) {
+    if (query.length < 2) {
       setLocationSuggestions([]);
       return;
     }
     
     try {
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&limit=5&types=place,locality,neighborhood,address`
-      );
-      const data = await response.json();
+      const { data, error } = await supabase.functions.invoke('location-autocomplete', {
+        body: { query }
+      });
       
-      if (data.features && data.features.length > 0) {
+      if (error) {
+        console.error('Location search error:', error);
+        setLocationSuggestions([]);
+        return;
+      }
+      
+      if (data?.features && data.features.length > 0) {
         const suggestions = data.features.map((feature: any) => ({
           place_name: feature.place_name,
           center: feature.center
@@ -119,27 +124,36 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   };
 
   const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
-    if (!token) return null;
-    
     try {
-      // Add "United States" to state names for better geocoding accuracy
-      let searchLocation = location;
+      // Parse the location to determine if it's an address or city/state
+      const parts = location.split(',').map(part => part.trim());
+      let city = '';
+      let state = '';
+      let address = '';
       
-      // List of US states to detect state-only searches
-      const usStates = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming'];
-      
-      // If location is just a state name, add "United States" for better geocoding
-      if (usStates.includes(location.trim())) {
-        searchLocation = `${location}, United States`;
+      if (parts.length === 1) {
+        // Could be a state name
+        state = parts[0];
+      } else if (parts.length === 2) {
+        // City, State format
+        city = parts[0];
+        state = parts[1];
+      } else {
+        // Assume it's a full address
+        address = location;
       }
       
-      const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchLocation)}.json?access_token=${token}&limit=1&country=US`
-      );
-      const data = await response.json();
+      const { data, error } = await supabase.functions.invoke('geocode-location', {
+        body: { address, city, state }
+      });
       
-      if (data.features && data.features.length > 0) {
-        return data.features[0].center;
+      if (error) {
+        console.error('Geocoding error:', error);
+        return null;
+      }
+      
+      if (data?.latitude && data?.longitude) {
+        return [data.longitude, data.latitude];
       }
     } catch (error) {
       console.error('Geocoding error:', error);
