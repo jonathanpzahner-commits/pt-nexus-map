@@ -43,125 +43,12 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   });
   const navigate = useNavigate();
 
-  // Fetch ALL location data - no limits
-  const { data: companies = [], isLoading: companiesLoading, error: companiesError } = useQuery({
-    queryKey: ['companies-all'],
-    queryFn: async () => {
-      console.log('Fetching ALL companies...');
-      let allCompanies = [];
-      let from = 0;
-      const limit = 1000;
-      
-      while (true) {
-        const { data, error } = await supabase
-          .from('companies')
-          .select('*')
-          .range(from, from + limit - 1);
-          
-        if (error) {
-          console.error('Companies query error:', error);
-          throw error;
-        }
-        
-        if (!data || data.length === 0) break;
-        
-        allCompanies.push(...data);
-        console.log(`Fetched ${data.length} companies, total: ${allCompanies.length}`);
-        
-        if (data.length < limit) break;
-        from += limit;
-      }
-      
-      console.log(`Total companies fetched: ${allCompanies.length}`);
-      return allCompanies;
-    },
-  });
-
-  const { data: schools = [] } = useQuery({
-    queryKey: ['schools-all'],
-    queryFn: async () => {
-      console.log('Fetching ALL schools...');
-      let allSchools = [];
-      let from = 0;
-      const limit = 1000;
-      
-      while (true) {
-        const { data, error } = await supabase
-          .from('schools')
-          .select('*')
-          .range(from, from + limit - 1);
-          
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        
-        allSchools.push(...data);
-        console.log(`Fetched ${data.length} schools, total: ${allSchools.length}`);
-        
-        if (data.length < limit) break;
-        from += limit;
-      }
-      
-      console.log(`Total schools fetched: ${allSchools.length}`);
-      return allSchools;
-    },
-  });
-
-  const { data: providers = [] } = useQuery({
-    queryKey: ['providers-all'],
-    queryFn: async () => {
-      console.log('Fetching ALL providers...');
-      let allProviders = [];
-      let from = 0;
-      const limit = 1000;
-      
-      while (true) {
-        const { data, error } = await supabase
-          .from('providers')
-          .select('*')
-          .range(from, from + limit - 1);
-          
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        
-        allProviders.push(...data);
-        console.log(`Fetched ${data.length} providers, total: ${allProviders.length}`);
-        
-        if (data.length < limit) break;
-        from += limit;
-      }
-      
-      console.log(`Total providers fetched: ${allProviders.length}`);
-      return allProviders;
-    },
-  });
-
-  const { data: jobListings = [] } = useQuery({
-    queryKey: ['job-listings-all'],
-    queryFn: async () => {
-      console.log('Fetching ALL job listings...');
-      let allJobs = [];
-      let from = 0;
-      const limit = 1000;
-      
-      while (true) {
-        const { data, error } = await supabase
-          .from('job_listings')
-          .select('*')
-          .range(from, from + limit - 1);
-          
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        
-        allJobs.push(...data);
-        console.log(`Fetched ${data.length} job listings, total: ${allJobs.length}`);
-        
-        if (data.length < limit) break;
-        from += limit;
-      }
-      
-      console.log(`Total job listings fetched: ${allJobs.length}`);
-      return allJobs;
-    },
+  // Don't fetch all data on load - only fetch after location search
+  const [allData, setAllData] = useState({
+    companies: [],
+    schools: [],
+    providers: [],
+    jobListings: []
   });
 
   const searchLocationSuggestions = async (query: string): Promise<void> => {
@@ -247,126 +134,98 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     return R * c;
   };
 
-  const filterDataByRadius = async (center: [number, number], radiusMiles: number) => {
-    console.log(`Starting to filter data within ${radiusMiles} miles of [${center[1]}, ${center[0]}]`);
-    console.log(`Data to filter: ${companies.length} companies, ${schools.length} schools, ${providers.length} providers, ${jobListings.length} job listings`);
+  const fetchDataWithinRadius = async (center: [number, number], radiusMiles: number) => {
+    console.log(`Fetching data within ${radiusMiles} miles of [${center[1]}, ${center[0]}]`);
     
-    const filtered = {
-      companies: [],
-      schools: [],
-      providers: [],
-      jobListings: []
-    };
-
-    // Filter companies - check both company_locations array and individual city/state fields
-    for (const company of companies) {
-      let coords = null;
-      let locationString = '';
-      
-      // Try company_locations array first
-      if (company.company_locations && company.company_locations.length > 0) {
-        for (const location of company.company_locations) {
-          coords = await geocodeLocation(location);
-          if (coords) {
-            locationString = location;
-            break;
-          }
-        }
-      }
-      
-      // If no coords yet, try individual fields or any location-like field
-      if (!coords) {
-        // Check for common location field combinations using type assertion
-        const companyAny = company as any;
-        const city = companyAny.city;
-        const state = companyAny.state;
+    try {
+      // Use database functions for efficient radius filtering
+      const [companiesResponse, providersResponse, schoolsResponse, jobsResponse] = await Promise.all([
+        // Companies with coordinates
+        supabase.rpc('companies_within_radius', {
+          user_lat: center[1],
+          user_lng: center[0], 
+          radius_miles: radiusMiles
+        }),
         
-        if (city && state) {
-          locationString = `${city}, ${state}`;
-          coords = await geocodeLocation(locationString);
-        } else if (companyAny.address) {
-          // Try full address if available
-          locationString = companyAny.address;
-          coords = await geocodeLocation(locationString);
-        } else if (state) {
-          // Try just state
-          locationString = state;
-          coords = await geocodeLocation(locationString);
-        }
-      }
-      
-      if (coords) {
-        const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
-        if (distance <= radiusMiles) {
-          filtered.companies.push({ ...company, _coords: coords, _location: locationString });
-        }
-      }
-    }
+        // Providers with coordinates  
+        supabase.rpc('providers_within_radius', {
+          user_lat: center[1],
+          user_lng: center[0],
+          radius_miles: radiusMiles
+        }),
+        
+        // Schools (need to geocode first, then filter)
+        supabase.from('schools').select('*'),
+        
+        // Job listings (need to geocode first, then filter)  
+        supabase.from('job_listings').select('*')
+      ]);
 
-    // Filter schools
-    for (const school of schools) {
-      if (school.city && school.state) {
-        const location = `${school.city}, ${school.state}`;
-        const coords = await geocodeLocation(location);
-        if (coords) {
-          const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
-          if (distance <= radiusMiles) {
-            filtered.schools.push({ ...school, _coords: coords });
+      console.log('Database responses:', {
+        companies: companiesResponse.data?.length || 0,
+        providers: providersResponse.data?.length || 0,
+        schools: schoolsResponse.data?.length || 0,
+        jobs: jobsResponse.data?.length || 0
+      });
+
+      const filtered = {
+        companies: companiesResponse.data || [],
+        providers: providersResponse.data || [],
+        schools: [],
+        jobListings: []
+      };
+
+      // Filter schools by geocoding city/state
+      if (schoolsResponse.data) {
+        for (const school of schoolsResponse.data) {
+          if (school.city && school.state) {
+            const coords = await geocodeLocation(`${school.city}, ${school.state}`);
+            if (coords) {
+              const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
+              if (distance <= radiusMiles) {
+                filtered.schools.push({ ...school, _coords: coords, distance_miles: distance });
+              }
+            }
           }
         }
       }
-    }
 
-    // Filter providers (use stored lat/lng if available)
-    console.log(`Filtering ${providers.length} providers...`);
-    let providerCount = 0;
-    for (const provider of providers) {
-      if (providerCount % 10000 === 0) {
-        console.log(`Processed ${providerCount}/${providers.length} providers, found ${filtered.providers.length} within radius`);
-      }
-      
-      let coords: [number, number] | null = null;
-      
-      if (provider.latitude && provider.longitude) {
-        coords = [parseFloat(provider.longitude.toString()), parseFloat(provider.latitude.toString())];
-      } else if (provider.city && provider.state) {
-        const location = `${provider.city}, ${provider.state}`;
-        coords = await geocodeLocation(location);
-      }
-      
-      if (coords) {
-        const distance = calculateDistance(center[1], center[0], parseFloat(coords[1].toString()), parseFloat(coords[0].toString()));
-        if (distance <= radiusMiles) {
-          filtered.providers.push({ ...provider, _coords: coords });
-        }
-      }
-      providerCount++;
-    }
-    console.log(`Finished filtering providers: ${filtered.providers.length} found within ${radiusMiles} miles`);
-
-    // Filter job listings
-    for (const job of jobListings) {
-      if (job.city && job.state) {
-        const location = `${job.city}, ${job.state}`;
-        const coords = await geocodeLocation(location);
-        if (coords) {
-          const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
-          if (distance <= radiusMiles) {
-            filtered.jobListings.push({ ...job, _coords: coords });
+      // Filter job listings by geocoding city/state
+      if (jobsResponse.data) {
+        for (const job of jobsResponse.data) {
+          if (job.city && job.state) {
+            const coords = await geocodeLocation(`${job.city}, ${job.state}`);
+            if (coords) {
+              const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
+              if (distance <= radiusMiles) {
+                filtered.jobListings.push({ ...job, _coords: coords, distance_miles: distance });
+              }
+            }
           }
         }
       }
-    }
 
-    console.log(`Filtering complete! Found within ${radiusMiles} miles:`, {
-      companies: filtered.companies.length,
-      schools: filtered.schools.length, 
-      providers: filtered.providers.length,
-      jobListings: filtered.jobListings.length
-    });
-    
-    setFilteredData(filtered);
-    return filtered;
+      console.log('Final filtered results:', {
+        companies: filtered.companies.length,
+        providers: filtered.providers.length,
+        schools: filtered.schools.length,
+        jobListings: filtered.jobListings.length
+      });
+
+      setFilteredData(filtered);
+      setAllData(filtered);
+      return filtered;
+      
+    } catch (error) {
+      console.error('Error fetching data within radius:', error);
+      toast.error('Error fetching location data');
+      return {
+        companies: [],
+        providers: [],
+        schools: [],
+        jobListings: []
+      };
+    }
   };
 
   const handleLocationSelect = async (location: string, coords?: [number, number]) => {
@@ -390,7 +249,7 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       });
     }
 
-    await filterDataByRadius(finalCoords, radius[0]);
+    await fetchDataWithinRadius(finalCoords, radius[0]);
     toast.success(`Found locations within ${radius[0]} miles of ${location}`);
   };
 
@@ -469,29 +328,11 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       
       let markersAdded = 0;
       
-      // Companies
+      // Companies (already have coordinates from database function)
       for (const company of dataToShow.companies) {
-        let coords = company._coords;
-        
-        if (!coords) {
-          // Try company_locations array first
-          if (company.company_locations && company.company_locations.length > 0) {
-            coords = await geocodeLocation(company.company_locations[0]);
-          } else {
-            // Try individual location fields using type assertion
-            const companyAny = company as any;
-            const city = companyAny.city;
-            const state = companyAny.state;
-            
-            if (city && state) {
-              coords = await geocodeLocation(`${city}, ${state}`);
-            } else if (companyAny.address) {
-              coords = await geocodeLocation(companyAny.address);
-            } else if (state) {
-              coords = await geocodeLocation(state);
-            }
-          }
-        }
+        const coords = company.longitude && company.latitude 
+          ? [parseFloat(company.longitude), parseFloat(company.latitude)]
+          : company._coords;
         
         if (coords) {
           markersAdded++;
@@ -501,7 +342,8 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
             `<div class="p-2">
               <h3 class="font-semibold text-sm">${company.name}</h3>
               <p class="text-xs text-gray-600">${company.company_type || 'Company'}</p>
-              <p class="text-xs">${company._location || ''}</p>
+              <p class="text-xs">${company.city}, ${company.state}</p>
+              <p class="text-xs text-gray-500">${company.distance_miles ? `${company.distance_miles.toFixed(1)} miles` : ''}</p>
             </div>`
           );
 
@@ -515,19 +357,26 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           });
 
           marker.getElement().style.cursor = 'pointer';
-        } else {
-          console.log('Failed to geocode company:', company.name, company.company_locations);
         }
       }
 
       // Schools
       for (const school of dataToShow.schools) {
-        const coords = school._coords || (school.city && school.state ? 
-          await geocodeLocation(`${school.city}, ${school.state}`) : null);
+        const coords = school._coords;
         
         if (coords) {
+          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+            `<div class="p-2">
+              <h3 class="font-semibold text-sm">${school.name}</h3>
+              <p class="text-xs text-gray-600">School</p>
+              <p class="text-xs">${school.city}, ${school.state}</p>
+              <p class="text-xs text-gray-500">${school.distance_miles ? `${school.distance_miles.toFixed(1)} miles` : ''}</p>
+            </div>`
+          );
+
           const marker = new mapboxgl.Marker({ color: '#10B981' })
             .setLngLat(coords)
+            .setPopup(popup)
             .addTo(map.current!);
 
           marker.getElement().addEventListener('click', () => {
@@ -538,19 +387,25 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         }
       }
 
-      // Providers
+      // Providers (already have coordinates from database function) 
       for (const provider of dataToShow.providers) {
-        let coords = provider._coords;
-        
-        if (!coords && provider.latitude && provider.longitude) {
-          coords = [parseFloat(provider.longitude), parseFloat(provider.latitude)];
-        } else if (!coords && provider.city && provider.state) {
-          coords = await geocodeLocation(`${provider.city}, ${provider.state}`);
-        }
+        const coords = provider.longitude && provider.latitude
+          ? [parseFloat(provider.longitude), parseFloat(provider.latitude)]
+          : provider._coords;
         
         if (coords) {
+          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+            `<div class="p-2">
+              <h3 class="font-semibold text-sm">${provider.name || `${provider.first_name} ${provider.last_name}`}</h3>
+              <p class="text-xs text-gray-600">Provider</p>
+              <p class="text-xs">${provider.city}, ${provider.state}</p>
+              <p class="text-xs text-gray-500">${provider.distance_miles ? `${provider.distance_miles.toFixed(1)} miles` : ''}</p>
+            </div>`
+          );
+
           const marker = new mapboxgl.Marker({ color: '#F59E0B' })
             .setLngLat(coords)
+            .setPopup(popup)
             .addTo(map.current!);
 
           marker.getElement().addEventListener('click', () => {
@@ -563,12 +418,21 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
 
       // Job Listings
       for (const job of dataToShow.jobListings) {
-        const coords = job._coords || (job.city && job.state ? 
-          await geocodeLocation(`${job.city}, ${job.state}`) : null);
+        const coords = job._coords;
         
         if (coords) {
+          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+            `<div class="p-2">
+              <h3 class="font-semibold text-sm">${job.title}</h3>
+              <p class="text-xs text-gray-600">Job Listing</p>
+              <p class="text-xs">${job.city}, ${job.state}</p>
+              <p class="text-xs text-gray-500">${job.distance_miles ? `${job.distance_miles.toFixed(1)} miles` : ''}</p>
+            </div>`
+          );
+
           const marker = new mapboxgl.Marker({ color: '#EF4444' })
             .setLngLat(coords)
+            .setPopup(popup)
             .addTo(map.current!);
 
           marker.getElement().addEventListener('click', () => {
@@ -615,10 +479,10 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   }
 
   const currentData = searchCenter ? filteredData : {
-    companies: companies.slice(0, 1000),
-    schools: schools.slice(0, 1000),
-    providers: providers.slice(0, 1000),
-    jobListings: jobListings.slice(0, 1000)
+    companies: [],
+    schools: [],
+    providers: [],
+    jobListings: []
   };
 
   return (
