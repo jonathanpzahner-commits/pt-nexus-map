@@ -17,7 +17,8 @@ import {
   MessageSquare,
   Headphones,
   DollarSign,
-  Handshake
+  Handshake,
+  MapPin
 } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
@@ -26,6 +27,7 @@ import { JobListingsTab } from './dashboard/JobListingsTab';
 import { MapContainer } from './map/MapContainer';
 import { GlobalSearch } from './search/GlobalSearch';
 import { SimpleBulkUpload } from './upload/SimpleBulkUpload';
+import { AutoGeocodeManager } from './dashboard/AutoGeocodeManager';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
@@ -126,7 +128,7 @@ const Dashboard = () => {
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-9 h-12">
+        <TabsList className="grid w-full grid-cols-10 h-12">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -158,6 +160,10 @@ const Dashboard = () => {
           <TabsTrigger value="map" className="flex items-center gap-2">
             <Map className="h-4 w-4" />
             <span className="hidden sm:inline">Map</span>
+          </TabsTrigger>
+          <TabsTrigger value="geocoding" className="flex items-center gap-2">
+            <MapPin className="h-4 w-4" />
+            <span className="hidden sm:inline">Geocoding</span>
           </TabsTrigger>
           <TabsTrigger value="community" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
@@ -226,6 +232,16 @@ const Dashboard = () => {
             </div>
             <MapContainer />
           </div>
+        </TabsContent>
+
+        <TabsContent value="geocoding" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <MapPin className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Automated Geocoding</h2>
+            </div>
+          </div>
+          <AutoGeocodeManager />
         </TabsContent>
 
         <TabsContent value="community" className="space-y-4">

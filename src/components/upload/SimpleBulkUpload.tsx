@@ -196,7 +196,8 @@ export function SimpleBulkUpload({ open, onOpenChange, onUploadComplete }: Simpl
             specializations: record['Healthcare Provider Taxonomy Code_1'] ? [record['Healthcare Provider Taxonomy Code_1']] : [],
             license_number: record['Provider License Number_1'] || null,
             license_state: record['Provider License Number State Code_1'] || null,
-            source: 'NPI Database'
+            source: 'NPI Database',
+            // Note: latitude/longitude will be auto-populated by trigger
           };
 
           // Only add if we have at least a name
@@ -230,6 +231,9 @@ export function SimpleBulkUpload({ open, onOpenChange, onUploadComplete }: Simpl
             validRecords.forEach(record => {
               bySheet[record._sourceSheet].successful++;
             });
+            
+            // Auto-geocoding will happen via database triggers
+            console.log(`Inserted ${validRecords.length} providers - geocoding will happen automatically`);
           }
         } catch (err) {
           failed += validRecords.length;
