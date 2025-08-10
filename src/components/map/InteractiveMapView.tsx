@@ -569,7 +569,7 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     };
 
     addMarkers();
-  }, [filteredData, searchCenter, companies, schools, providers, jobListings, navigate]);
+  }, [filteredData, searchCenter, navigate]);
 
   const handleTokenSubmit = (e: React.FormEvent) => {
     e.preventDefault();
