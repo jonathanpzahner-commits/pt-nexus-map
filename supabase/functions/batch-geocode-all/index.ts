@@ -75,14 +75,9 @@ serve(async (req) => {
 
     console.log(`Starting batch geocoding for ${table} table`);
 
-    // Get records without coordinates
-    let query = supabase
-      .from(table)
-      .select('id, city, state, address')
-      .or('latitude.is.null,longitude.is.null')
-      .limit(batch_size * max_batches);
-
-    // Add table-specific fields
+    // Get records without coordinates - table-specific queries
+    let query;
+    
     if (table === 'companies') {
       query = supabase
         .from(table)
@@ -93,6 +88,23 @@ serve(async (req) => {
       query = supabase
         .from(table)
         .select('id, city, state, name, first_name, last_name')
+        .or('latitude.is.null,longitude.is.null')
+        .limit(batch_size * max_batches);
+    } else if (table === 'schools') {
+      // Schools don't have address column, only city and state
+      query = supabase
+        .from(table)
+        .select('id, city, state, name')
+        .limit(batch_size * max_batches);
+    } else if (table === 'job_listings') {
+      query = supabase
+        .from(table)
+        .select('id, city, state, title')
+        .limit(batch_size * max_batches);
+    } else {
+      query = supabase
+        .from(table)
+        .select('id, city, state')
         .or('latitude.is.null,longitude.is.null')
         .limit(batch_size * max_batches);
     }
@@ -137,6 +149,7 @@ serve(async (req) => {
           );
 
           if (coords) {
+            // Only update coordinates, don't touch other fields
             updates.push({
               id: record.id,
               latitude: coords.latitude,
@@ -161,18 +174,25 @@ serve(async (req) => {
         }
       }
 
-      // Update coordinates in batch
+      // Update coordinates in batch using individual updates to avoid constraint issues
       if (updates.length > 0) {
-        const { error: updateError } = await supabase
-          .from(table)
-          .upsert(updates, { onConflict: 'id' });
+        for (const update of updates) {
+          const { error: updateError } = await supabase
+            .from(table)
+            .update({ 
+              latitude: update.latitude, 
+              longitude: update.longitude 
+            })
+            .eq('id', update.id);
 
-        if (updateError) {
-          console.error('Error updating coordinates:', updateError);
-          errors.push(`Batch update error: ${updateError.message}`);
-        } else {
-          console.log(`Updated ${updates.length} records with coordinates`);
+          if (updateError) {
+            console.error('Error updating coordinates:', updateError);
+            errors.push(`Update error for ${update.id}: ${updateError.message}`);
+            failed++;
+            successful--; // Adjust counter since this one failed
+          }
         }
+        console.log(`Attempted to update ${updates.length} records with coordinates`);
       }
 
       // Progress update
