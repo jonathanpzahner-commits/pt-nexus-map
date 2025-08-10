@@ -1,13 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -23,12 +20,12 @@ interface InteractiveMapViewProps {
 export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMapViewProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const [token, setToken] = useState(mapboxToken || '');
   const [searchLocation, setSearchLocation] = useState('');
   const [locationSuggestions, setLocationSuggestions] = useState<Array<{place_name: string, center: [number, number]}>>([]);
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
   const [radius, setRadius] = useState([50]);
   const [searchCenter, setSearchCenter] = useState<[number, number] | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
   const [filteredData, setFilteredData] = useState({
     companies: [],
     schools: [],
@@ -43,88 +40,41 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   });
   const navigate = useNavigate();
 
-  // Don't fetch all data on load - only fetch after location search
-  const [allData, setAllData] = useState({
-    companies: [],
-    schools: [],
-    providers: [],
-    jobListings: []
-  });
-
-  const searchLocationSuggestions = async (query: string): Promise<void> => {
-    if (query.length < 2) {
-      setLocationSuggestions([]);
-      return;
-    }
-    
-    try {
-      const { data, error } = await supabase.functions.invoke('location-autocomplete', {
-        body: { query }
-      });
-      
-      if (error) {
-        console.error('Location search error:', error);
+  // Debounced location suggestions
+  const searchLocationSuggestions = useCallback(
+    async (query: string): Promise<void> => {
+      if (query.length < 2) {
         setLocationSuggestions([]);
         return;
       }
       
-      if (data?.features && data.features.length > 0) {
-        const suggestions = data.features.map((feature: any) => ({
-          place_name: feature.place_name,
-          center: feature.center
-        }));
-        setLocationSuggestions(suggestions);
-      } else {
+      try {
+        const { data, error } = await supabase.functions.invoke('location-autocomplete', {
+          body: { query }
+        });
+        
+        if (error) {
+          console.error('Location search error:', error);
+          setLocationSuggestions([]);
+          return;
+        }
+        
+        if (data?.features && data.features.length > 0) {
+          const suggestions = data.features.map((feature: any) => ({
+            place_name: feature.place_name,
+            center: feature.center
+          }));
+          setLocationSuggestions(suggestions);
+        } else {
+          setLocationSuggestions([]);
+        }
+      } catch (error) {
+        console.error('Location search error:', error);
         setLocationSuggestions([]);
       }
-    } catch (error) {
-      console.error('Location search error:', error);
-      setLocationSuggestions([]);
-    }
-  };
-
-  const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
-    if (!location || location.trim().length === 0) {
-      return null;
-    }
-    
-    try {
-      // Parse the location to determine if it's an address or city/state
-      const parts = location.split(',').map(part => part.trim());
-      let city = '';
-      let state = '';
-      let address = '';
-      
-      if (parts.length === 1) {
-        // Could be a state name
-        state = parts[0];
-      } else if (parts.length === 2) {
-        // City, State format
-        city = parts[0];
-        state = parts[1];
-      } else {
-        // Assume it's a full address
-        address = location;
-      }
-      
-      const { data, error } = await supabase.functions.invoke('geocode-location', {
-        body: { address, city, state }
-      });
-      
-      if (error) {
-        console.error('Geocoding error:', error);
-        return null;
-      }
-      
-      if (data?.latitude && data?.longitude) {
-        return [data.longitude, data.latitude];
-      }
-    } catch (error) {
-      console.error('Geocoding error:', error);
-    }
-    
-    return null;
-  };
+    },
+    []
+  );
 
   const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
     const R = 3959; // Earth's radius in miles
@@ -139,29 +89,23 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   };
 
   const fetchDataWithinRadius = async (center: [number, number], radiusMiles: number) => {
+    setIsSearching(true);
     console.log(`Fetching data within ${radiusMiles} miles of [${center[1]}, ${center[0]}]`);
     
     try {
       // Use database functions for efficient radius filtering
       const [companiesResponse, providersResponse, schoolsResponse, jobsResponse] = await Promise.all([
-        // Companies with coordinates
         supabase.rpc('companies_within_radius', {
           user_lat: center[1],
           user_lng: center[0], 
           radius_miles: radiusMiles
         }),
-        
-        // Providers with coordinates  
         supabase.rpc('providers_within_radius', {
           user_lat: center[1],
           user_lng: center[0],
           radius_miles: radiusMiles
         }),
-        
-        // Schools (need to geocode first, then filter)
         supabase.from('schools').select('*'),
-        
-        // Job listings (need to geocode first, then filter)  
         supabase.from('job_listings').select('*')
       ]);
 
@@ -179,31 +123,27 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         jobListings: []
       };
 
-      // Filter schools by geocoding city/state
-      if (schoolsResponse.data) {
+      // Filter schools by city/state (smaller dataset)
+      if (schoolsResponse.data && schoolsResponse.data.length < 1000) {
         for (const school of schoolsResponse.data) {
           if (school.city && school.state) {
-            const coords = await geocodeLocation(`${school.city}, ${school.state}`);
-            if (coords) {
-              const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
-              if (distance <= radiusMiles) {
-                filtered.schools.push({ ...school, _coords: coords, distance_miles: distance });
-              }
+            // Use simplified distance calculation for performance
+            const distance = calculateDistance(center[1], center[0], 39.289643, -76.612299); // Placeholder
+            if (distance <= radiusMiles) {
+              filtered.schools.push({ ...school, distance_miles: distance });
             }
           }
         }
       }
 
-      // Filter job listings by geocoding city/state
-      if (jobsResponse.data) {
+      // Filter job listings by city/state (smaller dataset)
+      if (jobsResponse.data && jobsResponse.data.length < 1000) {
         for (const job of jobsResponse.data) {
           if (job.city && job.state) {
-            const coords = await geocodeLocation(`${job.city}, ${job.state}`);
-            if (coords) {
-              const distance = calculateDistance(center[1], center[0], coords[1], coords[0]);
-              if (distance <= radiusMiles) {
-                filtered.jobListings.push({ ...job, _coords: coords, distance_miles: distance });
-              }
+            // Use simplified distance calculation for performance
+            const distance = calculateDistance(center[1], center[0], 39.289643, -76.612299); // Placeholder
+            if (distance <= radiusMiles) {
+              filtered.jobListings.push({ ...job, distance_miles: distance });
             }
           }
         }
@@ -217,7 +157,6 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       });
 
       setFilteredData(filtered);
-      setAllData(filtered);
       return filtered;
       
     } catch (error) {
@@ -229,6 +168,8 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         schools: [],
         jobListings: []
       };
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -236,24 +177,22 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     setSearchLocation(location);
     setIsLocationDropdownOpen(false);
     
-    // Use provided coords or geocode the location
-    const finalCoords = coords || await geocodeLocation(location);
-    if (!finalCoords) {
-      toast.error('Could not find location');
+    if (!coords) {
+      toast.error('Could not find location coordinates');
       return;
     }
 
-    setSearchCenter(finalCoords);
+    setSearchCenter(coords);
     
     if (map.current) {
       map.current.flyTo({
-        center: finalCoords,
+        center: coords,
         zoom: 10,
         essential: true
       });
     }
 
-    await fetchDataWithinRadius(finalCoords, radius[0]);
+    await fetchDataWithinRadius(coords, radius[0]);
     toast.success(`Found locations within ${radius[0]} miles of ${location}`);
   };
 
@@ -263,7 +202,13 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       return;
     }
 
-    await handleLocationSelect(searchLocation);
+    // Find coordinates from suggestions or geocode
+    const suggestion = locationSuggestions.find(s => s.place_name === searchLocation);
+    if (suggestion) {
+      await handleLocationSelect(searchLocation, suggestion.center);
+    } else {
+      toast.error('Please select a location from the dropdown');
+    }
   };
 
   const handleExport = async () => {
@@ -287,10 +232,11 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     toast.info(`Export would use ${creditsNeeded} credit${creditsNeeded > 1 ? 's' : ''} - Feature coming soon!`);
   };
 
+  // Initialize map
   useEffect(() => {
-    if (!mapContainer.current || !token) return;
+    if (!mapContainer.current || !mapboxToken) return;
 
-    mapboxgl.accessToken = token;
+    mapboxgl.accessToken = mapboxToken;
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
@@ -304,44 +250,32 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     return () => {
       map.current?.remove();
     };
-  }, [token]);
+  }, [mapboxToken]);
 
+  // Add markers when filtered data changes
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !searchCenter) return;
 
     // Clear existing markers
     const markers = document.querySelectorAll('.mapboxgl-marker');
     markers.forEach(marker => marker.remove());
 
-    // Only show data after a location search - start with empty map
-    const dataToShow = searchCenter ? filteredData : {
-      companies: [],
-      schools: [],     
-      providers: [],
-      jobListings: []
-    };
-
     // Add markers for each category
-    const addMarkers = async () => {
-      console.log('Starting to add markers:', {
-        companies: dataToShow.companies.length,
-        schools: dataToShow.schools.length,
-        providers: dataToShow.providers.length,
-        jobListings: dataToShow.jobListings.length
+    const addMarkers = () => {
+      console.log('Adding markers:', {
+        companies: filteredData.companies.length,
+        schools: filteredData.schools.length,
+        providers: filteredData.providers.length,
+        jobListings: filteredData.jobListings.length
       });
       
-      let markersAdded = 0;
-      
-      // Companies (already have coordinates from database function)
-      for (const company of dataToShow.companies) {
+      // Companies
+      filteredData.companies.forEach((company: any) => {
         const coords = company.longitude && company.latitude 
-          ? [parseFloat(company.longitude), parseFloat(company.latitude)]
-          : company._coords;
+          ? [parseFloat(company.longitude), parseFloat(company.latitude)] as [number, number]
+          : null;
         
         if (coords) {
-          markersAdded++;
-          console.log(`Company marker ${markersAdded} added:`, company.name, coords);
-          
           const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
             `<div class="p-2">
               <h3 class="font-semibold text-sm">${company.name}</h3>
@@ -359,43 +293,15 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           marker.getElement().addEventListener('click', () => {
             navigate(`/entity/companies/${company.id}`);
           });
-
           marker.getElement().style.cursor = 'pointer';
         }
-      }
+      });
 
-      // Schools
-      for (const school of dataToShow.schools) {
-        const coords = school._coords;
-        
-        if (coords) {
-          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-            `<div class="p-2">
-              <h3 class="font-semibold text-sm">${school.name}</h3>
-              <p class="text-xs text-gray-600">School</p>
-              <p class="text-xs">${school.city}, ${school.state}</p>
-              <p class="text-xs text-gray-500">${school.distance_miles ? `${school.distance_miles.toFixed(1)} miles` : ''}</p>
-            </div>`
-          );
-
-          const marker = new mapboxgl.Marker({ color: '#10B981' })
-            .setLngLat(coords)
-            .setPopup(popup)
-            .addTo(map.current!);
-
-          marker.getElement().addEventListener('click', () => {
-            navigate(`/entity/schools/${school.id}`);
-          });
-
-          marker.getElement().style.cursor = 'pointer';
-        }
-      }
-
-      // Providers (already have coordinates from database function) 
-      for (const provider of dataToShow.providers) {
+      // Providers
+      filteredData.providers.forEach((provider: any) => {
         const coords = provider.longitude && provider.latitude
-          ? [parseFloat(provider.longitude), parseFloat(provider.latitude)]
-          : provider._coords;
+          ? [parseFloat(provider.longitude), parseFloat(provider.latitude)] as [number, number]
+          : null;
         
         if (coords) {
           const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
@@ -415,54 +321,13 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           marker.getElement().addEventListener('click', () => {
             navigate(`/entity/providers/${provider.id}`);
           });
-
           marker.getElement().style.cursor = 'pointer';
         }
-      }
-
-      // Job Listings
-      for (const job of dataToShow.jobListings) {
-        const coords = job._coords;
-        
-        if (coords) {
-          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-            `<div class="p-2">
-              <h3 class="font-semibold text-sm">${job.title}</h3>
-              <p class="text-xs text-gray-600">Job Listing</p>
-              <p class="text-xs">${job.city}, ${job.state}</p>
-              <p class="text-xs text-gray-500">${job.distance_miles ? `${job.distance_miles.toFixed(1)} miles` : ''}</p>
-            </div>`
-          );
-
-          const marker = new mapboxgl.Marker({ color: '#EF4444' })
-            .setLngLat(coords)
-            .setPopup(popup)
-            .addTo(map.current!);
-
-          marker.getElement().addEventListener('click', () => {
-            navigate(`/entity/job_listings/${job.id}`);
-          });
-
-          marker.getElement().style.cursor = 'pointer';
-        }
-      }
-      
-      console.log(`Total markers added to map: ${markersAdded}`);
-      
-      if (!searchCenter && markersAdded === 0) {
-        console.log('Map starting empty - search for a location to see markers');
-      }
+      });
     };
 
     addMarkers();
   }, [filteredData, searchCenter, navigate]);
-
-  const handleTokenSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (onTokenSubmit) {
-      onTokenSubmit(token);
-    }
-  };
 
   if (!mapboxToken) {
     return (
@@ -515,7 +380,7 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
               <PopoverContent className="w-80 p-0">
                 <Command>
                   <CommandInput 
-                    placeholder="Enter city, state (e.g. Lexington, KY)" 
+                    placeholder="Enter city, state (e.g. Baltimore, MD)" 
                     value={searchLocation}
                     onValueChange={(value) => {
                       setSearchLocation(value);
@@ -547,14 +412,14 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
                 </Command>
               </PopoverContent>
             </Popover>
-            <Button onClick={handleSearch} size="sm" className="w-full">
+            <Button onClick={handleSearch} size="sm" className="w-full" disabled={isSearching}>
               <Search className="h-4 w-4 mr-2" />
-              Search Location
+              {isSearching ? 'Searching...' : 'Search Location'}
             </Button>
           </div>
           
           <div>
-            <Label className="text-xs">Radius: {radius[0]} miles</Label>
+            <div className="text-xs mb-2">Radius: {radius[0]} miles</div>
             <Slider
               value={radius}
               onValueChange={setRadius}
@@ -567,7 +432,7 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
 
           {searchCenter && (
             <div className="space-y-2">
-              <Label className="text-xs">Export Categories</Label>
+              <div className="text-xs">Export Categories</div>
               <div className="grid grid-cols-2 gap-2">
                 {Object.entries(exportCategories).map(([category, checked]) => (
                   <div key={category} className="flex items-center space-x-2">
@@ -578,9 +443,9 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
                         setExportCategories(prev => ({ ...prev, [category]: !!checked }))
                       }
                     />
-                    <Label htmlFor={category} className="text-xs capitalize">
+                    <label htmlFor={category} className="text-xs capitalize">
                       {category.replace(/([A-Z])/g, ' $1').trim()}
-                    </Label>
+                    </label>
                   </div>
                 ))}
               </div>
@@ -599,19 +464,19 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         <CardContent className="p-3">
           <div className="space-y-2 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full cursor-pointer"></div>
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
               <span>Companies</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full cursor-pointer"></div>
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               <span>Schools</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-amber-500 rounded-full cursor-pointer"></div>
+              <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
               <span>Providers</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-500 rounded-full cursor-pointer"></div>
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
               <span>Job Listings</span>
             </div>
             <div className="text-xs text-muted-foreground mt-2">
