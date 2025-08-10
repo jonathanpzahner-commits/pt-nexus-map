@@ -32,7 +32,7 @@ import { AutoGeocodeManager } from './dashboard/AutoGeocodeManager';
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
 import { SearchOnlyTab } from './dashboard/SearchOnlyTab';
-import { NPIDuckDBProcessor } from './admin/NPIDuckDBProcessor';
+
 // import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
 import { toast } from 'sonner';
@@ -122,9 +122,6 @@ const Dashboard = () => {
           Bulk Upload Data
         </Button>
       </div>
-
-      {/* NPI DuckDB Processor */}
-      <NPIDuckDBProcessor />
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
