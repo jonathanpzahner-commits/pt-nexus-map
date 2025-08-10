@@ -854,6 +854,10 @@ export type Database = {
           distance_miles: number
         }[]
       }
+      process_geocoding_jobs: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       providers_within_radius: {
         Args: { user_lat: number; user_lng: number; radius_miles: number }
         Returns: {
