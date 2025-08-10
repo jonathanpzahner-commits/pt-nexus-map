@@ -432,11 +432,12 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     const markers = document.querySelectorAll('.mapboxgl-marker');
     markers.forEach(marker => marker.remove());
 
+    // Only show data after a location search - start with empty map
     const dataToShow = searchCenter ? filteredData : {
-      companies: companies, // Show ALL companies
-      schools: schools,     // Show ALL schools  
-      providers: providers, // Show ALL providers
-      jobListings: jobListings // Show ALL job listings
+      companies: [],
+      schools: [],     
+      providers: [],
+      jobListings: []
     };
 
     // Add markers for each category
@@ -561,6 +562,10 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       }
       
       console.log(`Total markers added to map: ${markersAdded}`);
+      
+      if (!searchCenter && markersAdded === 0) {
+        console.log('Map starting empty - search for a location to see markers');
+      }
     };
 
     addMarkers();
