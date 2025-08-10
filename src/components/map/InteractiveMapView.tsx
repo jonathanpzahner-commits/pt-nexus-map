@@ -84,6 +84,10 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   };
 
   const geocodeLocation = async (location: string): Promise<[number, number] | null> => {
+    if (!location || location.trim().length === 0) {
+      return null;
+    }
+    
     try {
       // Parse the location to determine if it's an address or city/state
       const parts = location.split(',').map(part => part.trim());
