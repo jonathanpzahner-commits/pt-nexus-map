@@ -93,7 +93,7 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     console.log(`Fetching data within ${radiusMiles} miles of [${center[1]}, ${center[0]}]`);
     
     try {
-      // Use database functions for efficient radius filtering
+      // Use database functions for efficient radius filtering where coordinates exist
       const [companiesResponse, providersResponse, schoolsResponse, jobsResponse] = await Promise.all([
         supabase.rpc('companies_within_radius', {
           user_lat: center[1],
@@ -123,30 +123,37 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         jobListings: []
       };
 
-      // Filter schools by city/state (smaller dataset)
-      if (schoolsResponse.data && schoolsResponse.data.length < 1000) {
-        for (const school of schoolsResponse.data) {
-          if (school.city && school.state) {
-            // Use simplified distance calculation for performance
-            const distance = calculateDistance(center[1], center[0], 39.289643, -76.612299); // Placeholder
-            if (distance <= radiusMiles) {
-              filtered.schools.push({ ...school, distance_miles: distance });
-            }
-          }
+      // If no companies from radius function, get all companies and filter by city/state
+      if (filtered.companies.length === 0) {
+        console.log('No companies with coordinates found, fetching all companies for city/state filtering');
+        const allCompaniesResponse = await supabase.from('companies').select('*');
+        if (allCompaniesResponse.data) {
+          // Filter companies by state/city proximity (simplified)
+          const centerState = await getStateFromCoords(center);
+          filtered.companies = allCompaniesResponse.data.filter((company: any) => {
+            return company.state && centerState && 
+                   company.state.toLowerCase().includes(centerState.toLowerCase());
+          }).map((company: any) => ({ ...company, distance_miles: 0 })).slice(0, 100); // Limit to 100 for performance
         }
       }
 
-      // Filter job listings by city/state (smaller dataset)
-      if (jobsResponse.data && jobsResponse.data.length < 1000) {
-        for (const job of jobsResponse.data) {
-          if (job.city && job.state) {
-            // Use simplified distance calculation for performance
-            const distance = calculateDistance(center[1], center[0], 39.289643, -76.612299); // Placeholder
-            if (distance <= radiusMiles) {
-              filtered.jobListings.push({ ...job, distance_miles: distance });
-            }
-          }
-        }
+      // Filter schools by city/state distance
+      if (schoolsResponse.data) {
+        const centerState = await getStateFromCoords(center);
+        filtered.schools = schoolsResponse.data.filter((school: any) => {
+          if (!school.city || !school.state) return false;
+          // Simple state matching for now - could be enhanced with proper geocoding
+          return centerState && school.state.toLowerCase().includes(centerState.toLowerCase());
+        }).slice(0, 50); // Limit for performance
+      }
+
+      // Filter job listings by city/state distance  
+      if (jobsResponse.data) {
+        const centerState = await getStateFromCoords(center);
+        filtered.jobListings = jobsResponse.data.filter((job: any) => {
+          if (!job.city || !job.state) return false;
+          return centerState && job.state.toLowerCase().includes(centerState.toLowerCase());
+        }).slice(0, 50); // Limit for performance
       }
 
       console.log('Final filtered results:', {
@@ -171,6 +178,26 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     } finally {
       setIsSearching(false);
     }
+  };
+
+  // Helper function to get state from coordinates
+  const getStateFromCoords = async (coords: [number, number]): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('geocode-location', {
+        body: { 
+          latitude: coords[1], 
+          longitude: coords[0],
+          reverse: true 
+        }
+      });
+      
+      if (data?.state) {
+        return data.state;
+      }
+    } catch (error) {
+      console.error('Error reverse geocoding:', error);
+    }
+    return null;
   };
 
   const handleLocationSelect = async (location: string, coords?: [number, number]) => {
@@ -269,19 +296,26 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         jobListings: filteredData.jobListings.length
       });
       
-      // Companies
+      // Companies (fallback to city/state if no coordinates)
       filteredData.companies.forEach((company: any) => {
-        const coords = company.longitude && company.latitude 
-          ? [parseFloat(company.longitude), parseFloat(company.latitude)] as [number, number]
-          : null;
+        let coords = null;
+        
+        // Try coordinates first
+        if (company.longitude && company.latitude) {
+          coords = [parseFloat(company.longitude), parseFloat(company.latitude)] as [number, number];
+        }
+        // Fallback: place at search center for companies without coordinates
+        else if (company.city && company.state) {
+          coords = searchCenter; // Place at search location
+        }
         
         if (coords) {
           const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
             `<div class="p-2">
               <h3 class="font-semibold text-sm">${company.name}</h3>
               <p class="text-xs text-gray-600">${company.company_type || 'Company'}</p>
-              <p class="text-xs">${company.city}, ${company.state}</p>
-              <p class="text-xs text-gray-500">${company.distance_miles ? `${company.distance_miles.toFixed(1)} miles` : ''}</p>
+              <p class="text-xs">${company.city || ''}, ${company.state || ''}</p>
+              <p class="text-xs text-gray-500">${company.longitude && company.latitude ? 'Exact location' : 'Approximate location'}</p>
             </div>`
           );
 
@@ -292,6 +326,30 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
 
           marker.getElement().addEventListener('click', () => {
             navigate(`/entity/companies/${company.id}`);
+          });
+          marker.getElement().style.cursor = 'pointer';
+        }
+      });
+
+      // Schools (place at search center)
+      filteredData.schools.forEach((school: any) => {
+        if (school.city && school.state && searchCenter) {
+          const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+            `<div class="p-2">
+              <h3 class="font-semibold text-sm">${school.name}</h3>
+              <p class="text-xs text-gray-600">School</p>
+              <p class="text-xs">${school.city}, ${school.state}</p>
+              <p class="text-xs text-gray-500">Approximate location</p>
+            </div>`
+          );
+
+          const marker = new mapboxgl.Marker({ color: '#10B981' })
+            .setLngLat(searchCenter)
+            .setPopup(popup)
+            .addTo(map.current!);
+
+          marker.getElement().addEventListener('click', () => {
+            navigate(`/entity/schools/${school.id}`);
           });
           marker.getElement().style.cursor = 'pointer';
         }
