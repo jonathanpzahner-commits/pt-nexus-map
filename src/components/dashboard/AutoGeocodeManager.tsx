@@ -29,6 +29,7 @@ export function AutoGeocodeManager() {
   const [stats, setStats] = useState<GeocodeStats | null>(null);
   const [jobs, setJobs] = useState<Record<string, GeocodeJob>>({});
   const [loading, setLoading] = useState(false);
+  const [activeJobs, setActiveJobs] = useState<any[]>([]);
   const { toast } = useToast();
 
   const loadStats = async () => {
@@ -161,8 +162,30 @@ export function AutoGeocodeManager() {
     }
   };
 
+  // Check for active geocoding jobs
+  const checkActiveJobs = async () => {
+    try {
+      const { data: geocodeJobs, error } = await supabase
+        .from('processing_jobs')
+        .select('*')
+        .eq('job_type', 'auto_geocode')
+        .in('status', ['pending', 'processing'])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setActiveJobs(geocodeJobs || []);
+    } catch (error) {
+      console.error('Error checking active jobs:', error);
+    }
+  };
+
   React.useEffect(() => {
     loadStats();
+    checkActiveJobs();
+    
+    // Check for active jobs every 5 seconds
+    const interval = setInterval(checkActiveJobs, 5000);
+    return () => clearInterval(interval);
   }, []);
 
   const getStatusIcon = (status: string) => {
@@ -283,6 +306,22 @@ export function AutoGeocodeManager() {
                 );
               })}
             </div>
+          )}
+
+          {activeJobs.length > 0 && (
+            <Alert>
+              <Clock className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Active Background Jobs:</strong>
+                <ul className="list-disc list-inside mt-2 text-sm">
+                  {activeJobs.map(job => (
+                    <li key={job.id}>
+                      Auto-geocoding record {job.metadata?.record_id} in {job.metadata?.table_name} - {job.status}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
           )}
 
           <Alert>
