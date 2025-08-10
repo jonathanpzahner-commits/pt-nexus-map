@@ -248,6 +248,9 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
   };
 
   const filterDataByRadius = async (center: [number, number], radiusMiles: number) => {
+    console.log(`Starting to filter data within ${radiusMiles} miles of [${center[1]}, ${center[0]}]`);
+    console.log(`Data to filter: ${companies.length} companies, ${schools.length} schools, ${providers.length} providers, ${jobListings.length} job listings`);
+    
     const filtered = {
       companies: [],
       schools: [],
@@ -315,7 +318,13 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
     }
 
     // Filter providers (use stored lat/lng if available)
+    console.log(`Filtering ${providers.length} providers...`);
+    let providerCount = 0;
     for (const provider of providers) {
+      if (providerCount % 10000 === 0) {
+        console.log(`Processed ${providerCount}/${providers.length} providers, found ${filtered.providers.length} within radius`);
+      }
+      
       let coords: [number, number] | null = null;
       
       if (provider.latitude && provider.longitude) {
@@ -331,7 +340,9 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
           filtered.providers.push({ ...provider, _coords: coords });
         }
       }
+      providerCount++;
     }
+    console.log(`Finished filtering providers: ${filtered.providers.length} found within ${radiusMiles} miles`);
 
     // Filter job listings
     for (const job of jobListings) {
@@ -347,6 +358,13 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       }
     }
 
+    console.log(`Filtering complete! Found within ${radiusMiles} miles:`, {
+      companies: filtered.companies.length,
+      schools: filtered.schools.length, 
+      providers: filtered.providers.length,
+      jobListings: filtered.jobListings.length
+    });
+    
     setFilteredData(filtered);
     return filtered;
   };
