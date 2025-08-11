@@ -51,7 +51,7 @@ export const GeocodingManager = () => {
       const { data } = await supabase
         .from('processing_jobs')
         .select('*')
-        .eq('job_type', 'background_geocode')
+        .eq('job_type', 'comprehensive_geocode')
         .eq('status', 'processing')
         .order('created_at', { ascending: false })
         .limit(1)
@@ -65,20 +65,25 @@ export const GeocodingManager = () => {
     setIsRunning(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('background-geocode-runner');
+      const { data, error } = await supabase.functions.invoke('comprehensive-geocode-runner', {
+        body: { 
+          batch_size: 100,
+          max_batches: 50
+        }
+      });
       
       if (error) throw error;
       
       toast({
-        title: "Background geocoding started!",
-        description: "Geocoding will continue automatically in the background. You can close your browser and it will keep running.",
+        title: "Comprehensive geocoding started!",
+        description: "Geocoding will continue automatically in the background for all entity types. You can close your browser and it will keep running.",
       });
       
     } catch (error) {
-      console.error('Background geocoding error:', error);
+      console.error('Comprehensive geocoding error:', error);
       toast({
         title: "Error",
-        description: "Failed to start background geocoding. Please try again.",
+        description: "Failed to start comprehensive geocoding. Please try again.",
         variant: "destructive",
       });
     } finally {
