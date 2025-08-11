@@ -103,6 +103,14 @@ async function runComprehensiveGeocoding(supabase: any, jobId: string, batchSize
   let totalProcessed = 0;
   let totalFailed = 0;
   let batchCount = 0;
+  
+  // Set maximum execution time (2 hours)
+  const maxExecutionTime = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+  const startTime = Date.now();
+  
+  // Track last activity for deadlock detection
+  let lastActivityTime = Date.now();
+  const maxInactivityTime = 10 * 60 * 1000; // 10 minutes without progress
 
   try {
     // Tables to geocode in order
@@ -125,6 +133,18 @@ async function runComprehensiveGeocoding(supabase: any, jobId: string, batchSize
       let tableBatches = 0;
 
       while (hasMore && tableBatches < maxBatches) {
+        // Check for timeout conditions
+        const currentTime = Date.now();
+        if (currentTime - startTime > maxExecutionTime) {
+          console.log(`Job ${jobId} exceeded maximum execution time (2 hours), stopping gracefully`);
+          throw new Error("Job exceeded maximum execution time of 2 hours");
+        }
+        
+        if (currentTime - lastActivityTime > maxInactivityTime) {
+          console.log(`Job ${jobId} has been inactive for ${maxInactivityTime/1000/60} minutes, stopping`);
+          throw new Error("Job has been inactive for too long, possible deadlock detected");
+        }
+        
         console.log(`Processing batch ${tableBatches + 1} for ${table.name}`);
 
         // Get records without coordinates
@@ -185,10 +205,16 @@ async function runComprehensiveGeocoding(supabase: any, jobId: string, batchSize
 
             console.log(`Geocoding ${table.name} ${record.id}: "${searchQuery}"`);
 
-            // Geocode the address
+            // Geocode the address with timeout
             const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxToken}&country=US&limit=1`;
             
-            const response = await fetch(geocodeUrl);
+            // Add timeout to fetch request
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+            
+            const response = await fetch(geocodeUrl, {
+              signal: controller.signal
+            }).finally(() => clearTimeout(timeoutId));
             
             if (!response.ok) {
               const errorText = await response.text();
@@ -214,14 +240,24 @@ async function runComprehensiveGeocoding(supabase: any, jobId: string, batchSize
                 batchFailed++;
               } else {
                 batchProcessed++;
+                lastActivityTime = Date.now(); // Update activity time on successful processing
               }
             } else {
               console.log(`No coordinates found for ${table.name} ${record.id}`);
               batchFailed++;
             }
 
-            // Rate limiting
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Rate limiting with timeout protection
+            const timeoutId = setTimeout(() => {
+              console.log("Rate limiting timeout, continuing...");
+            }, 5000); // 5 second timeout for rate limiting
+            
+            await Promise.race([
+              new Promise(resolve => setTimeout(resolve, 100)),
+              new Promise(resolve => setTimeout(resolve, 5000)) // Maximum 5 second wait
+            ]);
+            
+            clearTimeout(timeoutId);
             
           } catch (error) {
             console.error(`Error processing ${table.name} record ${record.id}:`, error);
