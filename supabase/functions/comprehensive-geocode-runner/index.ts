@@ -6,35 +6,41 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface TableConfig {
+  name: string;
+  addressFields: string[];
+}
+
+const TABLES: TableConfig[] = [
+  { name: 'providers', addressFields: ['city', 'state', 'zip_code'] },
+  { name: 'companies', addressFields: ['address', 'city', 'state', 'zip_code'] },
+  { name: 'schools', addressFields: ['city', 'state', 'zip_code'] },
+  { name: 'job_listings', addressFields: ['city', 'state', 'zip_code'] },
+  { name: 'consultant_companies', addressFields: ['city', 'state', 'zip_code'] },
+  { name: 'equipment_companies', addressFields: ['city', 'state', 'zip_code'] },
+  { name: 'pe_firms', addressFields: ['city', 'state', 'zip_code'] }
+];
+
 serve(async (req) => {
-  console.log("Comprehensive geocoding runner started");
-  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const body = await req.json().catch(() => ({}));
-    const batchSize = body.batch_size || 100;
-    const maxBatches = body.max_batches || 50;
-
-    console.log("Starting comprehensive geocoding", { batchSize, maxBatches });
-
+    const { batch_size = 25, max_batches = 20 } = await req.json().catch(() => ({}));
     const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
-    console.log("Mapbox token available:", !!mapboxToken);
-    
+
     if (!mapboxToken) {
-      console.error("Mapbox token not configured");
       throw new Error("Mapbox token not configured");
     }
 
-    // Check for existing running job
-    const { data: existingJobs } = await supabaseAdmin
+    // Check for existing running jobs
+    const { data: existingJobs } = await supabase
       .from('processing_jobs')
       .select('id')
       .eq('job_type', 'comprehensive_geocode')
@@ -42,267 +48,191 @@ serve(async (req) => {
       .limit(1);
 
     if (existingJobs && existingJobs.length > 0) {
-      console.log("Geocoding job already running");
       return new Response(
-        JSON.stringify({ 
-          message: "Geocoding job already running", 
-          job_id: existingJobs[0].id 
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: "A comprehensive geocoding job is already running" }),
+        { 
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 409 
+        }
       );
     }
 
-    // Create new job record
-    const { data: job, error: jobError } = await supabaseAdmin
+    // Create new job
+    const { data: jobData, error: jobError } = await supabase
       .from('processing_jobs')
       .insert({
         job_type: 'comprehensive_geocode',
         status: 'processing',
-        metadata: { batch_size: batchSize, max_batches: maxBatches },
-        started_at: new Date().toISOString()
+        started_at: new Date().toISOString(),
+        metadata: { batch_size, max_batches },
+        progress_data: { tables_processed: 0, total_processed: 0, total_failed: 0 }
       })
-      .select('id')
+      .select()
       .single();
 
-    if (jobError) {
-      console.error("Failed to create job:", jobError);
-      throw jobError;
+    if (jobError || !jobData) {
+      throw new Error(`Failed to create job: ${jobError?.message}`);
     }
 
-    const jobId = job.id;
-    console.log("Created job:", jobId);
-
-    // Start background geocoding using waitUntil
-    EdgeRuntime.waitUntil(runComprehensiveGeocoding(supabaseAdmin, jobId, batchSize, maxBatches, mapboxToken));
+    // Start background processing
+    EdgeRuntime.waitUntil(runComprehensiveGeocoding(supabase, jobData.id, mapboxToken, batch_size, max_batches));
 
     return new Response(
-      JSON.stringify({ 
-        message: "Comprehensive geocoding started", 
-        job_id: jobId,
-        batch_size: batchSize,
-        max_batches: maxBatches
-      }),
+      JSON.stringify({ message: "Comprehensive geocoding job started", jobId: jobData.id }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
-    console.error("Error starting comprehensive geocoding:", error);
+    console.error('Error starting comprehensive geocoding:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      {
+      { 
         headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 500,
+        status: 500 
       }
     );
   }
 });
 
-async function runComprehensiveGeocoding(supabase: any, jobId: string, batchSize: number, maxBatches: number, mapboxToken: string) {
-  console.log("Background comprehensive geocoding started for job:", jobId);
+async function runComprehensiveGeocoding(
+  supabase: any, 
+  jobId: string, 
+  mapboxToken: string, 
+  batchSize: number, 
+  maxBatches: number
+) {
+  console.log(`Starting comprehensive geocoding job ${jobId}`);
   
   let totalProcessed = 0;
   let totalFailed = 0;
-  let batchCount = 0;
+  let tablesProcessed = 0;
   
-  // Set maximum execution time (2 hours)
-  const maxExecutionTime = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+  // Execution limits
+  const MAX_EXECUTION_TIME = 90 * 60 * 1000; // 90 minutes
+  const MAX_INACTIVITY_TIME = 5 * 60 * 1000; // 5 minutes
   const startTime = Date.now();
-  
-  // Track last activity for deadlock detection
   let lastActivityTime = Date.now();
-  const maxInactivityTime = 10 * 60 * 1000; // 10 minutes without progress
 
   try {
-    // Tables to geocode in order
-    const tables = [
-      { name: 'providers', addressFields: ['city', 'state', 'zip_code'] },
-      { name: 'companies', addressFields: ['city', 'state', 'zip_code', 'address'] },
-      { name: 'schools', addressFields: ['city', 'state', 'zip_code'] },
-      { name: 'job_listings', addressFields: ['city', 'state', 'zip_code'] },
-      { name: 'consultant_companies', addressFields: ['city', 'state', 'zip_code'] },
-      { name: 'equipment_companies', addressFields: ['city', 'state', 'zip_code', 'address'] },
-      { name: 'pe_firms', addressFields: ['city', 'state', 'zip_code', 'address'] }
-    ];
-
-    for (const table of tables) {
-      console.log(`Starting geocoding for table: ${table.name}`);
-      
+    for (const table of TABLES) {
+      console.log(`Processing table: ${table.name}`);
       let tableProcessed = 0;
       let tableFailed = 0;
       let hasMore = true;
-      let tableBatches = 0;
+      let offset = 0;
+      let consecutiveErrors = 0;
+      const MAX_CONSECUTIVE_ERRORS = 5;
 
-      while (hasMore && tableBatches < maxBatches) {
-        // Check for timeout conditions
+      while (hasMore && offset < maxBatches * batchSize) {
+        // Check timeouts
         const currentTime = Date.now();
-        if (currentTime - startTime > maxExecutionTime) {
-          console.log(`Job ${jobId} exceeded maximum execution time (2 hours), stopping gracefully`);
-          throw new Error("Job exceeded maximum execution time of 2 hours");
+        if (currentTime - startTime > MAX_EXECUTION_TIME) {
+          throw new Error("Job exceeded maximum execution time");
         }
-        
-        if (currentTime - lastActivityTime > maxInactivityTime) {
-          console.log(`Job ${jobId} has been inactive for ${maxInactivityTime/1000/60} minutes, stopping`);
-          throw new Error("Job has been inactive for too long, possible deadlock detected");
-        }
-        
-        console.log(`Processing batch ${tableBatches + 1} for ${table.name}`);
-
-        // Get records without coordinates
-        const selectFields = ['id', ...table.addressFields].join(', ');
-        const { data: records, error: selectError } = await supabase
-          .from(table.name)
-          .select(selectFields)
-          .is('latitude', null)
-          .not('city', 'is', null)
-          .not('city', 'eq', '')
-          .limit(batchSize);
-
-        if (selectError) {
-          console.error(`Error selecting from ${table.name}:`, selectError);
-          break;
+        if (currentTime - lastActivityTime > MAX_INACTIVITY_TIME) {
+          throw new Error("Job inactive for too long");
         }
 
-        if (!records || records.length === 0) {
-          console.log(`No more records to geocode in ${table.name}`);
-          hasMore = false;
-          break;
-        }
+        try {
+          // Get records needing geocoding
+          const { data: records, error } = await supabase
+            .from(table.name)
+            .select(`id, ${table.addressFields.join(', ')}`)
+            .or('latitude.is.null,longitude.is.null')
+            .not('city', 'is', null)
+            .range(offset, offset + batchSize - 1);
 
-        console.log(`Found ${records.length} records to geocode in ${table.name}`);
-
-        let batchProcessed = 0;
-        let batchFailed = 0;
-
-        for (const record of records) {
-          try {
-            // Build address string
-            const addressParts = [];
-            if (record.address && record.address.trim()) {
-              addressParts.push(record.address.trim());
+          if (error) {
+            console.error(`Error fetching ${table.name}:`, error);
+            consecutiveErrors++;
+            if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+              throw new Error(`Too many consecutive errors for ${table.name}`);
             }
-            if (record.city && record.city.trim()) {
-              addressParts.push(record.city.trim());
-            }
-            if (record.state && record.state.trim()) {
-              addressParts.push(record.state.trim());
-            }
-            if (record.zip_code && record.zip_code.trim()) {
-              // Clean up zip code - remove extra numbers after dash if too long
-              let zipCode = record.zip_code.trim();
-              if (zipCode.includes('-') && zipCode.length > 10) {
-                zipCode = zipCode.split('-')[0];
-              }
-              addressParts.push(zipCode);
-            }
-
-            const searchQuery = addressParts.join(", ");
-            
-            if (!searchQuery.trim()) {
-              console.log(`${table.name} record ${record.id} has no address data`);
-              batchFailed++;
-              continue;
-            }
-
-            console.log(`Geocoding ${table.name} ${record.id}: "${searchQuery}"`);
-
-            // Geocode the address with timeout
-            const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxToken}&country=US&limit=1`;
-            
-            // Add timeout to fetch request
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-            
-            const response = await fetch(geocodeUrl, {
-              signal: controller.signal
-            }).finally(() => clearTimeout(timeoutId));
-            
-            if (!response.ok) {
-              const errorText = await response.text();
-              console.error(`Mapbox API error for ${table.name} ${record.id}:`, response.status, errorText);
-              batchFailed++;
-              continue;
-            }
-
-            const data = await response.json();
-
-            if (data.features && data.features.length > 0) {
-              const [longitude, latitude] = data.features[0].center;
-              console.log(`Found coordinates for ${table.name} ${record.id}:`, { latitude, longitude });
-
-              // Update record with coordinates
-              const { error: updateError } = await supabase
-                .from(table.name)
-                .update({ latitude, longitude })
-                .eq('id', record.id);
-
-              if (updateError) {
-                console.error(`Failed to update ${table.name} ${record.id}:`, updateError);
-                batchFailed++;
-              } else {
-                batchProcessed++;
-                lastActivityTime = Date.now(); // Update activity time on successful processing
-              }
-            } else {
-              console.log(`No coordinates found for ${table.name} ${record.id}`);
-              batchFailed++;
-            }
-
-            // Rate limiting with timeout protection
-            const timeoutId = setTimeout(() => {
-              console.log("Rate limiting timeout, continuing...");
-            }, 5000); // 5 second timeout for rate limiting
-            
-            await Promise.race([
-              new Promise(resolve => setTimeout(resolve, 100)),
-              new Promise(resolve => setTimeout(resolve, 5000)) // Maximum 5 second wait
-            ]);
-            
-            clearTimeout(timeoutId);
-            
-          } catch (error) {
-            console.error(`Error processing ${table.name} record ${record.id}:`, error);
-            batchFailed++;
+            await sleep(2000);
+            continue;
           }
+
+          if (!records || records.length === 0) {
+            console.log(`No more records to process for ${table.name}`);
+            hasMore = false;
+            break;
+          }
+
+          consecutiveErrors = 0; // Reset on successful fetch
+          console.log(`Processing ${records.length} records from ${table.name} (offset: ${offset})`);
+
+          // Process each record
+          for (const record of records) {
+            try {
+              const result = await geocodeRecord(record, table, mapboxToken);
+              
+              if (result.success) {
+                // Update database
+                const { error: updateError } = await supabase
+                  .from(table.name)
+                  .update({
+                    latitude: result.latitude,
+                    longitude: result.longitude
+                  })
+                  .eq('id', record.id);
+
+                if (updateError) {
+                  console.error(`Failed to update ${table.name} ${record.id}:`, updateError);
+                  tableFailed++;
+                } else {
+                  tableProcessed++;
+                  lastActivityTime = Date.now();
+                }
+              } else {
+                tableFailed++;
+              }
+
+              // Rate limiting
+              await sleep(100);
+
+            } catch (recordError) {
+              console.error(`Error processing ${table.name} record ${record.id}:`, recordError);
+              tableFailed++;
+            }
+          }
+
+          offset += batchSize;
+
+          // Update progress
+          totalProcessed += tableProcessed;
+          totalFailed += tableFailed;
+
+          await supabase
+            .from('processing_jobs')
+            .update({
+              progress_data: {
+                tables_processed: tablesProcessed,
+                current_table: table.name,
+                total_processed: totalProcessed,
+                total_failed: totalFailed,
+                last_update: new Date().toISOString()
+              }
+            })
+            .eq('id', jobId);
+
+          console.log(`Table ${table.name} progress: ${tableProcessed} processed, ${tableFailed} failed`);
+
+        } catch (batchError) {
+          console.error(`Batch error for ${table.name}:`, batchError);
+          consecutiveErrors++;
+          if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+            throw batchError;
+          }
+          await sleep(5000);
         }
-
-        tableProcessed += batchProcessed;
-        tableFailed += batchFailed;
-        totalProcessed += batchProcessed;
-        totalFailed += batchFailed;
-        tableBatches++;
-        batchCount++;
-
-        console.log(`Batch ${tableBatches} complete for ${table.name}: ${batchProcessed} processed, ${batchFailed} failed`);
-
-        // Update job progress
-        await supabase
-          .from('processing_jobs')
-          .update({
-            progress_data: {
-              total_processed: totalProcessed,
-              total_failed: totalFailed,
-              current_table: table.name,
-              table_processed: tableProcessed,
-              table_failed: tableFailed,
-              batch_count: batchCount
-            },
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', jobId);
-
-        // If we got less than batch size, we're done with this table
-        if (records.length < batchSize) {
-          hasMore = false;
-        }
-
-        // Brief pause between batches
-        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      console.log(`Completed ${table.name}: ${tableProcessed} processed, ${tableFailed} failed`);
+      tablesProcessed++;
+      console.log(`Completed table ${table.name}: ${tableProcessed} processed, ${tableFailed} failed`);
     }
 
-    // Mark job as completed
+    // Job completed successfully
+    console.log(`Job ${jobId} completed successfully`);
     await supabase
       .from('processing_jobs')
       .update({
@@ -311,18 +241,14 @@ async function runComprehensiveGeocoding(supabase: any, jobId: string, batchSize
         result_data: {
           total_processed: totalProcessed,
           total_failed: totalFailed,
-          batch_count: batchCount,
-          completion_message: `Comprehensive geocoding complete: ${totalProcessed} records geocoded successfully, ${totalFailed} failed`
+          tables_completed: tablesProcessed,
+          completion_time: new Date().toISOString()
         }
       })
       .eq('id', jobId);
 
-    console.log(`Comprehensive geocoding job ${jobId} completed: ${totalProcessed} processed, ${totalFailed} failed`);
-
   } catch (error) {
-    console.error(`Comprehensive geocoding job ${jobId} failed:`, error);
-    
-    // Mark job as failed
+    console.error(`Job ${jobId} failed:`, error);
     await supabase
       .from('processing_jobs')
       .update({
@@ -332,10 +258,96 @@ async function runComprehensiveGeocoding(supabase: any, jobId: string, batchSize
         result_data: {
           total_processed: totalProcessed,
           total_failed: totalFailed,
-          batch_count: batchCount,
+          tables_completed: tablesProcessed,
           error: error.message
         }
       })
       .eq('id', jobId);
   }
+}
+
+async function geocodeRecord(record: any, table: TableConfig, mapboxToken: string) {
+  try {
+    // Build search query
+    const parts = [];
+    for (const field of table.addressFields) {
+      if (record[field]) {
+        parts.push(record[field]);
+      }
+    }
+    
+    if (parts.length === 0) {
+      return { success: false, error: 'No address data' };
+    }
+
+    const searchQuery = parts.join(', ');
+    console.log(`Geocoding ${table.name} ${record.id}: "${searchQuery}"`);
+
+    // Make request with timeout and retry
+    const response = await fetchWithRetry(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxToken}&country=US&limit=1`,
+      { timeout: 10000, retries: 2 }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Geocoding API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.features || data.features.length === 0) {
+      return { success: false, error: 'No coordinates found' };
+    }
+
+    const [longitude, latitude] = data.features[0].center;
+    console.log(`Found coordinates for ${table.name} ${record.id}: ${latitude}, ${longitude}`);
+
+    return {
+      success: true,
+      latitude: parseFloat(latitude.toFixed(6)),
+      longitude: parseFloat(longitude.toFixed(6))
+    };
+
+  } catch (error) {
+    console.error(`Geocoding failed for ${table.name} ${record.id}:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function fetchWithRetry(url: string, options: { timeout: number; retries: number }) {
+  let lastError;
+  
+  for (let i = 0; i <= options.retries; i++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), options.timeout);
+      
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        return response;
+      }
+      
+      if (response.status === 429) {
+        // Rate limited, wait longer
+        await sleep(2000 * (i + 1));
+        continue;
+      }
+      
+      throw new Error(`HTTP ${response.status}`);
+      
+    } catch (error) {
+      lastError = error;
+      if (i < options.retries) {
+        await sleep(1000 * (i + 1));
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

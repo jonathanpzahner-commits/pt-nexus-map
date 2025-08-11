@@ -12,47 +12,43 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Starting background geocoding runner...");
-    
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+    );
 
-    // Check if geocoding is already running
+    // Check for existing job
     const { data: existingJob } = await supabase
       .from('processing_jobs')
       .select('id')
       .eq('job_type', 'background_geocode')
       .eq('status', 'processing')
-      .single();
+      .limit(1);
 
-    if (existingJob) {
-      console.log("Background geocoding already running");
+    if (existingJob && existingJob.length > 0) {
       return new Response(
         JSON.stringify({ message: "Background geocoding already running" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Create background job record
+    // Create job
     const { data: job, error: jobError } = await supabase
       .from('processing_jobs')
       .insert({
         job_type: 'background_geocode',
         status: 'processing',
-        metadata: { started_at: new Date().toISOString() }
+        started_at: new Date().toISOString(),
+        metadata: { batch_size: 25 }
       })
       .select()
       .single();
 
-    if (jobError) {
-      console.error("Failed to create job:", jobError);
-      throw jobError;
+    if (jobError || !job) {
+      throw new Error(`Failed to create job: ${jobError?.message}`);
     }
 
-    console.log("Created background job:", job.id);
-
-    // Start background geocoding without awaiting
+    // Start background processing
     EdgeRuntime.waitUntil(runBackgroundGeocoding(supabase, job.id));
 
     return new Response(
@@ -79,53 +75,87 @@ async function runBackgroundGeocoding(supabase: any, jobId: string) {
   let totalProcessed = 0;
   let totalFailed = 0;
   let batchCount = 0;
+  let consecutiveFailures = 0;
+  const MAX_CONSECUTIVE_FAILURES = 10;
+  const MAX_EXECUTION_TIME = 60 * 60 * 1000; // 1 hour
+  const startTime = Date.now();
 
   try {
-    console.log("Starting continuous geocoding process...");
+    console.log(`Starting background geocoding job ${jobId}`);
 
     while (true) {
-      batchCount++;
-      console.log(`Running batch ${batchCount}...`);
-
-      // Call the existing batch geocoding function
-      const { data, error } = await supabase.functions.invoke('batch-geocode-providers');
-      
-      if (error) {
-        console.error("Batch geocoding error:", error);
-        await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds on error
-        continue;
-      }
-
-      console.log(`Batch ${batchCount} result:`, data);
-
-      if (data.processed === 0 && data.failed === 0) {
-        console.log("No more providers to process - geocoding complete");
+      // Check execution time limit
+      if (Date.now() - startTime > MAX_EXECUTION_TIME) {
+        console.log("Background geocoding reached time limit");
         break;
       }
 
-      totalProcessed += data.processed;
-      totalFailed += data.failed;
+      batchCount++;
+      console.log(`Running batch ${batchCount}...`);
 
-      // Update job progress
-      await supabase
-        .from('processing_jobs')
-        .update({
-          result_data: {
-            totalProcessed,
-            totalFailed,
-            batchCount,
-            lastBatch: data
+      try {
+        // Call batch geocoding function
+        const { data, error } = await supabase.functions.invoke('batch-geocode-providers', {
+          body: { batch_size: 25 }
+        });
+        
+        if (error) {
+          console.error("Batch geocoding error:", error);
+          consecutiveFailures++;
+          if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+            throw new Error(`Too many consecutive failures: ${error.message}`);
           }
-        })
-        .eq('id', jobId);
+          await sleep(30000); // Wait 30 seconds on error
+          continue;
+        }
 
-      // If we're only getting failures, slow down but don't stop
-      if (data.processed === 0 && data.failed > 0) {
-        console.log("No successful geocoding in this batch, waiting longer...");
-        await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 1 minute
-      } else {
-        // Normal delay between successful batches
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+        console.log(`Batch ${batchCount} result:`, data);
+
+        // Check if we're done
+        if (data.completed || (data.processed === 0 && data.failed === 0)) {
+          console.log("Background geocoding completed - no more records to process");
+          break;
+        }
+
+        // Reset consecutive failures on successful batch
+        if (data.processed > 0) {
+          consecutiveFailures = 0;
+        }
+
+        totalProcessed += data.processed || 0;
+        totalFailed += data.failed || 0;
+
+        // Update job progress
+        await supabase
+          .from('processing_jobs')
+          .update({
+            progress_data: {
+              total_processed: totalProcessed,
+              total_failed: totalFailed,
+              batch_count: batchCount,
+              last_batch: data,
+              last_update: new Date().toISOString()
+            }
+          })
+          .eq('id', jobId);
+
+        // Adaptive delay based on results
+        if (data.processed === 0 && data.failed > 0) {
+          console.log("No successful geocoding in this batch, waiting longer...");
+          await sleep(60000); // Wait 1 minute
+        } else if (data.processed > 0) {
+          await sleep(5000); // Normal delay
+        } else {
+          await sleep(10000); // Medium delay
+        }
+
+      } catch (batchError) {
+        console.error(`Batch ${batchCount} failed:`, batchError);
+        consecutiveFailures++;
+        if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
+          throw batchError;
+        }
+        await sleep(60000); // Wait 1 minute on batch error
       }
     }
 
@@ -136,18 +166,19 @@ async function runBackgroundGeocoding(supabase: any, jobId: string) {
         status: 'completed',
         completed_at: new Date().toISOString(),
         result_data: {
-          totalProcessed,
-          totalFailed,
-          batchCount,
-          message: 'Background geocoding completed successfully'
+          total_processed: totalProcessed,
+          total_failed: totalFailed,
+          batch_count: batchCount,
+          message: 'Background geocoding completed successfully',
+          execution_time_ms: Date.now() - startTime
         }
       })
       .eq('id', jobId);
 
-    console.log(`Background geocoding completed: ${totalProcessed} processed, ${totalFailed} failed`);
+    console.log(`Background geocoding completed: ${totalProcessed} processed, ${totalFailed} failed in ${batchCount} batches`);
 
   } catch (error) {
-    console.error("Background geocoding failed:", error);
+    console.error(`Background geocoding job ${jobId} failed:`, error);
     
     // Mark job as failed
     await supabase
@@ -155,13 +186,19 @@ async function runBackgroundGeocoding(supabase: any, jobId: string) {
       .update({
         status: 'failed',
         completed_at: new Date().toISOString(),
+        error_details: error.message,
         result_data: {
-          totalProcessed,
-          totalFailed,
-          batchCount,
-          error: error.message
+          total_processed: totalProcessed,
+          total_failed: totalFailed,
+          batch_count: batchCount,
+          error: error.message,
+          execution_time_ms: Date.now() - startTime
         }
       })
       .eq('id', jobId);
   }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

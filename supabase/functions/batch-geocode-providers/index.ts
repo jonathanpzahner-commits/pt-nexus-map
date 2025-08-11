@@ -7,54 +7,43 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log("Batch geocoding function started");
-  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
     const body = await req.json().catch(() => ({}));
-    const isAutoMode = body.auto_mode === true;
-
-    console.log("Geocoding mode:", isAutoMode ? "automatic" : "manual");
-
-    const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
-    console.log("Mapbox token available:", !!mapboxToken);
+    const batchSize = body.batch_size || 25;
     
+    const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
     if (!mapboxToken) {
-      console.error("Mapbox token not configured");
       throw new Error("Mapbox token not configured");
     }
 
-    // Get providers without coordinates that have some address data
-    const { data: providers, error: selectError } = await supabaseAdmin
+    // Get providers without coordinates
+    const { data: providers, error: selectError } = await supabase
       .from('providers')
       .select('id, city, state, zip_code')
-      .is('latitude', null)
+      .or('latitude.is.null,longitude.is.null')
       .not('city', 'is', null)
-      .not('city', 'eq', '')
-      .limit(50); // Process in batches
-
-    console.log("Providers query result:", { providers: providers?.length, error: selectError });
+      .limit(batchSize);
 
     if (selectError) {
-      console.error("Database error:", selectError);
-      throw selectError;
+      throw new Error(`Database error: ${selectError.message}`);
     }
 
     if (!providers || providers.length === 0) {
-      console.log("No providers to geocode");
       return new Response(
         JSON.stringify({ 
           message: "No providers to geocode", 
           processed: 0,
-          auto_mode: isAutoMode,
+          failed: 0,
+          total: 0,
           completed: true
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -66,61 +55,29 @@ serve(async (req) => {
 
     for (const provider of providers) {
       try {
-        // Build address string
-        const parts = [];
-        if (provider.city) parts.push(provider.city);
-        if (provider.state) parts.push(provider.state);
-        if (provider.zip_code) parts.push(provider.zip_code);
+        const result = await geocodeProvider(provider, mapboxToken);
         
-        const searchQuery = parts.join(", ");
-        console.log(`Geocoding provider ${provider.id} with query: "${searchQuery}"`);
-        
-        if (!searchQuery.trim()) {
-          console.log(`Provider ${provider.id} has no address data`);
-          failed++;
-          continue;
-        }
-
-        // Geocode the address
-        const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxToken}&country=US&limit=1`;
-        
-        const response = await fetch(geocodeUrl);
-        console.log(`Mapbox API response status for ${provider.id}:`, response.status);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Mapbox API error for ${provider.id}:`, response.status, errorText);
-          failed++;
-          continue;
-        }
-
-        const data = await response.json();
-        console.log(`Mapbox response for ${provider.id}:`, { featuresCount: data.features?.length });
-
-        if (data.features && data.features.length > 0) {
-          const [longitude, latitude] = data.features[0].center;
-          console.log(`Found coordinates for ${provider.id}:`, { latitude, longitude });
-
-          // Update provider with coordinates
-          const { error: updateError } = await supabaseAdmin
+        if (result.success) {
+          const { error: updateError } = await supabase
             .from('providers')
-            .update({ latitude, longitude })
+            .update({ 
+              latitude: result.latitude, 
+              longitude: result.longitude 
+            })
             .eq('id', provider.id);
 
           if (updateError) {
             console.error(`Failed to update provider ${provider.id}:`, updateError);
             failed++;
           } else {
-            console.log(`Successfully updated provider ${provider.id}`);
             processed++;
           }
         } else {
-          console.log(`No coordinates found for ${provider.id}`);
           failed++;
         }
 
-        // Rate limiting - wait between requests
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Rate limiting
+        await sleep(100);
         
       } catch (error) {
         console.error(`Error processing provider ${provider.id}:`, error);
@@ -130,17 +87,17 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        message: `Geocoding batch completed`, 
+        message: `Batch completed: ${processed} processed, ${failed} failed`, 
         processed, 
         failed,
         total: providers.length,
-        auto_mode: isAutoMode,
-        completed: providers.length < 50 // If we processed less than limit, we're done
+        completed: providers.length < batchSize
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
+    console.error('Batch geocoding error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
@@ -150,3 +107,65 @@ serve(async (req) => {
     );
   }
 });
+
+async function geocodeProvider(provider: any, mapboxToken: string) {
+  try {
+    const parts = [];
+    if (provider.city) parts.push(provider.city);
+    if (provider.state) parts.push(provider.state);
+    if (provider.zip_code) parts.push(provider.zip_code);
+    
+    if (parts.length === 0) {
+      return { success: false, error: 'No address data' };
+    }
+
+    const searchQuery = parts.join(', ');
+    console.log(`Geocoding provider ${provider.id}: "${searchQuery}"`);
+
+    const response = await fetchWithTimeout(
+      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxToken}&country=US&limit=1`,
+      10000
+    );
+
+    if (!response.ok) {
+      throw new Error(`Geocoding API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.features || data.features.length === 0) {
+      return { success: false, error: 'No coordinates found' };
+    }
+
+    const [longitude, latitude] = data.features[0].center;
+    console.log(`Found coordinates for ${provider.id}: ${latitude}, ${longitude}`);
+
+    return {
+      success: true,
+      latitude: parseFloat(latitude.toFixed(6)),
+      longitude: parseFloat(longitude.toFixed(6))
+    };
+
+  } catch (error) {
+    console.error(`Geocoding failed for provider ${provider.id}:`, error);
+    return { success: false, error: error.message };
+  }
+}
+
+async function fetchWithTimeout(url: string, timeout: number) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
