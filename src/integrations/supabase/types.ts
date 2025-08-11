@@ -288,6 +288,8 @@ export type Database = {
           experience_level: string | null
           id: string
           is_remote: boolean | null
+          latitude: number | null
+          longitude: number | null
           posted_by: string | null
           requirements: string | null
           salary_max: number | null
@@ -295,6 +297,7 @@ export type Database = {
           state: string
           title: string
           updated_at: string
+          zip_code: string | null
         }
         Insert: {
           city: string
@@ -305,6 +308,8 @@ export type Database = {
           experience_level?: string | null
           id?: string
           is_remote?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           posted_by?: string | null
           requirements?: string | null
           salary_max?: number | null
@@ -312,6 +317,7 @@ export type Database = {
           state: string
           title: string
           updated_at?: string
+          zip_code?: string | null
         }
         Update: {
           city?: string
@@ -322,6 +328,8 @@ export type Database = {
           experience_level?: string | null
           id?: string
           is_remote?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
           posted_by?: string | null
           requirements?: string | null
           salary_max?: number | null
@@ -329,6 +337,7 @@ export type Database = {
           state?: string
           title?: string
           updated_at?: string
+          zip_code?: string | null
         }
         Relationships: [
           {
@@ -691,6 +700,8 @@ export type Database = {
           description: string | null
           faculty_count: number | null
           id: string
+          latitude: number | null
+          longitude: number | null
           name: string
           program_length_months: number | null
           programs_offered: string[] | null
@@ -698,6 +709,7 @@ export type Database = {
           state: string
           tuition_per_year: number | null
           updated_at: string
+          zip_code: string | null
         }
         Insert: {
           accreditation?: string | null
@@ -707,6 +719,8 @@ export type Database = {
           description?: string | null
           faculty_count?: number | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name: string
           program_length_months?: number | null
           programs_offered?: string[] | null
@@ -714,6 +728,7 @@ export type Database = {
           state: string
           tuition_per_year?: number | null
           updated_at?: string
+          zip_code?: string | null
         }
         Update: {
           accreditation?: string | null
@@ -723,6 +738,8 @@ export type Database = {
           description?: string | null
           faculty_count?: number | null
           id?: string
+          latitude?: number | null
+          longitude?: number | null
           name?: string
           program_length_months?: number | null
           programs_offered?: string[] | null
@@ -730,6 +747,7 @@ export type Database = {
           state?: string
           tuition_per_year?: number | null
           updated_at?: string
+          zip_code?: string | null
         }
         Relationships: []
       }
@@ -822,6 +840,25 @@ export type Database = {
           distance_miles: number
         }[]
       }
+      job_listings_within_radius: {
+        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Returns: {
+          id: string
+          title: string
+          description: string
+          city: string
+          state: string
+          zip_code: string
+          employment_type: string
+          experience_level: string
+          salary_min: number
+          salary_max: number
+          is_remote: boolean
+          latitude: number
+          longitude: number
+          distance_miles: number
+        }[]
+      }
       pe_firms_within_radius: {
         Args: { user_lat: number; user_lng: number; radius_miles: number }
         Returns: {
@@ -871,6 +908,22 @@ export type Database = {
           longitude: number
           specializations: string[]
           bio: string
+          distance_miles: number
+        }[]
+      }
+      schools_within_radius: {
+        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Returns: {
+          id: string
+          name: string
+          city: string
+          state: string
+          zip_code: string
+          description: string
+          programs_offered: string[]
+          specializations: string[]
+          latitude: number
+          longitude: number
           distance_miles: number
         }[]
       }
