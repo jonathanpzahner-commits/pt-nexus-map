@@ -27,7 +27,7 @@ import { JobListingsTab } from './dashboard/JobListingsTab';
 import { MapContainer } from './map/MapContainer';
 import { GlobalSearch } from './search/GlobalSearch';
 import { SimpleBulkUpload } from './upload/SimpleBulkUpload';
-import { AutoGeocodeManager } from './dashboard/AutoGeocodeManager';
+import { GeocodingManager } from './search/GeocodingManager';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
@@ -238,7 +238,7 @@ const Dashboard = () => {
               <h2 className="text-2xl font-bold text-foreground">Automated Geocoding</h2>
             </div>
           </div>
-          <AutoGeocodeManager />
+          <GeocodingManager />
         </TabsContent>
 
         <TabsContent value="community" className="space-y-4">
