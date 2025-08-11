@@ -588,7 +588,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
       </Collapsible>
 
       {/* Search Results */}
-      {(searchQuery || isLoading || totalResults > 0) && (
+      {(searchQuery || isLoading || totalResults > 0 || (!searchQuery && !isLoading)) && (
         <SearchResults results={results as any} isLoading={isLoading} />
       )}
     </div>
