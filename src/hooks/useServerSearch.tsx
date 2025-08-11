@@ -105,14 +105,21 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
               totalCount += radiusResults.length;
             } else {
               console.warn('Radius search failed, falling back to regular search:', radiusError);
-              // Continue to regular search below
+              // Fall back to regular search
+              await executeRegularProviderSearch();
             }
           } catch (radiusError) {
             console.warn('Radius search error, falling back to regular search:', radiusError);
-            // Continue to regular search below
+            // Fall back to regular search
+            await executeRegularProviderSearch();
           }
         } else {
           // Regular provider search when no location coordinates
+          await executeRegularProviderSearch();
+        }
+
+        // Helper function for regular provider search
+        async function executeRegularProviderSearch() {
           if (filters.location.trim()) {
             const locationTerm = filters.location.toLowerCase();
             query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%,zip_code.ilike.%${locationTerm}%`);
