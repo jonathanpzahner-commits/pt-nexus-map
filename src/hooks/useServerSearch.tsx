@@ -91,11 +91,18 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
             
             if (!radiusError && radiusResults) {
               radiusResults.forEach((provider: any) => {
+                // Skip generic NPI providers with placeholder names
+                if (provider.name?.match(/^Provider \d+-\d+$/)) {
+                  return;
+                }
+                
                 const location = provider.city && provider.state ? `${provider.city}, ${provider.state}` : '';
+                const displayName = provider.name || `${provider.first_name || ''} ${provider.last_name || ''}`.trim() || 'Unknown Provider';
+                
                 results.push({
                   id: provider.id,
                   type: 'provider',
-                  title: provider.name || `${provider.first_name} ${provider.last_name}`,
+                  title: displayName,
                   subtitle: `Physical Therapist (${provider.distance_miles?.toFixed(1)}mi away)`,
                   location,
                   description: provider.bio,
@@ -135,11 +142,18 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
           if (providers) {
             providers.forEach(provider => {
+              // Skip generic NPI providers with placeholder names
+              if (provider.name?.match(/^Provider \d+-\d+$/)) {
+                return;
+              }
+              
               const location = provider.city && provider.state ? `${provider.city}, ${provider.state}` : '';
+              const displayName = provider.name || `${provider.first_name || ''} ${provider.last_name || ''}`.trim() || 'Unknown Provider';
+              
               results.push({
                 id: provider.id,
                 type: 'provider',
-                title: provider.name || `${provider.first_name} ${provider.last_name}`,
+                title: displayName,
                 subtitle: 'Physical Therapist',
                 location,
                 description: provider.bio,
