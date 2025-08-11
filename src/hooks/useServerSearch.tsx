@@ -115,7 +115,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
           // Regular provider search when no location coordinates
           if (filters.location.trim()) {
             const locationTerm = filters.location.toLowerCase();
-            query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
+            query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%,zip_code.ilike.%${locationTerm}%`);
           }
 
           // Apply specialization filter
@@ -189,12 +189,12 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,accreditation.ilike.%${searchTerm}%,programs_offered.cs.{${searchTerm}},specializations.cs.{${searchTerm}}`);
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,accreditation.ilike.%${searchTerm}%,programs_offered.cs.{${searchTerm}},specializations.cs.{${searchTerm}}`);
         }
 
         if (filters.location.trim()) {
           const locationTerm = filters.location.toLowerCase();
-          query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
+          query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%,zip_code.ilike.%${locationTerm}%`);
         }
 
         const { data: schools, error, count } = await query;
@@ -226,7 +226,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,requirements.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,employment_type.ilike.%${searchTerm}%,experience_level.ilike.%${searchTerm}%`);
+          query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,requirements.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,employment_type.ilike.%${searchTerm}%,experience_level.ilike.%${searchTerm}%`);
         }
 
         if (filters.employmentType.trim()) {
