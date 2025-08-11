@@ -44,65 +44,41 @@ export const GeocodingManager = () => {
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
-  const runBatchGeocoding = async () => {
+  // Check for active background job
+  const { data: backgroundJob } = useQuery({
+    queryKey: ['background-geocode-job'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('processing_jobs')
+        .select('*')
+        .eq('job_type', 'background_geocode')
+        .eq('status', 'processing')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+      return data;
+    },
+    refetchInterval: 5000, // Check every 5 seconds
+  });
+
+  const startBackgroundGeocoding = async () => {
     setIsRunning(true);
-    setProgress(null);
     
     try {
-      let totalProcessed = 0;
-      let totalFailed = 0;
-      let batchCount = 0;
+      const { data, error } = await supabase.functions.invoke('background-geocode-runner');
       
-      // Run multiple batches until complete
-      while (true) {
-        batchCount++;
-        const { data, error } = await supabase.functions.invoke('batch-geocode-providers');
-        
-        if (error) throw error;
-        
-        if (data.processed === 0 && data.failed === 0) {
-          // No more providers to process
-          break;
-        }
-        
-        // If we're only getting failures and no successes, stop after a few attempts
-        if (data.processed === 0 && data.failed > 0 && batchCount >= 3) {
-          toast({
-            title: "Geocoding stopped",
-            description: "No providers with valid address data found. Please upload providers with city/state information.",
-            variant: "destructive",
-          });
-          break;
-        }
-        
-        totalProcessed += data.processed;
-        totalFailed += data.failed;
-        
-        setProgress({
-          processed: totalProcessed,
-          failed: totalFailed,
-          total: totalProcessed + totalFailed
-        });
-        
-        toast({
-          title: `Batch ${batchCount} completed`,
-          description: `Processed: ${data.processed}, Failed: ${data.failed}`,
-        });
-        
-        // Small delay between batches to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+      if (error) throw error;
       
       toast({
-        title: "Geocoding completed!",
-        description: `Successfully geocoded ${totalProcessed} providers. ${totalFailed} failed.`,
+        title: "Background geocoding started!",
+        description: "Geocoding will continue automatically in the background. You can close your browser and it will keep running.",
       });
       
     } catch (error) {
-      console.error('Geocoding error:', error);
+      console.error('Background geocoding error:', error);
       toast({
         title: "Error",
-        description: "Failed to run batch geocoding. Please try again.",
+        description: "Failed to start background geocoding. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -170,28 +146,50 @@ export const GeocodingManager = () => {
               </div>
             )}
             
-            {stats.remaining > 0 && (
+            {/* Background job status */}
+            {backgroundJob && (
+              <div className="p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center gap-2 mb-2">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span className="font-medium text-blue-800 dark:text-blue-200">
+                    Background geocoding is running
+                  </span>
+                </div>
+                <p className="text-sm text-blue-600 dark:text-blue-400">
+                  Geocoding continues automatically in the background. You can close your browser.
+                </p>
+                {backgroundJob.result_data && typeof backgroundJob.result_data === 'object' && (
+                  <div className="mt-2 text-xs space-y-1">
+                    <div>Processed: {(backgroundJob.result_data as any).totalProcessed || 0}</div>
+                    <div>Failed: {(backgroundJob.result_data as any).totalFailed || 0}</div>
+                    <div>Batches: {(backgroundJob.result_data as any).batchCount || 0}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {stats.remaining > 0 && !backgroundJob && (
               <>
                 <Button 
-                  onClick={runBatchGeocoding} 
+                  onClick={startBackgroundGeocoding} 
                   disabled={isRunning}
                   className="w-full"
                 >
                   {isRunning ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Running Geocoding...
+                      Starting Background Geocoding...
                     </>
                   ) : (
                     <>
                       <Play className="h-4 w-4 mr-2" />
-                      Continue Batch Geocoding
+                      Start Background Geocoding
                     </>
                   )}
                 </Button>
                 
                 <p className="text-xs text-muted-foreground">
-                  Note: This processes providers in batches of 50 to avoid rate limits. 
+                  This will start background geocoding that continues even if you close your browser. 
                   {stats.remaining} providers still need geocoding.
                 </p>
               </>
