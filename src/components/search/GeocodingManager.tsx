@@ -199,6 +199,38 @@ export const GeocodingManager = () => {
                 </p>
               </>
             )}
+            
+            {/* Reset stuck job button - only show if job has been running for over 2 hours */}
+            {backgroundJob && (
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={async () => {
+                    try {
+                      await supabase.functions.invoke('reset-stuck-geocoding');
+                      toast({
+                        title: "Geocoding job reset",
+                        description: "The stuck job has been reset and a new one started.",
+                      });
+                    } catch (error) {
+                      console.error('Reset error:', error);
+                      toast({
+                        title: "Error",
+                        description: "Failed to reset the geocoding job.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Reset Stuck Job
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Use this if the geocoding appears to be stuck for over 2 hours.
+                </p>
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
