@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MapPin, Globe, Phone, Mail } from 'lucide-react';
+import { ArrowLeft, MapPin, Globe, Phone, Mail, Star } from 'lucide-react';
 import { NotesSection } from '@/components/notes/NotesSection';
 
 const EntityDetails = () => {
@@ -311,6 +311,31 @@ const EntityDetails = () => {
                 </div>
               )}
             </div>
+            
+            {/* Glassdoor Section */}
+            {((entity as any).glassdoor_rating || (entity as any).glassdoor_url) && (
+              <div>
+                <h3 className="font-semibold mb-2">Employee Reviews</h3>
+                <div className="flex items-center gap-4 text-sm">
+                  {(entity as any).glassdoor_rating && (
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">{(entity as any).glassdoor_rating}/5 on Glassdoor</span>
+                    </div>
+                  )}
+                  {(entity as any).glassdoor_url && (
+                    <a 
+                      href={(entity as any).glassdoor_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      View Reviews →
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
             
             {/* Leadership Section */}
             {(entity as any).leadership && Object.keys((entity as any).leadership).length > 0 && (

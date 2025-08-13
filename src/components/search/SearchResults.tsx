@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, GraduationCap, Users, Briefcase, MapPin, ExternalLink } from 'lucide-react';
+import { Building2, GraduationCap, Users, Briefcase, MapPin, ExternalLink, Star } from 'lucide-react';
 import { SearchResult } from '@/hooks/useSearch';
 import { NotesSection } from '@/components/notes/NotesSection';
 import { useState } from 'react';
@@ -133,6 +133,28 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
               <div>
                 <span className="font-medium">Founded: </span>
                 <span className="text-muted-foreground">{data.founded_year}</span>
+              </div>
+            )}
+            {(data.glassdoor_rating || data.glassdoor_url) && (
+              <div>
+                <span className="font-medium">Glassdoor: </span>
+                {data.glassdoor_rating && (
+                  <span className="inline-flex items-center gap-1 text-muted-foreground">
+                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                    {data.glassdoor_rating}/5
+                  </span>
+                )}
+                {data.glassdoor_url && (
+                  <a 
+                    href={data.glassdoor_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-primary hover:underline ml-2"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                    View Reviews
+                  </a>
+                )}
               </div>
             )}
             {data.website && (

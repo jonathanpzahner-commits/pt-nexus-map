@@ -58,6 +58,8 @@ const companySchema = z.object({
   pe_backed: z.boolean().optional(),
   pe_firm_name: z.string().optional(),
   pe_relationship_start_date: z.string().optional(),
+  glassdoor_rating: z.number().min(1).max(5).optional(),
+  glassdoor_url: z.string().url('Invalid URL').optional().or(z.literal('')),
   company_locations: z.string().optional(),
   services: z.string().optional(),
   leadership: z.record(z.string()).optional(),
@@ -90,6 +92,8 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
       pe_backed: false,
       pe_firm_name: '',
       pe_relationship_start_date: '',
+      glassdoor_rating: undefined,
+      glassdoor_url: '',
       company_locations: '',
       services: '',
       leadership: {},
@@ -112,6 +116,8 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
         pe_backed: company.pe_backed || false,
         pe_firm_name: company.pe_firm_name || '',
         pe_relationship_start_date: company.pe_relationship_start_date || '',
+        glassdoor_rating: company.glassdoor_rating || undefined,
+        glassdoor_url: company.glassdoor_url || '',
         company_locations: company.company_locations?.join(', ') || '',
         services: company.services?.join(', ') || '',
         leadership: company.leadership || {},
@@ -134,6 +140,8 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
         pe_backed: data.pe_backed || false,
         pe_firm_name: data.pe_firm_name || null,
         pe_relationship_start_date: data.pe_relationship_start_date || null,
+        glassdoor_rating: data.glassdoor_rating || null,
+        glassdoor_url: data.glassdoor_url || null,
         company_locations: data.company_locations 
           ? data.company_locations.split(',').map(s => s.trim()).filter(s => s)
           : [],
@@ -387,6 +395,50 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
                     )}
                   />
                 ))}
+              </div>
+            </div>
+
+            {/* Glassdoor Section */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <h3 className="font-semibold">Glassdoor Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="glassdoor_rating"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Glassdoor Rating</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          step="0.1"
+                          min="1.0"
+                          max="5.0"
+                          placeholder="4.2" 
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="glassdoor_url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Glassdoor URL</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="https://www.glassdoor.com/Reviews/..." 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
             </div>
 

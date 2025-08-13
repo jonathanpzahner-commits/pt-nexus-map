@@ -75,6 +75,8 @@ export type Database = {
           created_at: string
           description: string | null
           founded_year: number | null
+          glassdoor_rating: number | null
+          glassdoor_url: string | null
           id: string
           latitude: number | null
           leadership: Json | null
@@ -100,6 +102,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           founded_year?: number | null
+          glassdoor_rating?: number | null
+          glassdoor_url?: string | null
           id?: string
           latitude?: number | null
           leadership?: Json | null
@@ -125,6 +129,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           founded_year?: number | null
+          glassdoor_rating?: number | null
+          glassdoor_url?: string | null
           id?: string
           latitude?: number | null
           leadership?: Json | null
