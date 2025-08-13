@@ -135,10 +135,6 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
                 <span className="text-muted-foreground">{data.programs_offered.join(', ')}</span>
               </div>
             )}
-            <div>
-              <span className="font-medium">Parent Company: </span>
-              <span className="text-muted-foreground">{data.parent_company || 'Not specified'}</span>
-            </div>
             {data.tuition_per_year && (
               <div>
                 <span className="font-medium">Tuition: </span>
@@ -163,10 +159,6 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
       case 'provider':
         return (
           <div className="space-y-2 text-sm">
-            <div>
-              <span className="font-medium">Parent Company: </span>
-              <span className="text-muted-foreground">{data.current_employer || 'Not specified'}</span>
-            </div>
             {data.specializations && data.specializations.length > 0 && (
               <div>
                 <span className="font-medium">Specializations: </span>
@@ -201,10 +193,6 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
       case 'job_listing':
         return (
           <div className="space-y-2 text-sm">
-            <div>
-              <span className="font-medium">Parent Company: </span>
-              <span className="text-muted-foreground">Not specified</span>
-            </div>
             {data.salary_min && data.salary_max && (
               <div>
                 <span className="font-medium">Salary: </span>
