@@ -70,15 +70,20 @@ export type Database = {
           address: string | null
           city: string | null
           company_locations: string[] | null
+          company_size_range: string | null
           company_type: string
           created_at: string
           description: string | null
-          employee_count: number | null
           founded_year: number | null
           id: string
           latitude: number | null
           longitude: number | null
           name: string
+          number_of_clinics: number | null
+          parent_company: string | null
+          pe_backed: boolean | null
+          pe_firm_name: string | null
+          pe_relationship_start_date: string | null
           services: string[] | null
           state: string | null
           updated_at: string
@@ -89,15 +94,20 @@ export type Database = {
           address?: string | null
           city?: string | null
           company_locations?: string[] | null
+          company_size_range?: string | null
           company_type: string
           created_at?: string
           description?: string | null
-          employee_count?: number | null
           founded_year?: number | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           name: string
+          number_of_clinics?: number | null
+          parent_company?: string | null
+          pe_backed?: boolean | null
+          pe_firm_name?: string | null
+          pe_relationship_start_date?: string | null
           services?: string[] | null
           state?: string | null
           updated_at?: string
@@ -108,15 +118,20 @@ export type Database = {
           address?: string | null
           city?: string | null
           company_locations?: string[] | null
+          company_size_range?: string | null
           company_type?: string
           created_at?: string
           description?: string | null
-          employee_count?: number | null
           founded_year?: number | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           name?: string
+          number_of_clinics?: number | null
+          parent_company?: string | null
+          pe_backed?: boolean | null
+          pe_firm_name?: string | null
+          pe_relationship_start_date?: string | null
           services?: string[] | null
           state?: string | null
           updated_at?: string

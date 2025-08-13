@@ -274,11 +274,41 @@ const EntityDetails = () => {
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="outline">{(entity as any).company_type}</Badge>
-              {(entity as any).employee_count && (
-                <Badge variant="secondary">{(entity as any).employee_count} employees</Badge>
+              {(entity as any).company_size_range && (
+                <Badge variant="secondary">{(entity as any).company_size_range} employees</Badge>
               )}
               {(entity as any).founded_year && (
                 <Badge variant="secondary">Founded {(entity as any).founded_year}</Badge>
+              )}
+              {(entity as any).number_of_clinics && (
+                <Badge variant="outline">{(entity as any).number_of_clinics} clinics</Badge>
+              )}
+              {(entity as any).pe_backed && (
+                <Badge variant="destructive">PE Backed</Badge>
+              )}
+            </div>
+            
+            {/* Company Structure & Ownership */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {(entity as any).parent_company && (
+                <div>
+                  <h3 className="font-semibold mb-2">Parent Company</h3>
+                  <p className="text-sm">{(entity as any).parent_company}</p>
+                </div>
+              )}
+              
+              {(entity as any).pe_backed && (
+                <div>
+                  <h3 className="font-semibold mb-2">Private Equity Information</h3>
+                  <div className="space-y-1 text-sm">
+                    {(entity as any).pe_firm_name && (
+                      <p><span className="font-medium">PE Firm:</span> {(entity as any).pe_firm_name}</p>
+                    )}
+                    {(entity as any).pe_relationship_start_date && (
+                      <p><span className="font-medium">Relationship Started:</span> {new Date((entity as any).pe_relationship_start_date).toLocaleDateString()}</p>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
             

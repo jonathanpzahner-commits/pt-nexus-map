@@ -23,13 +23,20 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Plus } from 'lucide-react';
 
 const companySchema = z.object({
   name: z.string().min(1, 'Company name is required'),
   company_type: z.string().min(1, 'Company type is required'),
   description: z.string().optional(),
-  employee_count: z.number().min(1).optional(),
+  number_of_clinics: z.number().min(1).optional(),
+  parent_company: z.string().optional(),
+  pe_backed: z.boolean().optional(),
+  pe_firm_name: z.string().optional(),
+  pe_relationship_start_date: z.string().optional(),
+  company_size_range: z.string().optional(),
   founded_year: z.number().min(1800).max(new Date().getFullYear()).optional(),
   website: z.string().url('Invalid URL').optional().or(z.literal('')),
   company_locations: z.string().optional(),
@@ -55,7 +62,12 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
       name: '',
       company_type: '',
       description: '',
-      employee_count: undefined,
+      number_of_clinics: undefined,
+      parent_company: '',
+      pe_backed: false,
+      pe_firm_name: '',
+      pe_relationship_start_date: '',
+      company_size_range: '',
       founded_year: undefined,
       website: '',
       company_locations: '',
@@ -69,7 +81,12 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
         name: company.name || '',
         company_type: company.company_type || '',
         description: company.description || '',
-        employee_count: company.employee_count || undefined,
+        number_of_clinics: company.number_of_clinics || undefined,
+        parent_company: company.parent_company || '',
+        pe_backed: company.pe_backed || false,
+        pe_firm_name: company.pe_firm_name || '',
+        pe_relationship_start_date: company.pe_relationship_start_date || '',
+        company_size_range: company.company_size_range || '',
         founded_year: company.founded_year || undefined,
         website: company.website || '',
         company_locations: company.company_locations?.join(', ') || '',
@@ -85,7 +102,12 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
         name: data.name,
         company_type: data.company_type,
         description: data.description || null,
-        employee_count: data.employee_count,
+        number_of_clinics: data.number_of_clinics,
+        parent_company: data.parent_company || null,
+        pe_backed: data.pe_backed || false,
+        pe_firm_name: data.pe_firm_name || null,
+        pe_relationship_start_date: data.pe_relationship_start_date || null,
+        company_size_range: data.company_size_range || null,
         founded_year: data.founded_year,
         website: data.website || null,
         company_locations: data.company_locations 
@@ -178,17 +200,68 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
               />
               <FormField
                 control={form.control}
-                name="employee_count"
+                name="number_of_clinics"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Employee Count</FormLabel>
+                    <FormLabel>Number of Clinics</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
-                        placeholder="250" 
+                        placeholder="25" 
                         {...field}
                         onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="company_size_range"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Size</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select size range" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1-5">1-5</SelectItem>
+                        <SelectItem value="6-10">6-10</SelectItem>
+                        <SelectItem value="11-20">11-20</SelectItem>
+                        <SelectItem value="21-40">21-40</SelectItem>
+                        <SelectItem value="41-75">41-75</SelectItem>
+                        <SelectItem value="76-100">76-100</SelectItem>
+                        <SelectItem value="101-125">101-125</SelectItem>
+                        <SelectItem value="126-150">126-150</SelectItem>
+                        <SelectItem value="151-200">151-200</SelectItem>
+                        <SelectItem value="201-250">201-250</SelectItem>
+                        <SelectItem value="251-500">251-500</SelectItem>
+                        <SelectItem value="501-600">501-600</SelectItem>
+                        <SelectItem value="601-750">601-750</SelectItem>
+                        <SelectItem value="751-1000">751-1000</SelectItem>
+                        <SelectItem value="1001-1500">1001-1500</SelectItem>
+                        <SelectItem value="1501-2500">1501-2500</SelectItem>
+                        <SelectItem value="2501-3500">2501-3500</SelectItem>
+                        <SelectItem value="3501-5000">3501-5000</SelectItem>
+                        <SelectItem value="5000+">5000+</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="parent_company"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Parent Company</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter parent company name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -275,6 +348,66 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
                 </FormItem>
               )}
             />
+            
+            {/* Private Equity Section */}
+            <div className="space-y-4 border-t pt-4">
+              <h3 className="text-lg font-semibold">Private Equity Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="pe_backed"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          Private Equity Backed
+                        </FormLabel>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                
+                {form.watch('pe_backed') && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="pe_firm_name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Private Equity Firm Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter PE firm name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="pe_relationship_start_date"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>PE Relationship Start Date</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="date" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"
