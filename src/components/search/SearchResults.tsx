@@ -76,16 +76,40 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
                 <span className="text-muted-foreground">{data.services.join(', ')}</span>
               </div>
             )}
+            <div>
+              <span className="font-medium">Company Size: </span>
+              <span className="text-muted-foreground">{data.company_size_range || 'Not specified'}</span>
+            </div>
+            <div>
+              <span className="font-medium">Number of Clinics: </span>
+              <span className="text-muted-foreground">{data.number_of_clinics || 'Not specified'}</span>
+            </div>
+            {data.parent_company && (
+              <div>
+                <span className="font-medium">Parent Company: </span>
+                <span className="text-muted-foreground">{data.parent_company}</span>
+              </div>
+            )}
+            <div>
+              <span className="font-medium">PE Backed: </span>
+              {data.pe_backed ? (
+                <div className="inline-flex flex-col">
+                  <span className="text-muted-foreground">Yes</span>
+                  {data.pe_firm_name && (
+                    <span className="text-xs text-muted-foreground">
+                      by {data.pe_firm_name}
+                      {data.pe_relationship_start_date && ` (since ${new Date(data.pe_relationship_start_date).getFullYear()})`}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="text-muted-foreground">No</span>
+              )}
+            </div>
             {data.founded_year && (
               <div>
                 <span className="font-medium">Founded: </span>
                 <span className="text-muted-foreground">{data.founded_year}</span>
-              </div>
-            )}
-            {data.employee_count && (
-              <div>
-                <span className="font-medium">Employees: </span>
-                <span className="text-muted-foreground">{data.employee_count}</span>
               </div>
             )}
             {data.website && (
