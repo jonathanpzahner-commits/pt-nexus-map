@@ -104,6 +104,31 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
                 <span className="text-muted-foreground">No</span>
               )}
             </div>
+            {data.leadership && Object.keys(data.leadership).length > 0 && (
+              <div>
+                <span className="font-medium">Leadership: </span>
+                <div className="mt-1 space-y-1">
+                  {Object.entries(data.leadership).map(([key, value]) => {
+                    if (!value) return null;
+                    const leadershipLabels = {
+                      owner_ceo: 'Owner/CEO',
+                      financial: 'Financial',
+                      operations: 'Operations',
+                      clinical_excellence: 'Clinical Excellence',
+                      technology: 'Technology',
+                      hr_recruitment: 'HR/Recruitment',
+                      sales_marketing: 'Sales/Marketing',
+                      facilities: 'Facilities'
+                    };
+                    return (
+                      <div key={key} className="text-xs text-muted-foreground">
+                        <span className="font-medium">{leadershipLabels[key as keyof typeof leadershipLabels] || key}:</span> {String(value)}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {data.founded_year && (
               <div>
                 <span className="font-medium">Founded: </span>

@@ -25,6 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
 
 const companySizeOptions = [
@@ -33,6 +34,17 @@ const companySizeOptions = [
   '501-600', '601-750', '751-1000', '1001-1500', 
   '1501-2500', '2501-3500', '3501-5000', '5000+'
 ];
+
+const leadershipCategories = {
+  owner_ceo: 'Owner/CEO',
+  financial: 'Financial',
+  operations: 'Operations',
+  clinical_excellence: 'Clinical Excellence',
+  technology: 'Technology',
+  hr_recruitment: 'Human Resources/Recruitment',
+  sales_marketing: 'Sales/Marketing',
+  facilities: 'Facilities'
+};
 
 const companySchema = z.object({
   name: z.string().min(1, 'Company name is required'),
@@ -48,6 +60,7 @@ const companySchema = z.object({
   pe_relationship_start_date: z.string().optional(),
   company_locations: z.string().optional(),
   services: z.string().optional(),
+  leadership: z.record(z.string()).optional(),
 });
 
 type CompanyFormData = z.infer<typeof companySchema>;
@@ -79,6 +92,7 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
       pe_relationship_start_date: '',
       company_locations: '',
       services: '',
+      leadership: {},
     },
   });
 
@@ -100,6 +114,7 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
         pe_relationship_start_date: company.pe_relationship_start_date || '',
         company_locations: company.company_locations?.join(', ') || '',
         services: company.services?.join(', ') || '',
+        leadership: company.leadership || {},
       });
       setOpen(true);
     }
@@ -125,6 +140,7 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
         services: data.services 
           ? data.services.split(',').map(s => s.trim()).filter(s => s)
           : [],
+        leadership: data.leadership || {},
       };
 
       if (isEditing) {
@@ -346,6 +362,32 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
                   />
                 </div>
               )}
+            </div>
+
+            {/* Leadership Section */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <h3 className="font-semibold">Leadership Team</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(leadershipCategories).map(([category, label]) => (
+                  <FormField
+                    key={category}
+                    control={form.control}
+                    name={`leadership.${category}` as any}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{label}</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder={`Enter ${label.toLowerCase()} leadership`}
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ))}
+              </div>
             </div>
 
             <FormField

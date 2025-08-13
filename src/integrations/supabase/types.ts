@@ -77,6 +77,7 @@ export type Database = {
           founded_year: number | null
           id: string
           latitude: number | null
+          leadership: Json | null
           longitude: number | null
           name: string
           number_of_clinics: number | null
@@ -101,6 +102,7 @@ export type Database = {
           founded_year?: number | null
           id?: string
           latitude?: number | null
+          leadership?: Json | null
           longitude?: number | null
           name: string
           number_of_clinics?: number | null
@@ -125,6 +127,7 @@ export type Database = {
           founded_year?: number | null
           id?: string
           latitude?: number | null
+          leadership?: Json | null
           longitude?: number | null
           name?: string
           number_of_clinics?: number | null

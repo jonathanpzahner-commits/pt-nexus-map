@@ -312,6 +312,34 @@ const EntityDetails = () => {
               )}
             </div>
             
+            {/* Leadership Section */}
+            {(entity as any).leadership && Object.keys((entity as any).leadership).length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-2">Leadership Team</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {Object.entries((entity as any).leadership).map(([key, value]) => {
+                    if (!value) return null;
+                    const leadershipLabels = {
+                      owner_ceo: 'Owner/CEO',
+                      financial: 'Financial',
+                      operations: 'Operations',
+                      clinical_excellence: 'Clinical Excellence',
+                      technology: 'Technology',
+                      hr_recruitment: 'Human Resources/Recruitment',
+                      sales_marketing: 'Sales/Marketing',
+                      facilities: 'Facilities'
+                    };
+                    return (
+                      <div key={key} className="text-sm">
+                        <span className="font-medium">{leadershipLabels[key as keyof typeof leadershipLabels] || key}:</span>
+                        <span className="text-muted-foreground"> {String(value)}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+            
             {(entity as any).description && (
               <div>
                 <h3 className="font-semibold mb-2">Description</h3>
