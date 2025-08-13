@@ -27,18 +27,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Plus } from 'lucide-react';
 
+const companySizeOptions = [
+  '1-5', '6-10', '11-20', '21-40', '41-75', '76-100', 
+  '101-125', '126-150', '151-200', '201-250', '251-500', 
+  '501-600', '601-750', '751-1000', '1001-1500', 
+  '1501-2500', '2501-3500', '3501-5000', '5000+'
+];
+
 const companySchema = z.object({
   name: z.string().min(1, 'Company name is required'),
   company_type: z.string().min(1, 'Company type is required'),
   description: z.string().optional(),
   number_of_clinics: z.number().min(1).optional(),
+  company_size_range: z.string().optional(),
+  founded_year: z.number().min(1800).max(new Date().getFullYear()).optional(),
+  website: z.string().url('Invalid URL').optional().or(z.literal('')),
   parent_company: z.string().optional(),
   pe_backed: z.boolean().optional(),
   pe_firm_name: z.string().optional(),
   pe_relationship_start_date: z.string().optional(),
-  company_size_range: z.string().optional(),
-  founded_year: z.number().min(1800).max(new Date().getFullYear()).optional(),
-  website: z.string().url('Invalid URL').optional().or(z.literal('')),
   company_locations: z.string().optional(),
   services: z.string().optional(),
 });
@@ -63,17 +70,19 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
       company_type: '',
       description: '',
       number_of_clinics: undefined,
+      company_size_range: '',
+      founded_year: undefined,
+      website: '',
       parent_company: '',
       pe_backed: false,
       pe_firm_name: '',
       pe_relationship_start_date: '',
-      company_size_range: '',
-      founded_year: undefined,
-      website: '',
       company_locations: '',
       services: '',
     },
   });
+
+  const watchPeBacked = form.watch('pe_backed');
 
   useEffect(() => {
     if (company) {
@@ -82,13 +91,13 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
         company_type: company.company_type || '',
         description: company.description || '',
         number_of_clinics: company.number_of_clinics || undefined,
+        company_size_range: company.company_size_range || '',
+        founded_year: company.founded_year || undefined,
+        website: company.website || '',
         parent_company: company.parent_company || '',
         pe_backed: company.pe_backed || false,
         pe_firm_name: company.pe_firm_name || '',
         pe_relationship_start_date: company.pe_relationship_start_date || '',
-        company_size_range: company.company_size_range || '',
-        founded_year: company.founded_year || undefined,
-        website: company.website || '',
         company_locations: company.company_locations?.join(', ') || '',
         services: company.services?.join(', ') || '',
       });
@@ -103,13 +112,13 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
         company_type: data.company_type,
         description: data.description || null,
         number_of_clinics: data.number_of_clinics,
+        company_size_range: data.company_size_range || null,
+        founded_year: data.founded_year,
+        website: data.website || null,
         parent_company: data.parent_company || null,
         pe_backed: data.pe_backed || false,
         pe_firm_name: data.pe_firm_name || null,
         pe_relationship_start_date: data.pe_relationship_start_date || null,
-        company_size_range: data.company_size_range || null,
-        founded_year: data.founded_year,
-        website: data.website || null,
         company_locations: data.company_locations 
           ? data.company_locations.split(',').map(s => s.trim()).filter(s => s)
           : [],
@@ -165,7 +174,7 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit Company' : 'Add New Company'}</DialogTitle>
         </DialogHeader>
@@ -222,32 +231,18 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Company Size</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select size range" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="1-5">1-5</SelectItem>
-                        <SelectItem value="6-10">6-10</SelectItem>
-                        <SelectItem value="11-20">11-20</SelectItem>
-                        <SelectItem value="21-40">21-40</SelectItem>
-                        <SelectItem value="41-75">41-75</SelectItem>
-                        <SelectItem value="76-100">76-100</SelectItem>
-                        <SelectItem value="101-125">101-125</SelectItem>
-                        <SelectItem value="126-150">126-150</SelectItem>
-                        <SelectItem value="151-200">151-200</SelectItem>
-                        <SelectItem value="201-250">201-250</SelectItem>
-                        <SelectItem value="251-500">251-500</SelectItem>
-                        <SelectItem value="501-600">501-600</SelectItem>
-                        <SelectItem value="601-750">601-750</SelectItem>
-                        <SelectItem value="751-1000">751-1000</SelectItem>
-                        <SelectItem value="1001-1500">1001-1500</SelectItem>
-                        <SelectItem value="1501-2500">1501-2500</SelectItem>
-                        <SelectItem value="2501-3500">2501-3500</SelectItem>
-                        <SelectItem value="3501-5000">3501-5000</SelectItem>
-                        <SelectItem value="5000+">5000+</SelectItem>
+                        {companySizeOptions.map((size) => (
+                          <SelectItem key={size} value={size}>
+                            {size} employees
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -261,7 +256,7 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
                   <FormItem>
                     <FormLabel>Parent Company</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter parent company name" {...field} />
+                      <Input placeholder="Parent company name (if applicable)" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -299,6 +294,60 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
                 )}
               />
             </div>
+
+            {/* PE Backing Section */}
+            <div className="border rounded-lg p-4 space-y-4">
+              <h3 className="font-semibold">Private Equity Information</h3>
+              <FormField
+                control={form.control}
+                name="pe_backed"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Private Equity Backed</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+              
+              {watchPeBacked && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="pe_firm_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>PE Firm Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Private equity firm name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="pe_relationship_start_date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Relationship Start Date</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
+            </div>
+
             <FormField
               control={form.control}
               name="description"
@@ -348,66 +397,6 @@ export const AddCompanyDialog = ({ company, onClose }: AddCompanyDialogProps = {
                 </FormItem>
               )}
             />
-            
-            {/* Private Equity Section */}
-            <div className="space-y-4 border-t pt-4">
-              <h3 className="text-lg font-semibold">Private Equity Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="pe_backed"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel>
-                          Private Equity Backed
-                        </FormLabel>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-                
-                {form.watch('pe_backed') && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="pe_firm_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Private Equity Firm Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Enter PE firm name" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="pe_relationship_start_date"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>PE Relationship Start Date</FormLabel>
-                          <FormControl>
-                            <Input 
-                              type="date" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
-              </div>
-            </div>
             <div className="flex justify-end space-x-2 pt-4">
               <Button
                 type="button"
