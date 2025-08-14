@@ -28,6 +28,7 @@ import { MapContainer } from './map/MapContainer';
 import { GlobalSearch } from './search/GlobalSearch';
 import { SimpleBulkUpload } from './upload/SimpleBulkUpload';
 import { GeocodingManager } from './search/GeocodingManager';
+import { FastGeocodingManager } from './dashboard/FastGeocodingManager';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
@@ -238,7 +239,10 @@ const Dashboard = () => {
               <h2 className="text-2xl font-bold text-foreground">Automated Geocoding</h2>
             </div>
           </div>
-          <GeocodingManager />
+          <div className="grid gap-6">
+            <FastGeocodingManager />
+            <GeocodingManager />
+          </div>
         </TabsContent>
 
         <TabsContent value="community" className="space-y-4">
