@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -781,138 +781,138 @@ export type Database = {
     }
     Functions: {
       calculate_distance: {
-        Args: { lat1: number; lon1: number; lat2: number; lon2: number }
+        Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
       }
       companies_within_radius: {
-        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
-          id: string
-          name: string
-          company_type: string
-          description: string
-          website: string
           address: string
           city: string
-          state: string
-          zip_code: string
-          founded_year: number
-          employee_count: number
           company_locations: string[]
-          services: string[]
+          company_type: string
+          created_at: string
+          description: string
+          distance_miles: number
+          employee_count: number
+          founded_year: number
+          id: string
           latitude: number
           longitude: number
-          created_at: string
+          name: string
+          services: string[]
+          state: string
           updated_at: string
-          distance_miles: number
+          website: string
+          zip_code: string
         }[]
       }
       consultant_companies_within_radius: {
-        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
-          id: string
-          name: string
-          first_name: string
-          last_name: string
-          email: string
-          phone: string
-          website: string
-          company: string
-          title: string
           bio: string
-          years_experience: number
-          consulting_categories: string[]
-          industries: string[]
-          territories: string[]
           certifications: string[]
-          linkedin_url: string
           city: string
-          state: string
-          zip_code: string
-          latitude: number
-          longitude: number
+          company: string
+          consulting_categories: string[]
           created_at: string
-          updated_at: string
           distance_miles: number
+          email: string
+          first_name: string
+          id: string
+          industries: string[]
+          last_name: string
+          latitude: number
+          linkedin_url: string
+          longitude: number
+          name: string
+          phone: string
+          state: string
+          territories: string[]
+          title: string
+          updated_at: string
+          website: string
+          years_experience: number
+          zip_code: string
         }[]
       }
       equipment_companies_within_radius: {
-        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
-          id: string
-          name: string
-          company_type: string
-          description: string
-          website: string
-          phone: string
-          email: string
           address: string
+          certifications: string[]
           city: string
-          state: string
-          zip_code: string
-          founded_year: number
+          company_type: string
+          created_at: string
+          description: string
+          distance_miles: number
+          email: string
           employee_count: number
           equipment_categories: string[]
-          product_lines: string[]
-          target_markets: string[]
-          certifications: string[]
-          linkedin_url: string
+          founded_year: number
+          id: string
           latitude: number
+          linkedin_url: string
           longitude: number
-          created_at: string
+          name: string
+          phone: string
+          product_lines: string[]
+          state: string
+          target_markets: string[]
           updated_at: string
-          distance_miles: number
+          website: string
+          zip_code: string
         }[]
       }
       job_listings_within_radius: {
-        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
-          id: string
-          title: string
-          description: string
           city: string
-          state: string
-          zip_code: string
+          description: string
+          distance_miles: number
           employment_type: string
           experience_level: string
-          salary_min: number
-          salary_max: number
+          id: string
           is_remote: boolean
           latitude: number
           longitude: number
-          distance_miles: number
+          salary_max: number
+          salary_min: number
+          state: string
+          title: string
+          zip_code: string
         }[]
       }
       pe_firms_within_radius: {
-        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
-          id: string
-          name: string
-          firm_type: string
-          description: string
-          website: string
-          founded_year: number
-          total_aum: number
-          healthcare_focus: boolean
-          typical_deal_size_min: number
-          typical_deal_size_max: number
-          investment_stage: string[]
-          geographic_focus: string[]
-          sector_focus: string[]
-          portfolio_companies: string[]
-          key_contacts: Json
           address: string
           city: string
-          state: string
-          zip_code: string
-          phone: string
-          email: string
-          linkedin_url: string
-          latitude: number
-          longitude: number
           created_at: string
-          updated_at: string
+          description: string
           distance_miles: number
+          email: string
+          firm_type: string
+          founded_year: number
+          geographic_focus: string[]
+          healthcare_focus: boolean
+          id: string
+          investment_stage: string[]
+          key_contacts: Json
+          latitude: number
+          linkedin_url: string
+          longitude: number
+          name: string
+          phone: string
+          portfolio_companies: string[]
+          sector_focus: string[]
+          state: string
+          total_aum: number
+          typical_deal_size_max: number
+          typical_deal_size_min: number
+          updated_at: string
+          website: string
+          zip_code: string
         }[]
       }
       process_geocoding_jobs: {
@@ -920,35 +920,35 @@ export type Database = {
         Returns: undefined
       }
       providers_within_radius: {
-        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
-          id: string
-          name: string
-          first_name: string
-          last_name: string
+          bio: string
           city: string
-          state: string
+          distance_miles: number
+          first_name: string
+          id: string
+          last_name: string
           latitude: number
           longitude: number
+          name: string
           specializations: string[]
-          bio: string
-          distance_miles: number
+          state: string
         }[]
       }
       schools_within_radius: {
-        Args: { user_lat: number; user_lng: number; radius_miles: number }
+        Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
-          id: string
-          name: string
           city: string
-          state: string
-          zip_code: string
           description: string
-          programs_offered: string[]
-          specializations: string[]
+          distance_miles: number
+          id: string
           latitude: number
           longitude: number
-          distance_miles: number
+          name: string
+          programs_offered: string[]
+          specializations: string[]
+          state: string
+          zip_code: string
         }[]
       }
     }
