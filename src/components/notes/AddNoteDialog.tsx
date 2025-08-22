@@ -73,11 +73,19 @@ export const AddNoteDialog = ({
   const mutation = useMutation({
     mutationFn: async (data: NoteFormData) => {
       console.log('Submitting note:', data, 'for entity:', entityType, entityId);
+      
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error('User must be authenticated to create notes');
+      }
+      
       const noteData = {
         title: data.title,
         content: data.content || null,
         entity_type: entityType,
         entity_id: entityId,
+        user_id: user.id,
       };
 
       if (isEditing) {

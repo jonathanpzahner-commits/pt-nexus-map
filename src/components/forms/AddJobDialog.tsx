@@ -31,6 +31,7 @@ const jobSchema = z.object({
   title: z.string().min(1, 'Job title is required'),
   city: z.string().min(1, 'City is required'),
   state: z.string().min(2, 'State is required'),
+  company_name: z.string().optional(),
   description: z.string().optional(),
   requirements: z.string().optional(),
   employment_type: z.string().min(1, 'Employment type is required'),
@@ -38,6 +39,7 @@ const jobSchema = z.object({
   salary_min: z.number().min(0).optional(),
   salary_max: z.number().min(0).optional(),
   is_remote: z.boolean().default(false),
+  external_url: z.string().url().optional().or(z.literal('')),
 });
 
 type JobFormData = z.infer<typeof jobSchema>;
@@ -59,6 +61,7 @@ export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
       title: '',
       city: '',
       state: '',
+      company_name: '',
       description: '',
       requirements: '',
       employment_type: 'Full-time',
@@ -66,6 +69,7 @@ export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
       salary_min: undefined,
       salary_max: undefined,
       is_remote: false,
+      external_url: '',
     },
   });
 
@@ -75,6 +79,7 @@ export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
         title: job.title || '',
         city: job.city || '',
         state: job.state || '',
+        company_name: job.company_name || '',
         description: job.description || '',
         requirements: job.requirements || '',
         employment_type: job.employment_type || 'Full-time',
@@ -82,6 +87,7 @@ export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
         salary_min: job.salary_min || undefined,
         salary_max: job.salary_max || undefined,
         is_remote: job.is_remote || false,
+        external_url: job.external_url || '',
       });
       setOpen(true);
     }
@@ -93,6 +99,7 @@ export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
         title: data.title,
         city: data.city,
         state: data.state,
+        company_name: data.company_name || null,
         description: data.description || null,
         requirements: data.requirements || null,
         employment_type: data.employment_type,
@@ -100,6 +107,8 @@ export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
         salary_min: data.salary_min,
         salary_max: data.salary_max,
         is_remote: data.is_remote,
+        external_url: data.external_url || null,
+        source: data.external_url ? 'external' : 'internal',
       };
 
       if (isEditing) {
@@ -163,6 +172,19 @@ export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
                   <FormLabel>Job Title *</FormLabel>
                   <FormControl>
                     <Input placeholder="Physical Therapist - Outpatient Orthopedics" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="company_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="ABC Therapy Centers" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -295,6 +317,22 @@ export const AddJobDialog = ({ job, onClose }: AddJobDialogProps = {}) => {
                       Remote Work Available
                     </FormLabel>
                   </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="external_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>External Job Link (Optional)</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="https://indeed.com/viewjob?jk=..." 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />

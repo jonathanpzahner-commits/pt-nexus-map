@@ -306,10 +306,13 @@ export type Database = {
         Row: {
           city: string
           company_id: string | null
+          company_name: string | null
           created_at: string
           description: string | null
           employment_type: string | null
           experience_level: string | null
+          external_id: string | null
+          external_url: string | null
           id: string
           is_remote: boolean | null
           latitude: number | null
@@ -318,6 +321,7 @@ export type Database = {
           requirements: string | null
           salary_max: number | null
           salary_min: number | null
+          source: string | null
           state: string
           title: string
           updated_at: string
@@ -326,10 +330,13 @@ export type Database = {
         Insert: {
           city: string
           company_id?: string | null
+          company_name?: string | null
           created_at?: string
           description?: string | null
           employment_type?: string | null
           experience_level?: string | null
+          external_id?: string | null
+          external_url?: string | null
           id?: string
           is_remote?: boolean | null
           latitude?: number | null
@@ -338,6 +345,7 @@ export type Database = {
           requirements?: string | null
           salary_max?: number | null
           salary_min?: number | null
+          source?: string | null
           state: string
           title: string
           updated_at?: string
@@ -346,10 +354,13 @@ export type Database = {
         Update: {
           city?: string
           company_id?: string | null
+          company_name?: string | null
           created_at?: string
           description?: string | null
           employment_type?: string | null
           experience_level?: string | null
+          external_id?: string | null
+          external_url?: string | null
           id?: string
           is_remote?: boolean | null
           latitude?: number | null
@@ -358,6 +369,7 @@ export type Database = {
           requirements?: string | null
           salary_max?: number | null
           salary_min?: number | null
+          source?: string | null
           state?: string
           title?: string
           updated_at?: string

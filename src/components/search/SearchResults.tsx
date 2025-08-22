@@ -240,6 +240,12 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
       case 'job_listing':
         return (
           <div className="space-y-2 text-sm">
+            {data.company_name && (
+              <div>
+                <span className="font-medium">Company: </span>
+                <span className="text-muted-foreground">{data.company_name}</span>
+              </div>
+            )}
             {data.salary_min && data.salary_max && (
               <div>
                 <span className="font-medium">Salary: </span>
@@ -254,8 +260,26 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
                 <span className="text-muted-foreground">{data.experience_level}</span>
               </div>
             )}
-            {data.is_remote && (
-              <Badge variant="secondary" className="text-xs">Remote</Badge>
+            <div className="flex items-center gap-2">
+              {data.is_remote && (
+                <Badge variant="secondary" className="text-xs">Remote</Badge>
+              )}
+              {data.source && data.source !== 'internal' && (
+                <Badge variant="outline" className="text-xs">
+                  {data.source === 'indeed' ? 'Indeed' : data.source}
+                </Badge>
+              )}
+            </div>
+            {data.external_url && (
+              <div>
+                <button
+                  onClick={() => window.open(data.external_url, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes')}
+                  className="inline-flex items-center gap-1 text-primary hover:underline font-medium"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Apply on {data.source === 'indeed' ? 'Indeed' : 'External Site'}
+                </button>
+              </div>
             )}
             {data.requirements && (
               <div>
