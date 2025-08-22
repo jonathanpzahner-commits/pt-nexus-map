@@ -297,12 +297,15 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       });
       
       // Companies (fallback to city/state if no coordinates)
+      const hiringCompanyIds = new Set((filteredData.jobListings || []).map((j: any) => j.company_id).filter(Boolean));
+      const hiringCompanyNames = new Set((filteredData.jobListings || []).map((j: any) => (j.company_name || '').toLowerCase().trim()).filter(Boolean));
+
       filteredData.companies.forEach((company: any) => {
-        let coords = null;
+        let coords: [number, number] | null = null;
         
         // Try coordinates first
         if (company.longitude && company.latitude) {
-          coords = [parseFloat(company.longitude), parseFloat(company.latitude)] as [number, number];
+          coords = [parseFloat(company.longitude), parseFloat(company.latitude)];
         }
         // Fallback: place at search center for companies without coordinates
         else if (company.city && company.state) {
@@ -310,16 +313,21 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         }
         
         if (coords) {
+          const isHiring = (company.id && hiringCompanyIds.has(company.id)) ||
+            ((company.name || '') && hiringCompanyNames.has(String(company.name).toLowerCase().trim()));
+          const markerColor = isHiring ? '#EF4444' : '#3B82F6';
+
           const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
             `<div class="p-2">
               <h3 class="font-semibold text-sm">${company.name}</h3>
               <p class="text-xs text-gray-600">${company.company_type || 'Company'}</p>
               <p class="text-xs">${company.city || ''}, ${company.state || ''}</p>
               <p class="text-xs text-gray-500">${company.longitude && company.latitude ? 'Exact location' : 'Approximate location'}</p>
+              ${isHiring ? '<p class="mt-1 text-[11px] font-medium text-red-600">Hiring now</p>' : ''}
             </div>`
           );
 
-          const marker = new mapboxgl.Marker({ color: '#3B82F6' })
+          const marker = new mapboxgl.Marker({ color: markerColor })
             .setLngLat(coords)
             .setPopup(popup)
             .addTo(map.current!);
@@ -535,7 +543,7 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-              <span>Job Listings</span>
+              <span>Companies hiring</span>
             </div>
             <div className="text-xs text-muted-foreground mt-2">
               Click markers to view details

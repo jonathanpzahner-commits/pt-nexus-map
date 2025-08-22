@@ -963,6 +963,10 @@ export type Database = {
           zip_code: string
         }[]
       }
+      trigger_company_geocoding: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
