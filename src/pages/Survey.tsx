@@ -12,6 +12,8 @@ const Survey = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [startTime] = useState(Date.now());
 
+  console.log('Survey component loaded with role:', role);
+
   // Track page view analytics
   useEffect(() => {
     if (role) {
@@ -57,28 +59,48 @@ const Survey = () => {
   // Validate role parameter
   const validRoles = ['pt_owner', 'pt_ceo_coo', 'pt_consultant', 'healthcare_recruiter', 'talent_leadership', 'physical_therapist'];
   
+  console.log('Valid roles:', validRoles);
+  console.log('Current role:', role);
+  console.log('Role is valid:', validRoles.includes(role || ''));
+  
   if (!role || !validRoles.includes(role)) {
+    console.log('Invalid role, redirecting to pt_owner');
     navigate('/survey/pt_owner');
     return null;
   }
+
+  console.log('Rendering survey for role:', role);
 
   if (isSubmitted) {
     return <SurveyThankYou role={role} />;
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <SurveyHeader role={role} />
-          
-          <Card className="mt-8 p-8">
-            <SurveyForm role={role} onSubmit={handleSurveySubmit} />
-          </Card>
+  try {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background to-muted/30">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-4xl mx-auto">
+            <SurveyHeader role={role} />
+            
+            <Card className="mt-8 p-8">
+              <SurveyForm role={role} onSubmit={handleSurveySubmit} />
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Survey render error:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Survey Loading Error</h1>
+          <p>Role: {role}</p>
+          <p>Error: {String(error)}</p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default Survey;
