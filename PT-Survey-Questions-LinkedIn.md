@@ -1,0 +1,366 @@
+# PT Industry Survey Questions for LinkedIn Forms
+
+## Survey Introduction
+**Title:** Help Shape the Future of Physical Therapy Industry Solutions
+
+**Description:** We're building a comprehensive platform to solve the biggest challenges facing PT professionals. Your 5-minute input will directly influence what we build first. Early participants get 6 months free access when we launch.
+
+---
+
+## Step 1: Basic Information
+
+### Question 1: What best describes your role?
+**Type:** Multiple Choice (Single Select)
+**Options:**
+- Practice Owner
+- PT CEO/COO (Multi-location)
+- PT Consultant
+- Healthcare Recruiter
+- Talent/HR Leadership
+- Physical Therapist
+
+### Question 2: Company/Practice Name
+**Type:** Short Text
+**Required:** No
+**Placeholder:** Your organization name (optional)
+
+### Question 3: Organization Size
+**Type:** Multiple Choice (Single Select)
+**Options:**
+For Practice Owners:
+- Solo practice
+- Small clinic (2-10 staff)
+- Medium clinic (11-50 staff)
+- Large clinic/hospital (50+ staff)
+- Not applicable
+
+For Others:
+- Startup (1-10 employees)
+- Small (11-50 employees)
+- Medium (51-200 employees)
+- Large (201-1000 employees)
+- Enterprise (1000+ employees)
+
+### Question 4: Years of Experience in PT Industry
+**Type:** Multiple Choice (Single Select)
+**Options:**
+- 0-2 years
+- 3-5 years
+- 6-10 years
+- 11-15 years
+- 16-20 years
+- 20+ years
+
+---
+
+## Step 2: Current Challenges
+
+### Question 5: What are your biggest daily challenges? (Select all that apply)
+
+**Type:** Multiple Choice (Multiple Select)
+
+**For Practice Owners:**
+- Finding and retaining qualified PTs and support staff
+- Managing relationships with multiple equipment vendors
+- Tracking and comparing supplier pricing and contracts
+- Staying competitive with larger clinic chains
+- Understanding local market rates and competitor strategies
+- Finding reliable continuing education providers for staff
+- Networking with other practice owners for best practices
+- Managing patient referral relationships with physicians
+- Keeping up with insurance reimbursement changes
+- Finding and evaluating new practice management software
+
+**For PT CEO/COO:**
+- Coordinating operations across multiple clinic locations
+- Developing standardized protocols across all sites
+- Analyzing performance metrics across different markets
+- Managing vendor relationships and contracts at scale
+- Recruiting leadership talent for expansion
+- Staying ahead of industry consolidation trends
+- Implementing technology solutions across locations
+- Managing relationships with PE firms or investors
+- Benchmarking performance against industry standards
+- Planning strategic acquisitions and market expansion
+
+**For PT Consultants:**
+- Finding new clients who need consulting services
+- Building credibility and reputation in the market
+- Staying current with industry trends and changes
+- Accessing reliable market research and data
+- Networking with potential clients and referral sources
+- Differentiating from other consultants and firms
+- Understanding client pain points and needs deeply
+- Managing multiple client relationships effectively
+- Pricing services competitively yet profitably
+- Finding subject matter experts for specialized projects
+
+**For Healthcare Recruiters:**
+- Sourcing qualified PT candidates in a tight market
+- Understanding client practice culture and specific needs
+- Keeping up with salary trends and market rates
+- Building relationships with passive candidates
+- Competing with internal recruiters and other agencies
+- Understanding different PT specializations and requirements
+- Managing candidate expectations vs client requirements
+- Building a pipeline of quality candidates
+- Staying connected with placed candidates for referrals
+- Understanding regional market differences and trends
+
+**For Talent Leadership:**
+- Building a strong pipeline of PT talent
+- Understanding market compensation trends
+- Reducing turnover and improving retention
+- Competing with other employers for top talent
+- Identifying skills gaps and training needs
+- Building relationships with PT schools and programs
+- Managing succession planning for key roles
+- Creating attractive career development paths
+- Benchmarking benefits and compensation packages
+- Understanding what motivates PT professionals today
+
+**For Physical Therapists:**
+- Finding the right career opportunities and advancement paths
+- Staying current with evidence-based practices and research
+- Networking with other PTs in my specialty area
+- Finding quality continuing education and certification programs
+- Understanding salary ranges and negotiating compensation
+- Building professional relationships and mentorships
+- Finding opportunities to specialize or change practice areas
+- Staying informed about industry trends and changes
+- Balancing work-life integration and avoiding burnout
+- Finding leadership and management development opportunities
+
+### Question 6: Rate the impact level of your selected challenges
+**Type:** Linear Scale (1-5)
+**Note:** Only show this for challenges selected in Question 5
+**Scale:** 1 = Minor issue, 5 = Critical issue
+
+---
+
+## Step 3: Current Tools & Investment
+
+### Question 7: How do you currently handle these challenges? (Select all that apply)
+
+**Type:** Multiple Choice (Multiple Select)
+
+**For Practice Owners:**
+- Practice management software (WebPT, TheraOffice, etc.)
+- Excel/Google Sheets for vendor tracking
+- LinkedIn for networking and recruiting
+- Email and phone for vendor communications
+- Industry publications (APTA, state association newsletters)
+- Local PT owner networking groups
+- Referral tracking spreadsheets
+- Manual vendor price comparison
+- Word-of-mouth recommendations from peers
+- Google searches for equipment and services
+- Trade show vendor lists
+- None - I handle everything manually
+
+**For PT CEO/COO:**
+- Business intelligence dashboards (Tableau, Power BI)
+- Multi-location practice management systems
+- Excel/Google Sheets for performance tracking
+- CRM software for relationship management
+- LinkedIn for industry networking
+- Industry benchmarking reports (purchased)
+- Consultant relationships for market insights
+- Private equity network connections
+- Board advisor relationships
+- Industry conference networking
+- Professional association memberships
+- None - I rely on internal teams for data
+
+**For PT Consultants:**
+- CRM software for client relationship management
+- LinkedIn for prospecting and networking
+- Industry research subscriptions
+- Excel/Google Sheets for analysis
+- Survey tools (SurveyMonkey, Typeform)
+- Professional association memberships
+- Conference networking and speaking
+- Referral networks from past clients
+- Cold outreach via email and LinkedIn
+- Content marketing (blog, LinkedIn posts)
+- Direct mail and targeted advertising
+- None - I rely primarily on referrals
+
+**For Healthcare Recruiters:**
+- Applicant tracking system (ATS)
+- LinkedIn Recruiter for candidate sourcing
+- Job boards (Indeed, ZipRecruiter, PT-specific)
+- CRM for client relationship management
+- Salary survey data and reports
+- Professional association job boards
+- Referral networks and past placements
+- Cold calling and networking
+- Social media recruiting (Facebook, Instagram)
+- PT school career fair participation
+- Employee referral programs
+- None - I use basic tools and networking
+
+**For Talent Leadership:**
+- HRIS system for talent management
+- LinkedIn for sourcing and employer branding
+- Salary benchmarking tools (PayScale, Glassdoor)
+- Performance management software
+- Learning management system (LMS)
+- Employee engagement survey tools
+- Applicant tracking system (ATS)
+- PT school partnership programs
+- Professional development budget tracking
+- Succession planning software
+- Industry compensation surveys
+- None - I use manual processes and spreadsheets
+
+**For Physical Therapists:**
+- LinkedIn for networking and job searching
+- Indeed, ZipRecruiter for job opportunities
+- Continuing education platforms (MedBridge, etc.)
+- Professional association websites (APTA)
+- PT-specific job boards
+- Networking through current colleagues
+- Professional mentorship relationships
+- Specialty-specific online communities
+- Conference networking and education
+- Local PT networking groups
+- Social media groups (Facebook, Reddit)
+- None - I rely on word-of-mouth and referrals
+
+### Question 8: What would you pay monthly for a platform that significantly reduces these challenges?
+**Type:** Multiple Choice (Single Select)
+
+**For Physical Therapists:**
+- Free only
+- Under $25/month
+- $25-50/month
+- $50-100/month
+- Over $100/month
+- Not interested in paid solutions
+
+**For All Others:**
+- Free only
+- Under $50/month
+- $50-100/month
+- $100-250/month
+- $250-500/month
+- Over $500/month
+- Not interested in paid solutions
+
+---
+
+## Step 4: Feature Priorities
+
+### Question 9: Rate the importance of these potential features (1-5 scale)
+**Type:** Matrix/Grid (Linear Scale 1-5)
+**Scale:** 1 = Not important, 5 = Very important
+
+**For Practice Owners:**
+- Searchable database of PT equipment vendors with pricing
+- Vendor comparison tools with peer reviews and ratings
+- Network of other practice owners for advice and referrals
+- Market intelligence on competitor pricing and services
+- Qualified PT candidate database with verified credentials
+- Continuing education provider directory with staff reviews
+- Practice management benchmarking against similar practices
+- Supplier contract management and renewal reminders
+- Local market salary and benefit benchmarking tools
+- Physician referral relationship tracking system
+
+**For PT CEO/COO:**
+- Multi-location performance analytics and benchmarking
+- Industry M&A and market intelligence dashboard
+- Network of C-level executives for strategic insights
+- Standardized vendor management across all locations
+- Leadership talent pipeline and succession planning tools
+- Market expansion and acquisition opportunity analysis
+- Technology integration planning and vendor evaluation
+- PE firm and investment partner networking platform
+- Regulatory compliance tracking across multiple states
+- Competitive intelligence and market positioning analysis
+
+**For PT Consultants:**
+- Database of potential clients with contact information
+- Market research tools and industry trend analysis
+- Professional credentialing and case study portfolio
+- Network of subject matter experts for project collaboration
+- Client relationship and project management system
+- Industry benchmarking data and analysis tools
+- Speaking opportunity and thought leadership platform
+- Referral partner network and relationship tracking
+- Competitive analysis and market positioning tools
+- Contract and proposal template library
+
+**For Healthcare Recruiters:**
+- Comprehensive PT candidate database with specializations
+- Client company profiles with culture and compensation data
+- Real-time salary and benefit benchmarking by market
+- Passive candidate relationship management system
+- Market intelligence on hiring trends and demands
+- PT school partnership and new graduate pipeline
+- Interview assessment tools and candidate evaluation
+- Placement tracking and follow-up automation
+- Competitor analysis and market positioning insights
+- Regional market trend analysis and reporting
+
+**For Talent Leadership:**
+- Talent pipeline analytics and forecasting tools
+- Comprehensive compensation benchmarking by role and market
+- Retention prediction and early warning systems
+- Skills gap analysis and training needs assessment
+- PT school partnership and recruitment pipeline management
+- Succession planning and leadership development tracking
+- Employee engagement and satisfaction benchmarking
+- Competitor talent intelligence and market analysis
+- Performance management and career development pathways
+- Benefits and perks benchmarking against industry standards
+
+**For Physical Therapists:**
+- Personalized career development planning and tracking
+- Mentor matching with experienced PTs in your specialty
+- Comprehensive continuing education catalog with reviews
+- Professional networking groups by specialty and interest
+- Job opportunity alerts matching your skills and preferences
+- Salary negotiation tools and market rate information
+- Professional portfolio and achievement tracking
+- Research collaboration opportunities with peers
+- Leadership and management development programs
+- Work-life balance resources and peer support groups
+
+---
+
+## Step 5: Beta Interest & Contact
+
+### Question 10: Are you interested in early access and helping shape this platform?
+**Type:** Yes/No
+**Additional Info:** Beta users get 6 months free access + priority pricing
+
+### Question 11: Contact Information (Only if answered Yes to Q10)
+**Full Name:** [Short Text - Required]
+**Email Address:** [Email - Required]
+
+### Question 12: Final thoughts or specific needs we should prioritize?
+**Type:** Long Text (Optional)
+**Placeholder:** Any specific features, pain points, or requirements you'd like us to focus on first...
+
+---
+
+## Thank You Message
+
+**Title:** Thank You for Your Input!
+
+**Message:** Your responses will directly influence what we build first. If you opted for beta access, we'll reach out within 2 weeks with early access details and updates.
+
+**CTA:** Follow us on LinkedIn for updates: [Your Company LinkedIn]
+
+---
+
+## Implementation Notes for LinkedIn:
+
+1. **Use LinkedIn's "Choose Role" targeting** to show role-specific questions automatically
+2. **Create separate forms for each role** to avoid long conditional logic
+3. **Use LinkedIn's built-in analytics** to track completion rates by audience
+4. **Export responses to CSV** for analysis and follow-up
+5. **Set up automated follow-up campaigns** for beta participants
+6. **Create retargeting audiences** from form completers for future product launches
