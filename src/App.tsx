@@ -11,6 +11,7 @@ import Pricing from "./pages/Pricing";
 import EntityDetails from "./pages/EntityDetails";
 import Profile from "./pages/Profile";
 import InvestorPresentation from "./pages/InvestorPresentation";
+import Survey from "./pages/Survey";
 
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/investors" element={<InvestorPresentation />} />
+            <Route path="/survey/:role" element={<Survey />} />
             
             <Route path="/entity/:type/:id" element={<EntityDetails />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

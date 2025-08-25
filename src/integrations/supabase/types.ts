@@ -787,6 +787,93 @@ export type Database = {
         }
         Relationships: []
       }
+      survey_analytics: {
+        Row: {
+          completion_rate: number | null
+          created_at: string
+          id: string
+          page_views: number | null
+          respondent_role: string
+          source_campaign: string | null
+          time_spent_seconds: number | null
+        }
+        Insert: {
+          completion_rate?: number | null
+          created_at?: string
+          id?: string
+          page_views?: number | null
+          respondent_role: string
+          source_campaign?: string | null
+          time_spent_seconds?: number | null
+        }
+        Update: {
+          completion_rate?: number | null
+          created_at?: string
+          id?: string
+          page_views?: number | null
+          respondent_role?: string
+          source_campaign?: string | null
+          time_spent_seconds?: number | null
+        }
+        Relationships: []
+      }
+      survey_responses: {
+        Row: {
+          additional_comments: string | null
+          beta_interest: boolean | null
+          company_name: string | null
+          company_size: string | null
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string
+          current_challenges: string[] | null
+          feature_priorities: Json | null
+          id: string
+          pain_point_severity: Json | null
+          pricing_willingness: string | null
+          respondent_role: string
+          tools_currently_used: string[] | null
+          updated_at: string
+          years_experience: string | null
+        }
+        Insert: {
+          additional_comments?: string | null
+          beta_interest?: boolean | null
+          company_name?: string | null
+          company_size?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          current_challenges?: string[] | null
+          feature_priorities?: Json | null
+          id?: string
+          pain_point_severity?: Json | null
+          pricing_willingness?: string | null
+          respondent_role: string
+          tools_currently_used?: string[] | null
+          updated_at?: string
+          years_experience?: string | null
+        }
+        Update: {
+          additional_comments?: string | null
+          beta_interest?: boolean | null
+          company_name?: string | null
+          company_size?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          current_challenges?: string[] | null
+          feature_priorities?: Json | null
+          id?: string
+          pain_point_severity?: Json | null
+          pricing_willingness?: string | null
+          respondent_role?: string
+          tools_currently_used?: string[] | null
+          updated_at?: string
+          years_experience?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
