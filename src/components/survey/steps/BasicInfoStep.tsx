@@ -59,6 +59,8 @@ export const BasicInfoStep = ({ role, data, onChange }: BasicInfoStepProps) => {
     }
   };
 
+  console.log('BasicInfoStep rendering with role:', role, 'data:', data);
+
   return (
     <div className="space-y-6">
       <div>
