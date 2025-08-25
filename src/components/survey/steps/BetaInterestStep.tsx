@@ -15,9 +15,9 @@ export const BetaInterestStep = ({ role, data, onChange }: BetaInterestStepProps
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Beta Testing & Contact</h2>
+        <h2 className="text-2xl font-bold mb-4">Help Us Build This</h2>
         <p className="text-muted-foreground mb-6">
-          Help us launch the right solution by joining our beta program and sharing any final thoughts.
+          Your insights are invaluable. Join our beta program to shape this platform and get early access.
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export const BetaInterestStep = ({ role, data, onChange }: BetaInterestStepProps
               onCheckedChange={(checked) => onChange({ beta_interest: checked })}
             />
             <Label htmlFor="beta_interest" className="text-lg font-semibold cursor-pointer">
-              Yes, I'm interested in free beta access!
+              Yes, I want early access and to help shape this platform!
             </Label>
           </div>
 
@@ -39,22 +39,22 @@ export const BetaInterestStep = ({ role, data, onChange }: BetaInterestStepProps
             <div className="flex items-center space-x-3">
               <Gift className="h-8 w-8 text-primary" />
               <div>
-                <p className="font-medium">Free Access</p>
-                <p className="text-sm text-muted-foreground">No cost during beta</p>
+                <p className="font-medium">Free Beta Access</p>
+                <p className="text-sm text-muted-foreground">6 months free + priority pricing</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <Users className="h-8 w-8 text-primary" />
               <div>
-                <p className="font-medium">Shape the Product</p>
-                <p className="text-sm text-muted-foreground">Your feedback drives development</p>
+                <p className="font-medium">Direct Input</p>
+                <p className="text-sm text-muted-foreground">Help prioritize features you need</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
               <Zap className="h-8 w-8 text-primary" />
               <div>
-                <p className="font-medium">Early Advantage</p>
-                <p className="text-sm text-muted-foreground">Get ahead of competitors</p>
+                <p className="font-medium">First-Mover Advantage</p>
+                <p className="text-sm text-muted-foreground">Be first to benefit from the network</p>
               </div>
             </div>
           </div>
@@ -101,13 +101,13 @@ export const BetaInterestStep = ({ role, data, onChange }: BetaInterestStepProps
       {/* Additional Comments */}
       <div className="space-y-4">
         <Label htmlFor="additional_comments">
-          Any additional thoughts, suggestions, or specific needs? (Optional)
+          Final thoughts or specific needs we should prioritize? (Optional)
         </Label>
         <Textarea
           id="additional_comments"
           value={data.additional_comments}
           onChange={(e) => onChange({ additional_comments: e.target.value })}
-          placeholder="Share any specific requirements, concerns, or ideas you have for the platform..."
+          placeholder="Any specific features, pain points, or requirements you'd like us to focus on first..."
           rows={4}
         />
       </div>

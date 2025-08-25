@@ -11,61 +11,94 @@ interface ToolsAndPricingStepProps {
 
 export const ToolsAndPricingStep = ({ role, data, onChange }: ToolsAndPricingStepProps) => {
   const getTools = () => {
-    const commonTools = [
-      'LinkedIn',
-      'Excel/Google Sheets',
-      'CRM software',
-      'Email marketing tools',
-      'Industry publications',
-      'Professional associations'
-    ];
-
     const roleTools: Record<string, string[]> = {
       pt_owner: [
-        'Practice management software',
-        'EMR/EHR systems',
-        'Scheduling software',
-        'Financial management tools',
-        ...commonTools
+        'Practice management software (WebPT, TheraOffice, etc.)',
+        'Excel/Google Sheets for vendor tracking',
+        'LinkedIn for networking and recruiting',
+        'Email and phone for vendor communications',
+        'Industry publications (APTA, state association newsletters)',
+        'Local PT owner networking groups',
+        'Referral tracking spreadsheets',
+        'Manual vendor price comparison',
+        'Word-of-mouth recommendations from peers',
+        'Google searches for equipment and services',
+        'Trade show vendor lists',
+        'None - I handle everything manually'
       ],
       pt_ceo_coo: [
-        'Business intelligence tools',
-        'Project management software',
-        'Performance dashboards',
-        'Multi-location management systems',
-        ...commonTools
+        'Business intelligence dashboards (Tableau, Power BI)',
+        'Multi-location practice management systems',
+        'Excel/Google Sheets for performance tracking',
+        'CRM software for relationship management',
+        'LinkedIn for industry networking',
+        'Industry benchmarking reports (purchased)',
+        'Consultant relationships for market insights',
+        'Private equity network connections',
+        'Board advisor relationships',
+        'Industry conference networking',
+        'Professional association memberships',
+        'None - I rely on internal teams for data'
       ],
       pt_consultant: [
-        'Market research tools',
-        'Presentation software',
-        'Project management tools',
-        'Client relationship management',
-        ...commonTools
+        'CRM software for client relationship management',
+        'LinkedIn for prospecting and networking',
+        'Industry research subscriptions',
+        'Excel/Google Sheets for analysis',
+        'Survey tools (SurveyMonkey, Typeform)',
+        'Professional association memberships',
+        'Conference networking and speaking',
+        'Referral networks from past clients',
+        'Cold outreach via email and LinkedIn',
+        'Content marketing (blog, LinkedIn posts)',
+        'Direct mail and targeted advertising',
+        'None - I rely primarily on referrals'
       ],
       healthcare_recruiter: [
-        'Applicant tracking systems',
-        'Job boards',
-        'Social recruiting tools',
-        'Background check services',
-        ...commonTools
+        'Applicant tracking system (ATS)',
+        'LinkedIn Recruiter for candidate sourcing',
+        'Job boards (Indeed, ZipRecruiter, PT-specific)',
+        'CRM for client relationship management',
+        'Salary survey data and reports',
+        'Professional association job boards',
+        'Referral networks and past placements',
+        'Cold calling and networking',
+        'Social media recruiting (Facebook, Instagram)',
+        'PT school career fair participation',
+        'Employee referral programs',
+        'None - I use basic tools and networking'
       ],
       talent_leadership: [
-        'HRIS systems',
+        'HRIS system for talent management',
+        'LinkedIn for sourcing and employer branding',
+        'Salary benchmarking tools (PayScale, Glassdoor)',
         'Performance management software',
-        'Compensation analysis tools',
-        'Learning management systems',
-        ...commonTools
+        'Learning management system (LMS)',
+        'Employee engagement survey tools',
+        'Applicant tracking system (ATS)',
+        'PT school partnership programs',
+        'Professional development budget tracking',
+        'Succession planning software',
+        'Industry compensation surveys',
+        'None - I use manual processes and spreadsheets'
       ],
       physical_therapist: [
-        'Continuing education platforms',
-        'Job search websites',
-        'Professional networking apps',
-        'Clinical reference tools',
-        ...commonTools
+        'LinkedIn for networking and job searching',
+        'Indeed, ZipRecruiter for job opportunities',
+        'Continuing education platforms (MedBridge, etc.)',
+        'Professional association websites (APTA)',
+        'PT-specific job boards',
+        'Networking through current colleagues',
+        'Professional mentorship relationships',
+        'Specialty-specific online communities',
+        'Conference networking and education',
+        'Local PT networking groups',
+        'Social media groups (Facebook, Reddit)',
+        'None - I rely on word-of-mouth and referrals'
       ]
     };
 
-    return [...(roleTools[role] || []), 'None of the above', 'Other (please specify in comments)'];
+    return roleTools[role] || [];
   };
 
   const getPricingOptions = () => {
@@ -104,16 +137,16 @@ export const ToolsAndPricingStep = ({ role, data, onChange }: ToolsAndPricingSte
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Current Tools & Pricing</h2>
+        <h2 className="text-2xl font-bold mb-4">Current Solutions & Investment</h2>
         <p className="text-muted-foreground mb-6">
-          Help us understand what you're currently using and what you'd be willing to invest in better solutions.
+          Understanding what you currently use and what you'd invest in helps us build the right solution.
         </p>
       </div>
 
       {/* Current Tools */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">What tools do you currently use for your work?</h3>
-        <p className="text-sm text-muted-foreground">Select all that apply</p>
+        <h3 className="text-lg font-semibold">How do you currently handle these challenges?</h3>
+        <p className="text-sm text-muted-foreground">Check all tools, methods, and resources you currently use</p>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {getTools().map((tool) => (
@@ -137,10 +170,10 @@ export const ToolsAndPricingStep = ({ role, data, onChange }: ToolsAndPricingSte
       <Card className="p-6">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">
-            What would you be willing to pay for a comprehensive platform that addresses your key challenges?
+            What would you pay monthly for a platform that significantly reduces these challenges?
           </h3>
           <p className="text-sm text-muted-foreground">
-            Consider a solution that combines networking, industry intelligence, vendor management, and professional tools.
+            Consider a comprehensive solution that saves you 5-10 hours per week and improves your results.
           </p>
           
           <RadioGroup

@@ -9,66 +9,82 @@ interface FeaturesStepProps {
 
 export const FeaturesStep = ({ role, data, onChange }: FeaturesStepProps) => {
   const getFeatures = () => {
-    const commonFeatures = [
-      'Professional networking and connections',
-      'Industry news and trends tracking',
-      'Vendor and supplier directory',
-      'Job listings and career opportunities',
-      'Educational resources and events'
-    ];
-
     const roleFeatures: Record<string, string[]> = {
       pt_owner: [
-        'Practice management tools',
-        'Equipment and supplier sourcing',
-        'Staff recruitment platform',
-        'Financial benchmarking',
-        'Competitor analysis tools',
-        ...commonFeatures
+        'Searchable database of PT equipment vendors with pricing',
+        'Vendor comparison tools with peer reviews and ratings',
+        'Network of other practice owners for advice and referrals',
+        'Market intelligence on competitor pricing and services',
+        'Qualified PT candidate database with verified credentials',
+        'Continuing education provider directory with staff reviews',
+        'Practice management benchmarking against similar practices',
+        'Supplier contract management and renewal reminders',
+        'Local market salary and benefit benchmarking tools',
+        'Physician referral relationship tracking system'
       ],
       pt_ceo_coo: [
-        'Multi-location management dashboard',
-        'Performance analytics and reporting',
-        'Strategic planning resources',
-        'Regulatory compliance tracking',
-        'Technology integration marketplace',
-        ...commonFeatures
+        'Multi-location performance analytics and benchmarking',
+        'Industry M&A and market intelligence dashboard',
+        'Network of C-level executives for strategic insights',
+        'Standardized vendor management across all locations',
+        'Leadership talent pipeline and succession planning tools',
+        'Market expansion and acquisition opportunity analysis',
+        'Technology integration planning and vendor evaluation',
+        'PE firm and investment partner networking platform',
+        'Regulatory compliance tracking across multiple states',
+        'Competitive intelligence and market positioning analysis'
       ],
       pt_consultant: [
-        'Client prospect database',
-        'Market research tools',
-        'Professional credentialing system',
-        'Project management features',
-        'Client relationship tracking',
-        ...commonFeatures
+        'Database of potential clients with contact information',
+        'Market research tools and industry trend analysis',
+        'Professional credentialing and case study portfolio',
+        'Network of subject matter experts for project collaboration',
+        'Client relationship and project management system',
+        'Industry benchmarking data and analysis tools',
+        'Speaking opportunity and thought leadership platform',
+        'Referral partner network and relationship tracking',
+        'Competitive analysis and market positioning tools',
+        'Contract and proposal template library'
       ],
       healthcare_recruiter: [
-        'Candidate database and search',
-        'Client company profiles',
-        'Salary benchmarking tools',
-        'Interview and assessment tools',
-        'Market trend analysis',
-        ...commonFeatures
+        'Comprehensive PT candidate database with specializations',
+        'Client company profiles with culture and compensation data',
+        'Real-time salary and benefit benchmarking by market',
+        'Passive candidate relationship management system',
+        'Market intelligence on hiring trends and demands',
+        'PT school partnership and new graduate pipeline',
+        'Interview assessment tools and candidate evaluation',
+        'Placement tracking and follow-up automation',
+        'Competitor analysis and market positioning insights',
+        'Regional market trend analysis and reporting'
       ],
       talent_leadership: [
-        'Talent pipeline analytics',
-        'Compensation benchmarking',
-        'Retention prediction tools',
-        'Skills gap analysis',
-        'Succession planning features',
-        ...commonFeatures
+        'Talent pipeline analytics and forecasting tools',
+        'Comprehensive compensation benchmarking by role and market',
+        'Retention prediction and early warning systems',
+        'Skills gap analysis and training needs assessment',
+        'PT school partnership and recruitment pipeline management',
+        'Succession planning and leadership development tracking',
+        'Employee engagement and satisfaction benchmarking',
+        'Competitor talent intelligence and market analysis',
+        'Performance management and career development pathways',
+        'Benefits and perks benchmarking against industry standards'
       ],
       physical_therapist: [
-        'Career development tracking',
-        'Mentorship matching',
-        'Continuing education catalog',
-        'Professional portfolio builder',
-        'Peer networking groups',
-        ...commonFeatures
+        'Personalized career development planning and tracking',
+        'Mentor matching with experienced PTs in your specialty',
+        'Comprehensive continuing education catalog with reviews',
+        'Professional networking groups by specialty and interest',
+        'Job opportunity alerts matching your skills and preferences',
+        'Salary negotiation tools and market rate information',
+        'Professional portfolio and achievement tracking',
+        'Research collaboration opportunities with peers',
+        'Leadership and management development programs',
+        'Work-life balance resources and peer support groups'
       ]
     };
 
-    return roleFeatures[role] || commonFeatures;
+    return roleFeatures[role] || [];
   };
 
   const handlePriorityChange = (feature: string, priority: number[]) => {
@@ -89,9 +105,9 @@ export const FeaturesStep = ({ role, data, onChange }: FeaturesStepProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Feature Priorities</h2>
+        <h2 className="text-2xl font-bold mb-4">Solution Priorities</h2>
         <p className="text-muted-foreground mb-6">
-          Rate how important each feature would be for your daily work. This helps us prioritize development.
+          Which features would have the biggest impact on your daily work? Rate each based on how much time and frustration it would save you.
         </p>
       </div>
 

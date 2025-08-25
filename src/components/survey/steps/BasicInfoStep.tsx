@@ -43,13 +43,15 @@ export const BasicInfoStep = ({ role, data, onChange }: BasicInfoStepProps) => {
   const getCompanyLabel = () => {
     switch (role) {
       case 'pt_owner':
+        return 'Practice Name';
       case 'pt_ceo_coo':
-        return 'Practice/Company Name';
+        return 'Company/Organization Name';
       case 'pt_consultant':
-        return 'Consulting Company/Practice';
+        return 'Consulting Firm Name (or Independent)';
       case 'healthcare_recruiter':
+        return 'Recruiting Agency/Company Name';
       case 'talent_leadership':
-        return 'Company/Agency Name';
+        return 'Company/Organization Name';
       case 'physical_therapist':
         return 'Current Employer (Optional)';
       default:
@@ -60,9 +62,9 @@ export const BasicInfoStep = ({ role, data, onChange }: BasicInfoStepProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold mb-4">Basic Information</h2>
+        <h2 className="text-2xl font-bold mb-4">Let's Get Started</h2>
         <p className="text-muted-foreground mb-6">
-          Tell us a bit about your background to help us tailor the questions.
+          Help us understand your background so we can ask the most relevant questions.
         </p>
       </div>
 
@@ -73,13 +75,14 @@ export const BasicInfoStep = ({ role, data, onChange }: BasicInfoStepProps) => {
             id="company_name"
             value={data.company_name}
             onChange={(e) => onChange({ company_name: e.target.value })}
-            placeholder="Enter name"
+            placeholder={role === 'pt_consultant' ? 'ABC Consulting or Independent' : 'Enter name'}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="company_size">
-            {role === 'physical_therapist' ? 'Workplace Size' : 'Company Size'}
+            {role === 'physical_therapist' ? 'Workplace Size' : 
+             role === 'pt_consultant' ? 'Typical Project Size' : 'Organization Size'}
           </Label>
           <Select value={data.company_size} onValueChange={(value) => onChange({ company_size: value })}>
             <SelectTrigger>
@@ -96,7 +99,11 @@ export const BasicInfoStep = ({ role, data, onChange }: BasicInfoStepProps) => {
         </div>
 
         <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="years_experience">Years of Experience in Healthcare/PT</Label>
+          <Label htmlFor="years_experience">
+            Years of Experience in {role === 'healthcare_recruiter' ? 'Healthcare Recruiting' : 
+                                  role === 'talent_leadership' ? 'Talent/HR Leadership' :
+                                  'Physical Therapy Industry'}
+          </Label>
           <Select value={data.years_experience} onValueChange={(value) => onChange({ years_experience: value })}>
             <SelectTrigger className="md:w-1/2">
               <SelectValue placeholder="Select experience level" />
