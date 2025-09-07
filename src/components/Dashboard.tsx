@@ -35,6 +35,7 @@ import { FastGeocodingManager } from './dashboard/FastGeocodingManager';
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
 import { ContinuingEducationTab } from './dashboard/ContinuingEducationTab';
+import { ActiveSurveysTab } from './dashboard/ActiveSurveysTab';
 import { SearchOnlyTab } from './dashboard/SearchOnlyTab';
 import { SurveyAnalyticsTab } from './dashboard/SurveyAnalyticsTab';
 
@@ -290,7 +291,7 @@ const Dashboard = () => {
         </TabsContent>
 
         <TabsContent value="survey" className="space-y-4">
-          <SurveyAnalyticsTab />
+          <ActiveSurveysTab />
         </TabsContent>
       </Tabs>
 
