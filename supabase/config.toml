@@ -31,3 +31,12 @@ verify_jwt = false
 
 [functions.migrate-company-locations]
 verify_jwt = false
+
+[functions.api-data-access]
+verify_jwt = false
+
+[functions.api-key-management]
+verify_jwt = true
+
+[functions.credit-management]
+verify_jwt = true
