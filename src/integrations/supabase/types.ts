@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          permissions: Json
+          rate_limit: number
+          updated_at: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name: string
+          permissions?: Json
+          rate_limit?: number
+          updated_at?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          permissions?: Json
+          rate_limit?: number
+          updated_at?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      api_usage_logs: {
+        Row: {
+          api_key_id: string
+          created_at: string
+          credits_charged: number
+          endpoint: string
+          id: string
+          method: string
+          request_metadata: Json | null
+          response_status: number | null
+          user_id: string
+        }
+        Insert: {
+          api_key_id: string
+          created_at?: string
+          credits_charged?: number
+          endpoint: string
+          id?: string
+          method: string
+          request_metadata?: Json | null
+          response_status?: number | null
+          user_id: string
+        }
+        Update: {
+          api_key_id?: string
+          created_at?: string
+          credits_charged?: number
+          endpoint?: string
+          id?: string
+          method?: string
+          request_metadata?: Json | null
+          response_status?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_usage_logs_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bulk_upload_jobs: {
         Row: {
           created_at: string
@@ -226,6 +315,50 @@ export type Database = {
           zip_code?: string | null
         }
         Relationships: []
+      }
+      credit_transactions: {
+        Row: {
+          amount: number
+          api_key_id: string | null
+          balance_after: number
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          api_key_id?: string | null
+          balance_after: number
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          api_key_id?: string | null
+          balance_after?: number
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transactions_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crm_activities: {
         Row: {
@@ -1158,14 +1291,63 @@ export type Database = {
         }
         Relationships: []
       }
+      user_credits: {
+        Row: {
+          balance: number
+          created_at: string
+          id: string
+          total_purchased: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_purchased?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          id?: string
+          total_purchased?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      add_credits: {
+        Args: {
+          p_amount: number
+          p_description: string
+          p_metadata?: Json
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       calculate_distance: {
         Args: { lat1: number; lat2: number; lon1: number; lon2: number }
         Returns: number
+      }
+      charge_credits: {
+        Args: {
+          p_amount: number
+          p_api_key_id: string
+          p_description: string
+          p_metadata?: Json
+          p_user_id: string
+        }
+        Returns: boolean
       }
       companies_within_radius: {
         Args: { radius_miles: number; user_lat: number; user_lng: number }
