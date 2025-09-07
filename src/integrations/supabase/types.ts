@@ -227,6 +227,290 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_activities: {
+        Row: {
+          activity_date: string
+          activity_type: string
+          contact_id: string | null
+          created_at: string
+          deal_id: string | null
+          description: string | null
+          duration_minutes: number | null
+          follow_up_date: string | null
+          follow_up_required: boolean | null
+          id: string
+          outcome: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_date?: string
+          activity_type: string
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          outcome?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_type?: string
+          contact_id?: string | null
+          created_at?: string
+          deal_id?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          follow_up_date?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          outcome?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "crm_deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_companies: {
+        Row: {
+          address: string | null
+          annual_revenue: number | null
+          city: string | null
+          company_size: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          employee_count: number | null
+          id: string
+          industry: string | null
+          linkedin_url: string | null
+          name: string
+          phone: string | null
+          state: string | null
+          status: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+          website: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          annual_revenue?: number | null
+          city?: string | null
+          company_size?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          employee_count?: number | null
+          id?: string
+          industry?: string | null
+          linkedin_url?: string | null
+          name: string
+          phone?: string | null
+          state?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          annual_revenue?: number | null
+          city?: string | null
+          company_size?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          employee_count?: number | null
+          id?: string
+          industry?: string | null
+          linkedin_url?: string | null
+          name?: string
+          phone?: string | null
+          state?: string | null
+          status?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      crm_contacts: {
+        Row: {
+          address: string | null
+          city: string | null
+          company: string | null
+          contact_type: string
+          created_at: string
+          email: string | null
+          first_name: string
+          id: string
+          industry: string | null
+          last_contact_date: string | null
+          last_name: string
+          lead_source: string | null
+          lifetime_value: number | null
+          linkedin_url: string | null
+          next_follow_up_date: string | null
+          notes: string | null
+          phone: string | null
+          state: string | null
+          status: string
+          tags: string[] | null
+          title: string | null
+          updated_at: string
+          user_id: string
+          website: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company?: string | null
+          contact_type?: string
+          created_at?: string
+          email?: string | null
+          first_name: string
+          id?: string
+          industry?: string | null
+          last_contact_date?: string | null
+          last_name: string
+          lead_source?: string | null
+          lifetime_value?: number | null
+          linkedin_url?: string | null
+          next_follow_up_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company?: string | null
+          contact_type?: string
+          created_at?: string
+          email?: string | null
+          first_name?: string
+          id?: string
+          industry?: string | null
+          last_contact_date?: string | null
+          last_name?: string
+          lead_source?: string | null
+          lifetime_value?: number | null
+          linkedin_url?: string | null
+          next_follow_up_date?: string | null
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          status?: string
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
+      crm_deals: {
+        Row: {
+          actual_close_date: string | null
+          contact_id: string | null
+          created_at: string
+          description: string | null
+          expected_close_date: string | null
+          id: string
+          lead_source: string | null
+          next_action: string | null
+          next_action_date: string | null
+          probability: number | null
+          stage: string
+          title: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          actual_close_date?: string | null
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_source?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          probability?: number | null
+          stage?: string
+          title: string
+          updated_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          actual_close_date?: string | null
+          contact_id?: string | null
+          created_at?: string
+          description?: string | null
+          expected_close_date?: string | null
+          id?: string
+          lead_source?: string | null
+          next_action?: string | null
+          next_action_date?: string | null
+          probability?: number | null
+          stage?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_deals_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment_companies: {
         Row: {
           address: string | null

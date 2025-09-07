@@ -39,6 +39,7 @@ import { ActiveSurveysTab } from './dashboard/ActiveSurveysTab';
 import { SearchOnlyTab } from './dashboard/SearchOnlyTab';
 import { SurveyAnalyticsTab } from './dashboard/SurveyAnalyticsTab';
 import { ConsultantsTab } from './dashboard/ConsultantsTab';
+import { CRMDashboard } from './crm/CRMDashboard';
 
 // import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
@@ -132,7 +133,7 @@ const Dashboard = () => {
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-10 h-12">
+        <TabsList className="grid w-full grid-cols-11 h-12">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -176,6 +177,10 @@ const Dashboard = () => {
           <TabsTrigger value="consultants" className="flex items-center gap-2">
             <Headphones className="h-4 w-4" />
             <span className="hidden sm:inline">Consultants</span>
+          </TabsTrigger>
+          <TabsTrigger value="crm" className="flex items-center gap-2">
+            <DollarSign className="h-4 w-4" />
+            <span className="hidden sm:inline">CRM</span>
           </TabsTrigger>
           <TabsTrigger value="survey" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
@@ -297,6 +302,10 @@ const Dashboard = () => {
 
         <TabsContent value="consultants" className="space-y-4">
           <ConsultantsTab />
+        </TabsContent>
+
+        <TabsContent value="crm" className="space-y-4">
+          <CRMDashboard />
         </TabsContent>
 
         <TabsContent value="survey" className="space-y-4">
