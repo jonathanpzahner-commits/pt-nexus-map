@@ -2,6 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SponsoredBanner } from '@/components/ads/SponsoredBanner';
+import { getAdsForPage } from '@/data/sponsoredAds';
 import { 
   Users, 
   TrendingUp, 
@@ -99,6 +101,8 @@ const consultantCategories = [
 export const ConsultantsTab = () => {
   return (
     <div className="space-y-6">
+      {/* Sponsored Ads */}
+      <SponsoredBanner ads={getAdsForPage('consultants')} position="top" />
       {/* Header */}
       <div className="flex items-center gap-3 pb-4 border-b">
         <Users className="h-8 w-8 text-primary" />

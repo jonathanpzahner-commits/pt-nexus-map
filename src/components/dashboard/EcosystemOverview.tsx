@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SponsoredBanner } from '@/components/ads/SponsoredBanner';
+import { getAdsForPage } from '@/data/sponsoredAds';
 import { 
   Users, 
   Building2, 
@@ -85,6 +87,8 @@ export const EcosystemOverview = ({ onNavigateToTab }: EcosystemOverviewProps) =
 
   return (
     <div className="space-y-12">
+      {/* Sponsored Ads */}
+      <SponsoredBanner ads={getAdsForPage('overview')} position="top" />
       {/* Hero Section */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-background via-secondary/20 to-accent/10 p-12 shadow-elegant border border-border/50">
         <div className="relative z-10">

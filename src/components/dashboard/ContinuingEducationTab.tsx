@@ -1,6 +1,9 @@
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { SponsoredBanner } from '@/components/ads/SponsoredBanner';
+import { getAdsForPage } from '@/data/sponsoredAds';
 import { 
   BookOpen, 
   Calendar, 
@@ -59,6 +62,9 @@ export const ContinuingEducationTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Sponsored Ads */}
+      <SponsoredBanner ads={getAdsForPage('education')} position="top" />
+      
       <div className="flex items-center gap-3">
         <BookOpen className="h-6 w-6 text-primary" />
         <h2 className="text-2xl font-bold text-foreground">Continuing Education Hub</h2>
