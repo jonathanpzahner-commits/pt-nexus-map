@@ -1,11 +1,18 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { createHash } from "https://deno.land/std@0.190.0/hash/mod.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(digest));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 // Generate a secure API key
 function generateApiKey(): string {
@@ -71,9 +78,7 @@ serve(async (req) => {
       const keyPrefix = apiKey.substring(0, 12) + "...";
       
       // Hash the key for storage
-      const hasher = createHash("sha256");
-      hasher.update(apiKey);
-      const keyHash = hasher.toString();
+      const keyHash = await sha256Hex(apiKey);
 
       // Insert API key
       const { data: newApiKey, error } = await supabaseService
