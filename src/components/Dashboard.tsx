@@ -18,7 +18,8 @@ import {
   Headphones,
   DollarSign,
   Handshake,
-  MapPin
+  MapPin,
+  TrendingUp
 } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
@@ -127,7 +128,7 @@ const Dashboard = () => {
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-11 h-12">
+        <TabsList className="grid w-full grid-cols-8 h-12">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -160,10 +161,6 @@ const Dashboard = () => {
             <Map className="h-4 w-4" />
             <span className="hidden sm:inline">Map</span>
           </TabsTrigger>
-          <TabsTrigger value="geocoding" className="flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            <span className="hidden sm:inline">Geocoding</span>
-          </TabsTrigger>
           <TabsTrigger value="community" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
             <span className="hidden sm:inline">Community</span>
@@ -175,6 +172,31 @@ const Dashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          {/* Professional Welcome Section */}
+          <div className="p-8 bg-gradient-primary rounded-2xl text-white shadow-glow">
+            <div className="max-w-4xl">
+              <h2 className="text-3xl font-display font-bold mb-4">
+                Welcome to PT Connect Pro
+              </h2>
+              <p className="text-lg opacity-90 mb-6 leading-relaxed">
+                The comprehensive platform connecting physical therapy professionals, educational institutions, 
+                and healthcare organizations. Access our network of 12,400+ verified PT professionals and 
+                growing partnerships with leading continuing education providers.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <span className="text-sm font-medium">12.4K+ Professionals</span>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <span className="text-sm font-medium">47 Education Partners</span>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <span className="text-sm font-medium">284 Network Connections</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <EcosystemOverview onNavigateToTab={handleNavigateToTab} />
         </TabsContent>
         
@@ -221,9 +243,49 @@ const Dashboard = () => {
         </TabsContent>
         
         <TabsContent value="partnerships" className="space-y-4">
-          <div className="p-8 text-center">
-            <h3 className="text-lg font-semibold mb-2">Partnership Management</h3>
-            <p className="text-muted-foreground">Partnership features will be available once the database migration is applied.</p>
+          <div className="grid gap-6">
+            <div className="flex items-center gap-3">
+              <Handshake className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Partnership Management</h2>
+            </div>
+            
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="p-6 bg-card rounded-xl border border-border shadow-soft">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Building className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground">Education Partners</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Connect with continuing education providers and academic institutions.</p>
+                <div className="text-2xl font-bold text-primary mb-1">47</div>
+                <p className="text-xs text-muted-foreground">Active partnerships</p>
+              </div>
+              
+              <div className="p-6 bg-card rounded-xl border border-border shadow-soft">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-accent/10 rounded-lg">
+                    <Users className="h-5 w-5 text-accent" />
+                  </div>
+                  <h3 className="font-semibold text-foreground">Referral Network</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Manage professional referral relationships and collaborations.</p>
+                <div className="text-2xl font-bold text-accent mb-1">284</div>
+                <p className="text-xs text-muted-foreground">Network connections</p>
+              </div>
+              
+              <div className="p-6 bg-card rounded-xl border border-border shadow-soft">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="p-2 bg-orange-500/10 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <h3 className="font-semibold text-foreground">Growth Metrics</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4">Track partnership performance and engagement.</p>
+                <div className="text-2xl font-bold text-orange-500 mb-1">+23%</div>
+                <p className="text-xs text-muted-foreground">Partnership growth</p>
+              </div>
+            </div>
           </div>
         </TabsContent>
         
@@ -237,18 +299,6 @@ const Dashboard = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="geocoding" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <MapPin className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">Automated Geocoding</h2>
-            </div>
-          </div>
-          <div className="grid gap-6">
-            <FastGeocodingManager />
-            <GeocodingManager />
-          </div>
-        </TabsContent>
 
         <TabsContent value="community" className="space-y-4">
           <CommunityHub />
