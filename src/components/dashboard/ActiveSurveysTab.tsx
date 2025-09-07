@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import {
   Clock,
   ExternalLink
 } from 'lucide-react';
+import { SurveyBuilderTab } from './SurveyBuilderTab';
 
 export const ActiveSurveysTab = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -156,184 +158,197 @@ export const ActiveSurveysTab = () => {
     <div className="space-y-6">
       <div className="flex items-center gap-3">
         <FileText className="h-6 w-6 text-primary" />
-        <h2 className="text-2xl font-bold text-foreground">Active Field Surveys</h2>
+        <h2 className="text-2xl font-bold text-foreground">Survey Hub</h2>
       </div>
 
-      {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <FileText className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Active Surveys</p>
-                <p className="text-2xl font-bold text-foreground">{surveys.length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="active" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="active">Active Surveys</TabsTrigger>
+          <TabsTrigger value="builder">Survey Builder</TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-accent/10 rounded-lg">
-                <Users className="h-5 w-5 text-accent" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Total Participants</p>
-                <p className="text-2xl font-bold text-foreground">{totalParticipants.toLocaleString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <TabsContent value="active" className="space-y-6">
+          {/* Overview Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <FileText className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Active Surveys</p>
+                    <p className="text-2xl font-bold text-foreground">{surveys.length}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-500/10 rounded-lg">
-                <Target className="h-5 w-5 text-orange-500" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Avg Completion</p>
-                <p className="text-2xl font-bold text-foreground">{Math.round(avgCompletion)}%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-accent/10 rounded-lg">
+                    <Users className="h-5 w-5 text-accent" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Participants</p>
+                    <p className="text-2xl font-bold text-foreground">{totalParticipants.toLocaleString()}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-green-500" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">High Priority</p>
-                <p className="text-2xl font-bold text-foreground">{surveys.filter(s => s.priority === 'high').length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-500/10 rounded-lg">
+                    <Target className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Avg Completion</p>
+                    <p className="text-2xl font-bold text-foreground">{Math.round(avgCompletion)}%</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-      {/* Category Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Survey Categories</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-                className="flex items-center gap-2"
-              >
-                {getCategoryIcon(category.id)}
-                {category.name}
-                <Badge variant="secondary" className="ml-1">
-                  {category.count}
-                </Badge>
-              </Button>
-            ))}
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <TrendingUp className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">High Priority</p>
+                    <p className="text-2xl font-bold text-foreground">{surveys.filter(s => s.priority === 'high').length}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Survey List */}
-      <div className="space-y-4">
-        {filteredSurveys.map((survey) => (
-          <Card key={survey.id} className="hover:shadow-md transition-shadow">
+          {/* Category Filters */}
+          <Card>
             <CardHeader>
-              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-start gap-3 mb-2">
-                    <div className="p-2 bg-secondary/30 rounded-lg">
-                      {getCategoryIcon(survey.category)}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-foreground">{survey.title}</h3>
-                      <p className="text-sm text-muted-foreground">{survey.organization}</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-sm text-muted-foreground mb-3">{survey.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {survey.topics.map((topic) => (
-                      <Badge key={topic} variant="outline" className="text-xs">
-                        {topic}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="lg:text-right space-y-3">
-                  <Badge className={getPriorityColor(survey.priority)}>
-                    {survey.priority.toUpperCase()} PRIORITY
-                  </Badge>
-                  
-                  <div className="text-sm text-muted-foreground space-y-1">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      Deadline: {new Date(survey.deadline).toLocaleDateString()}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      Duration: {survey.duration}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="h-3 w-3" />
-                      Incentive: {survey.incentive}
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <CardTitle>Survey Categories</CardTitle>
             </CardHeader>
-            
             <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span>Participation Progress</span>
-                    <span>{survey.participants.toLocaleString()} / {survey.targetParticipants.toLocaleString()}</span>
-                  </div>
-                  <Progress 
-                    value={(survey.participants / survey.targetParticipants) * 100} 
-                    className="h-2"
-                  />
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button size="sm" className="flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4" />
-                    Take Survey
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <Button
+                    key={category.id}
+                    variant={selectedCategory === category.id ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className="flex items-center gap-2"
+                  >
+                    {getCategoryIcon(category.id)}
+                    {category.name}
+                    <Badge variant="secondary" className="ml-1">
+                      {category.count}
+                    </Badge>
                   </Button>
-                  <Button variant="outline" size="sm">
-                    View Details
-                  </Button>
-                  <Button variant="ghost" size="sm">
-                    Share with Network
-                  </Button>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
 
-      {filteredSurveys.length === 0 && (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No surveys found in this category.</p>
-          </CardContent>
-        </Card>
-      )}
+          {/* Survey List */}
+          <div className="space-y-4">
+            {filteredSurveys.map((survey) => (
+              <Card key={survey.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="p-2 bg-secondary/30 rounded-lg">
+                          {getCategoryIcon(survey.category)}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-foreground">{survey.title}</h3>
+                          <p className="text-sm text-muted-foreground">{survey.organization}</p>
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm text-muted-foreground mb-3">{survey.description}</p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {survey.topics.map((topic) => (
+                          <Badge key={topic} variant="outline" className="text-xs">
+                            {topic}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="lg:text-right space-y-3">
+                      <Badge className={getPriorityColor(survey.priority)}>
+                        {survey.priority.toUpperCase()} PRIORITY
+                      </Badge>
+                      
+                      <div className="text-sm text-muted-foreground space-y-1">
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          Deadline: {new Date(survey.deadline).toLocaleDateString()}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Duration: {survey.duration}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <DollarSign className="h-3 w-3" />
+                          Incentive: {survey.incentive}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between text-sm mb-2">
+                        <span>Participation Progress</span>
+                        <span>{survey.participants.toLocaleString()} / {survey.targetParticipants.toLocaleString()}</span>
+                      </div>
+                      <Progress 
+                        value={(survey.participants / survey.targetParticipants) * 100} 
+                        className="h-2"
+                      />
+                    </div>
+                    
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button size="sm" className="flex items-center gap-2">
+                        <ExternalLink className="h-4 w-4" />
+                        Take Survey
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        View Details
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        Share with Network
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {filteredSurveys.length === 0 && (
+            <Card>
+              <CardContent className="p-8 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">No surveys found in this category.</p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="builder">
+          <SurveyBuilderTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
