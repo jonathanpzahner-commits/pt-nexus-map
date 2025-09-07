@@ -25,7 +25,7 @@ const consultantCategories = [
     icon: Users,
     description: 'Recruitment, staffing, and talent acquisition specialists',
     consultants: [
-      { name: 'PT Talent Solutions', specialty: 'Executive Recruitment', rating: 4.8, location: 'Chicago, IL' },
+      { name: 'Henry Holland Health', specialty: 'Executive Recruitment', rating: 4.8, location: 'Chicago, IL' },
       { name: 'HealthCare Staffing Pro', specialty: 'Permanent Placement', rating: 4.7, location: 'Austin, TX' },
       { name: 'Rehab Recruiters Inc', specialty: 'Travel PT Staffing', rating: 4.9, location: 'Denver, CO' }
     ]
