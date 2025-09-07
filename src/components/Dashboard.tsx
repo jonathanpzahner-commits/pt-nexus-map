@@ -172,31 +172,6 @@ const Dashboard = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          {/* Professional Welcome Section */}
-          <div className="p-8 bg-gradient-primary rounded-2xl text-white shadow-glow">
-            <div className="max-w-4xl">
-              <h2 className="text-3xl font-display font-bold mb-4">
-                Welcome to PT Connect Pro
-              </h2>
-              <p className="text-lg opacity-90 mb-6 leading-relaxed">
-                The comprehensive platform connecting physical therapy professionals, educational institutions, 
-                and healthcare organizations. Access our network of 12,400+ verified PT professionals and 
-                growing partnerships with leading continuing education providers.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <span className="text-sm font-medium">12.4K+ Professionals</span>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <span className="text-sm font-medium">47 Education Partners</span>
-                </div>
-                <div className="bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
-                  <span className="text-sm font-medium">284 Network Connections</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
           <EcosystemOverview onNavigateToTab={handleNavigateToTab} />
         </TabsContent>
         

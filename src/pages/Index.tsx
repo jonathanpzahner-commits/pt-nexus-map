@@ -40,8 +40,8 @@ const Index = () => {
               <span className="text-white font-bold text-lg">PT</span>
             </div>
             <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">PT Connect Pro</h1>
-              <p className="text-xs text-muted-foreground">Professional Therapy Network Platform</p>
+              <h1 className="text-2xl font-display font-bold text-foreground">PT Ecosystem</h1>
+              <p className="text-xs text-muted-foreground">A Henry Holland Health Company</p>
             </div>
           </div>
           
@@ -63,8 +63,8 @@ const Index = () => {
               >
                 Pricing
               </Button>
-              <span className="text-sm text-foreground px-3 py-1 rounded-full bg-gradient-primary shadow-glow">
-                Professional Platform
+              <span className="text-sm text-muted-foreground px-3 py-1 rounded-full bg-secondary/50">
+                Beta Platform
               </span>
             </nav>
             
