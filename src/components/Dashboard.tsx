@@ -19,7 +19,8 @@ import {
   DollarSign,
   Handshake,
   MapPin,
-  TrendingUp
+  TrendingUp,
+  BookOpen
 } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
@@ -33,6 +34,7 @@ import { FastGeocodingManager } from './dashboard/FastGeocodingManager';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
+import { ContinuingEducationTab } from './dashboard/ContinuingEducationTab';
 import { SearchOnlyTab } from './dashboard/SearchOnlyTab';
 import { SurveyAnalyticsTab } from './dashboard/SurveyAnalyticsTab';
 
@@ -128,7 +130,7 @@ const Dashboard = () => {
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-8 h-12">
+        <TabsList className="grid w-full grid-cols-9 h-12">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -146,7 +148,7 @@ const Dashboard = () => {
             <span className="hidden sm:inline">Companies</span>
           </TabsTrigger>
           <TabsTrigger value="schools" className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4" />
+            <BookOpen className="h-4 w-4" />
             <span className="hidden sm:inline">Schools</span>
           </TabsTrigger>
           <TabsTrigger value="jobs" className="flex items-center gap-2">
@@ -160,6 +162,10 @@ const Dashboard = () => {
           <TabsTrigger value="map" className="flex items-center gap-2">
             <Map className="h-4 w-4" />
             <span className="hidden sm:inline">Map</span>
+          </TabsTrigger>
+          <TabsTrigger value="education" className="flex items-center gap-2">
+            <GraduationCap className="h-4 w-4" />
+            <span className="hidden sm:inline">Con Ed</span>
           </TabsTrigger>
           <TabsTrigger value="community" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" />
@@ -274,6 +280,10 @@ const Dashboard = () => {
           </div>
         </TabsContent>
 
+
+        <TabsContent value="education" className="space-y-4">
+          <ContinuingEducationTab />
+        </TabsContent>
 
         <TabsContent value="community" className="space-y-4">
           <CommunityHub />
