@@ -12,7 +12,8 @@ import {
   Search,
   Star,
   MapPin,
-  Clock
+  Clock,
+  Monitor
 } from 'lucide-react';
 
 const consultantCategories = [
@@ -69,6 +70,17 @@ const consultantCategories = [
       { name: 'PT HR Consultants', specialty: 'HR Compliance', rating: 4.6, location: 'San Francisco, CA' },
       { name: 'Healthcare HR Solutions', specialty: 'Employee Relations', rating: 4.8, location: 'Nashville, TN' },
       { name: 'Rehab People Partners', specialty: 'Performance Management', rating: 4.7, location: 'Minneapolis, MN' }
+    ]
+  },
+  {
+    id: 'technology',
+    title: 'Technology',
+    icon: Monitor,
+    description: 'EMR, practice management software, and digital solutions',
+    consultants: [
+      { name: 'PT Tech Solutions', specialty: 'EMR Implementation', rating: 4.8, location: 'Silicon Valley, CA' },
+      { name: 'Digital Health Partners', specialty: 'Practice Management', rating: 4.7, location: 'Austin, TX' },
+      { name: 'Rehab Tech Advisors', specialty: 'Telehealth Integration', rating: 4.9, location: 'Seattle, WA' }
     ]
   },
   {
