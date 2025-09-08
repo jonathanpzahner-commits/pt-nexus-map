@@ -13,6 +13,7 @@ import Profile from "./pages/Profile";
 import ProfileSetup from "./pages/ProfileSetup";
 import Community from "./pages/Community";
 import InvestorPresentation from "./pages/InvestorPresentation";
+import FractionalVPPitch from "./pages/FractionalVPPitch";
 import Survey from "./pages/Survey";
 
 import NotFound from "./pages/NotFound";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/profile/setup" element={<ProfileSetup />} />
             <Route path="/community" element={<Community />} />
             <Route path="/investors" element={<InvestorPresentation />} />
+            <Route path="/fractional-vp" element={<FractionalVPPitch />} />
             <Route path="/survey/:role" element={<Survey />} />
             
             <Route path="/entity/:type/:id" element={<EntityDetails />} />
