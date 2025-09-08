@@ -315,7 +315,7 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
         if (coords) {
           const isHiring = (company.id && hiringCompanyIds.has(company.id)) ||
             ((company.name || '') && hiringCompanyNames.has(String(company.name).toLowerCase().trim()));
-          const markerColor = isHiring ? '#EF4444' : '#3B82F6';
+          const markerColor = isHiring ? '#10B981' : '#3B82F6'; // Green for hiring, blue for non-hiring
 
           const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
             `<div class="p-2">
@@ -323,7 +323,7 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
               <p class="text-xs text-gray-600">${company.company_type || 'Company'}</p>
               <p class="text-xs">${company.city || ''}, ${company.state || ''}</p>
               <p class="text-xs text-gray-500">${company.longitude && company.latitude ? 'Exact location' : 'Approximate location'}</p>
-              ${isHiring ? '<p class="mt-1 text-[11px] font-medium text-red-600">Hiring now</p>' : ''}
+              ${isHiring ? '<p class="mt-1 text-[11px] font-medium text-green-600">🟢 Hiring now</p>' : ''}
             </div>`
           );
 
