@@ -16,6 +16,7 @@ import {
   Home,
   MessageSquare,
   Headphones,
+  Mic,
   DollarSign,
   Handshake,
   MapPin,
@@ -41,6 +42,7 @@ import { SurveyAnalyticsTab } from './dashboard/SurveyAnalyticsTab';
 import { ConsultantsTab } from './dashboard/ConsultantsTab';
 import { CRMDashboard } from './crm/CRMDashboard';
 import { ApiManagementTab } from './dashboard/ApiManagementTab';
+import { PodcastsTab } from './dashboard/PodcastsTab';
 
 // import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
@@ -134,7 +136,7 @@ const Dashboard = () => {
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-12 h-12">
+        <TabsList className="grid w-full grid-cols-14 h-12">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
@@ -175,8 +177,12 @@ const Dashboard = () => {
             <MessageSquare className="h-4 w-4" />
             <span className="hidden sm:inline">Community</span>
           </TabsTrigger>
+          <TabsTrigger value="podcasts" className="flex items-center gap-2">
+            <Mic className="h-4 w-4" />
+            <span className="hidden sm:inline">Podcasts</span>
+          </TabsTrigger>
           <TabsTrigger value="consultants" className="flex items-center gap-2">
-            <Headphones className="h-4 w-4" />
+            <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Consultants</span>
           </TabsTrigger>
           <TabsTrigger value="crm" className="flex items-center gap-2">
@@ -303,6 +309,10 @@ const Dashboard = () => {
 
         <TabsContent value="community" className="space-y-4">
           <CommunityHub />
+        </TabsContent>
+
+        <TabsContent value="podcasts" className="space-y-4">
+          <PodcastsTab />
         </TabsContent>
 
         <TabsContent value="consultants" className="space-y-4">
