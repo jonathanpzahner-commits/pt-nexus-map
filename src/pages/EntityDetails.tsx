@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MapPin, Globe, Phone, Mail, Star } from 'lucide-react';
+import { ArrowLeft, MapPin, Globe, Phone, Mail, Star, Building2, TrendingUp } from 'lucide-react';
 import { NotesSection } from '@/components/notes/NotesSection';
 
 const EntityDetails = () => {
@@ -271,131 +271,240 @@ const EntityDetails = () => {
         
       case 'companies':
         return (
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2 mb-4">
+          <div className="space-y-6">
+            {/* Key Company Facts - Hero Section */}
+            <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-6 border">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(entity as any).founded_year && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{(entity as any).founded_year}</div>
+                    <div className="text-sm text-muted-foreground">Founded</div>
+                  </div>
+                )}
+                {(entity as any).number_of_clinics && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">{(entity as any).number_of_clinics}</div>
+                    <div className="text-sm text-muted-foreground">Total Clinics</div>
+                  </div>
+                )}
+                {(entity as any).company_size_range && (
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-primary">{(entity as any).company_size_range}</div>
+                    <div className="text-sm text-muted-foreground">Employees</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Status Badges */}
+            <div className="flex flex-wrap gap-2">
               <Badge variant="outline">{(entity as any).company_type}</Badge>
-              {(entity as any).company_size_range && (
-                <Badge variant="secondary">{(entity as any).company_size_range} employees</Badge>
-              )}
-              {(entity as any).founded_year && (
-                <Badge variant="secondary">Founded {(entity as any).founded_year}</Badge>
-              )}
-              {(entity as any).number_of_clinics && (
-                <Badge variant="outline">{(entity as any).number_of_clinics} clinics</Badge>
-              )}
               {(entity as any).pe_backed && (
                 <Badge variant="destructive">PE Backed</Badge>
               )}
-            </div>
-            
-            {/* Company Structure & Ownership */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(entity as any).parent_company && (
-                <div>
-                  <h3 className="font-semibold mb-2">Parent Company</h3>
-                  <p className="text-sm">{(entity as any).parent_company}</p>
-                </div>
+                <Badge variant="secondary">Subsidiary</Badge>
               )}
-              
-              {(entity as any).pe_backed && (
-                <div>
-                  <h3 className="font-semibold mb-2">Private Equity Information</h3>
-                  <div className="space-y-1 text-sm">
-                    {(entity as any).pe_firm_name && (
-                      <p><span className="font-medium">PE Firm:</span> {(entity as any).pe_firm_name}</p>
-                    )}
-                    {(entity as any).pe_relationship_start_date && (
-                      <p><span className="font-medium">Relationship Started:</span> {new Date((entity as any).pe_relationship_start_date).toLocaleDateString()}</p>
-                    )}
-                  </div>
-                </div>
+              {(entity as any).glassdoor_rating && (
+                <Badge variant="outline">⭐ {(entity as any).glassdoor_rating}/5 Glassdoor</Badge>
               )}
             </div>
             
-            {/* Glassdoor Section */}
-            {((entity as any).glassdoor_rating || (entity as any).glassdoor_url) && (
-              <div>
-                <h3 className="font-semibold mb-2">Employee Reviews</h3>
-                <div className="flex items-center gap-4 text-sm">
-                  {(entity as any).glassdoor_rating && (
-                    <div className="flex items-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-medium">{(entity as any).glassdoor_rating}/5 on Glassdoor</span>
+            {/* Leadership & Ownership */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Leadership Team */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Leadership Team</h3>
+                {(entity as any).leadership && Object.keys((entity as any).leadership).length > 0 ? (
+                  <div className="space-y-3">
+                    {Object.entries((entity as any).leadership).map(([key, value]) => {
+                      if (!value) return null;
+                      const leadershipLabels = {
+                        owner_ceo: 'Owner/CEO',
+                        current_ceo: 'Current CEO',
+                        founder: 'Founder',
+                        president: 'President',
+                        cfo: 'CFO',
+                        operations: 'Head of Operations',
+                        clinical_excellence: 'Clinical Director',
+                        clinical_director: 'Clinical Director',
+                        technology: 'CTO',
+                        hr_recruitment: 'Head of HR',
+                        sales_marketing: 'Head of Sales/Marketing',
+                        facilities: 'Facilities Director',
+                        current_leadership: 'Current Leadership',
+                        acquisition_date: 'Acquired',
+                        acquisition_details: 'Acquisition Details'
+                      };
+                      
+                      if (key === 'acquisition_date' || key === 'acquisition_details') {
+                        return null; // Handle these separately in the ownership section
+                      }
+                      
+                      return (
+                        <div key={key} className="flex items-start gap-2">
+                          <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
+                          <div className="text-sm">
+                            <span className="font-medium text-primary">{leadershipLabels[key as keyof typeof leadershipLabels] || key}:</span>
+                            <div className="text-foreground">{String(value)}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Leadership information not available</p>
+                )}
+              </div>
+
+              {/* Ownership & Corporate Structure */}
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Ownership & Structure</h3>
+                <div className="space-y-3">
+                  {(entity as any).parent_company ? (
+                    <div className="bg-muted/30 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Building2 className="h-4 w-4 text-primary" />
+                        <span className="font-medium">Parent Company</span>
+                      </div>
+                      <p className="text-sm font-semibold text-primary">{(entity as any).parent_company}</p>
+                      
+                      {/* Show acquisition details if available */}
+                      {(entity as any).leadership?.acquisition_date && (
+                        <div className="mt-2 text-sm text-muted-foreground">
+                          <div>Acquired: {new Date((entity as any).leadership.acquisition_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</div>
+                          {(entity as any).leadership?.acquisition_details && (
+                            <div className="mt-1">{(entity as any).leadership.acquisition_details}</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">Independent company</div>
+                  )}
+                  
+                  {(entity as any).pe_backed && (
+                    <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="h-4 w-4 text-red-600" />
+                        <span className="font-medium text-red-800">Private Equity Backed</span>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        {(entity as any).pe_firm_name && (
+                          <p><span className="font-medium">PE Firm:</span> {(entity as any).pe_firm_name}</p>
+                        )}
+                        {(entity as any).pe_relationship_start_date && (
+                          <p><span className="font-medium">Relationship Started:</span> {new Date((entity as any).pe_relationship_start_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</p>
+                        )}
+                      </div>
                     </div>
                   )}
-                  {(entity as any).glassdoor_url && (
-                    <a 
-                      href={(entity as any).glassdoor_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      View Reviews →
-                    </a>
-                  )}
                 </div>
               </div>
-            )}
+            </div>
             
-            {/* Leadership Section */}
-            {(entity as any).leadership && Object.keys((entity as any).leadership).length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Leadership Team</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {Object.entries((entity as any).leadership).map(([key, value]) => {
-                    if (!value) return null;
-                    const leadershipLabels = {
-                      owner_ceo: 'Owner/CEO',
-                      financial: 'Financial',
-                      operations: 'Operations',
-                      clinical_excellence: 'Clinical Excellence',
-                      technology: 'Technology',
-                      hr_recruitment: 'Human Resources/Recruitment',
-                      sales_marketing: 'Sales/Marketing',
-                      facilities: 'Facilities'
-                    };
-                    return (
-                      <div key={key} className="text-sm">
-                        <span className="font-medium">{leadershipLabels[key as keyof typeof leadershipLabels] || key}:</span>
-                        <span className="text-muted-foreground"> {String(value)}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-            
+            {/* Company Description */}
             {(entity as any).description && (
-              <div>
-                <h3 className="font-semibold mb-2">Description</h3>
-                <p className="text-sm">{(entity as any).description}</p>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Company Overview</h3>
+                <p className="text-sm leading-relaxed">{(entity as any).description}</p>
               </div>
             )}
             
+            {/* Services Offered */}
             {(entity as any).services?.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Services</h3>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Services Offered</h3>
                 <div className="flex flex-wrap gap-2">
                   {(entity as any).services.map((service: string) => (
-                    <Badge key={service} variant="secondary">{service}</Badge>
+                    <Badge key={service} variant="secondary" className="text-xs">{service}</Badge>
                   ))}
                 </div>
               </div>
             )}
             
+            {/* Geographic Presence & Locations */}
             {(entity as any).company_locations?.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Locations</h3>
-                <div className="space-y-1">
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Geographic Presence</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {(entity as any).company_locations.map((location: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2 text-sm">
-                      <MapPin className="h-4 w-4" />
+                    <div key={index} className="flex items-center gap-2 text-sm p-2 bg-muted/30 rounded">
+                      <MapPin className="h-4 w-4 text-primary flex-shrink-0" />
                       <span>{location}</span>
                     </div>
                   ))}
                 </div>
+                <div className="mt-4">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    View All Locations on Map
+                  </Button>
+                </div>
               </div>
             )}
+
+            {/* Employee Reviews */}
+            {((entity as any).glassdoor_rating || (entity as any).glassdoor_url) && (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Employee Reviews</h3>
+                <div className="bg-muted/30 p-4 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {(entity as any).glassdoor_rating && (
+                        <div className="flex items-center gap-2">
+                          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                          <span className="text-lg font-semibold">{(entity as any).glassdoor_rating}/5</span>
+                          <span className="text-sm text-muted-foreground">on Glassdoor</span>
+                        </div>
+                      )}
+                    </div>
+                    {(entity as any).glassdoor_url && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a 
+                          href={(entity as any).glassdoor_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          View Reviews
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Quick Facts */}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg border-b pb-2">Quick Facts</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                {(entity as any).founded_year && (
+                  <div className="text-center p-3 bg-muted/30 rounded">
+                    <div className="font-medium text-muted-foreground">Founded</div>
+                    <div className="text-lg font-bold">{(entity as any).founded_year}</div>
+                  </div>
+                )}
+                {(entity as any).number_of_clinics && (
+                  <div className="text-center p-3 bg-muted/30 rounded">
+                    <div className="font-medium text-muted-foreground">Clinics</div>
+                    <div className="text-lg font-bold">{(entity as any).number_of_clinics}</div>
+                  </div>
+                )}
+                {(entity as any).company_size_range && (
+                  <div className="text-center p-3 bg-muted/30 rounded">
+                    <div className="font-medium text-muted-foreground">Employees</div>
+                    <div className="text-lg font-bold">{(entity as any).company_size_range}</div>
+                  </div>
+                )}
+                {(entity as any).city && (entity as any).state && (
+                  <div className="text-center p-3 bg-muted/30 rounded">
+                    <div className="font-medium text-muted-foreground">Headquarters</div>
+                    <div className="text-sm font-bold">{(entity as any).city}, {(entity as any).state}</div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         );
         
