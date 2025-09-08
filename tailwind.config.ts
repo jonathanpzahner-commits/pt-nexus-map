@@ -77,14 +77,16 @@ export default {
 			backgroundImage: {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-accent': 'var(--gradient-accent)',
-				'gradient-ecosystem': 'var(--gradient-ecosystem)',
+				'gradient-hero': 'var(--gradient-hero)',
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-				'gradient-mesh': 'linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.1), hsl(var(--primary-glow) / 0.1))',
+				'gradient-mesh': 'var(--gradient-mesh)',
 			},
 			boxShadow: {
 				'elegant': 'var(--shadow-elegant)',
 				'glow': 'var(--shadow-glow)',
+				'premium': 'var(--shadow-premium)',
 				'soft': '0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)',
+				'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
 			},
 			transitionTimingFunction: {
 				'smooth': 'var(--transition-smooth)'

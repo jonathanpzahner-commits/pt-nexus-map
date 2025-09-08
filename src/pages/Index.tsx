@@ -33,16 +33,21 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-mesh">
-      {/* Modern Header */}
-      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-lg">
-        <div className="flex justify-between items-center max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center shadow-glow">
-              <span className="text-white font-bold text-lg">PT</span>
+      {/* Professional Header */}
+      <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-xl shadow-elegant">
+        <div className="flex justify-between items-center max-w-7xl mx-auto px-6 py-5">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="w-12 h-12 bg-gradient-hero rounded-xl flex items-center justify-center shadow-premium">
+                <svg viewBox="0 0 32 32" className="w-7 h-7 text-white">
+                  <path fill="currentColor" d="M16 2L8 8v6c0 7.18 4.82 13.94 12 15.5 7.18-1.56 12-8.32 12-15.5V8l-8-6zm4 18h-8v-2h8v2zm0-4h-8v-2h8v2zm0-4h-8V8h8v4z"/>
+                </svg>
+              </div>
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full border-2 border-background"></div>
             </div>
             <div>
-              <h1 className="text-2xl font-display font-bold text-foreground">PT Ecosystem</h1>
-              <p className="text-xs text-muted-foreground">A Henry Holland Health Company</p>
+              <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">PT Ecosystem</h1>
+              <p className="text-sm text-muted-foreground font-medium">Professional Healthcare Network</p>
             </div>
           </div>
           
@@ -64,7 +69,7 @@ const Index = () => {
               >
                 Pricing
               </Button>
-              <span className="text-sm text-muted-foreground px-3 py-1 rounded-full bg-secondary/50">
+              <span className="text-xs font-medium text-accent px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
                 Beta Platform
               </span>
             </nav>
