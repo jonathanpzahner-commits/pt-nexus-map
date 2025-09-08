@@ -10,6 +10,8 @@ import About from "./pages/About";
 import Pricing from "./pages/Pricing";
 import EntityDetails from "./pages/EntityDetails";
 import Profile from "./pages/Profile";
+import ProfileSetup from "./pages/ProfileSetup";
+import Community from "./pages/Community";
 import InvestorPresentation from "./pages/InvestorPresentation";
 import Survey from "./pages/Survey";
 
@@ -30,6 +32,8 @@ const App = () => (
             <Route path="/about" element={<About />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/setup" element={<ProfileSetup />} />
+            <Route path="/community" element={<Community />} />
             <Route path="/investors" element={<InvestorPresentation />} />
             <Route path="/survey/:role" element={<Survey />} />
             

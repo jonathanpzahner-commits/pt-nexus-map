@@ -991,6 +991,7 @@ export type Database = {
           profile_photo_url: string | null
           research_interests: string[] | null
           resume_url: string | null
+          site_purposes: string[] | null
           sme_areas: string[] | null
           specializations: string[] | null
           state: string | null
@@ -1022,6 +1023,7 @@ export type Database = {
           profile_photo_url?: string | null
           research_interests?: string[] | null
           resume_url?: string | null
+          site_purposes?: string[] | null
           sme_areas?: string[] | null
           specializations?: string[] | null
           state?: string | null
@@ -1053,6 +1055,7 @@ export type Database = {
           profile_photo_url?: string | null
           research_interests?: string[] | null
           resume_url?: string | null
+          site_purposes?: string[] | null
           sme_areas?: string[] | null
           specializations?: string[] | null
           state?: string | null

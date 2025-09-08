@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import Dashboard from '@/components/Dashboard';
-import { User, Settings } from 'lucide-react';
+import ProfileCompletionBanner from '@/components/ProfileCompletionBanner';
+import { User, Users, Settings } from 'lucide-react';
 
 const Index = () => {
   const { user, loading, signOut } = useAuth();
@@ -79,6 +80,15 @@ const Index = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
+                onClick={() => navigate('/community')}
+                className="gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Community
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
                 onClick={() => navigate('/profile')}
                 className="gap-2"
               >
@@ -97,6 +107,7 @@ const Index = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
         <div className="animate-fade-in">
+          <ProfileCompletionBanner />
           <Dashboard />
         </div>
       </main>

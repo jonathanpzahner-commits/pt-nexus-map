@@ -1,5 +1,5 @@
 import { useAuth } from '@/hooks/useAuth';
-import ProfileForm from '@/components/community/ProfileForm';
+import EnhancedProfileForm from '@/components/community/EnhancedProfileForm';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, User } from 'lucide-react';
@@ -61,7 +61,9 @@ const Profile = () => {
           </Card>
 
           {/* Profile Form */}
-          <ProfileForm />
+          <EnhancedProfileForm onComplete={() => {
+            // Optional: Navigate somewhere after completion or show success message
+          }} />
         </div>
       </main>
     </div>
