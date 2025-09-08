@@ -223,6 +223,14 @@ export const LocationRadiusSearch = ({
               value={locationInput}
               onChange={handleInputChange}
               onFocus={handleInputFocus}
+              onBlur={() => {
+                // Close suggestions after a small delay to allow click events
+                setTimeout(() => {
+                  if (!suggestionsRef.current?.contains(document.activeElement)) {
+                    setShowSuggestions(false);
+                  }
+                }, 150);
+              }}
               onKeyPress={(e) => {
                 if (e.key === 'Enter' && suggestions.length > 0) {
                   selectSuggestion(suggestions[0]);
@@ -241,7 +249,7 @@ export const LocationRadiusSearch = ({
             {showSuggestions && suggestions.length > 0 && (
               <div 
                 ref={suggestionsRef}
-                className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto"
+                className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-md shadow-lg max-h-60 overflow-y-auto"
               >
                 {suggestions.map((suggestion) => (
                   <button

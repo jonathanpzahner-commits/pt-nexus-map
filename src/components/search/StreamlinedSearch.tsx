@@ -53,6 +53,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
   // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // Close location suggestions
       if (
         suggestionsRef.current &&
         !suggestionsRef.current.contains(event.target as Node) &&
@@ -60,6 +61,8 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
       ) {
         setShowSuggestions(false);
       }
+      
+      // Close search suggestions
       if (
         searchSuggestionsRef.current &&
         !searchSuggestionsRef.current.contains(event.target as Node) &&
@@ -281,6 +284,10 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
 
   const selectSearchSuggestion = (suggestion: any) => {
     console.log("Search suggestion selected:", suggestion);
+    
+    // Close the suggestions dropdown
+    setShowSearchSuggestions(false);
+    
     if (suggestion.type === 'specialization') {
       updateFilters({ specialization: suggestion.title });
       setSearchQuery('');
@@ -340,12 +347,23 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchSuggestions.length > 0 && setShowSearchSuggestions(true)}
+                onBlur={() => {
+                  // Small delay to allow click events on suggestions to fire first
+                  setTimeout(() => {
+                    if (!searchSuggestionsRef.current?.contains(document.activeElement)) {
+                      setShowSearchSuggestions(false);
+                    }
+                  }, 150);
+                }}
                 className="pl-10 h-10"
               />
               
               {/* Search Suggestions */}
               {showSearchSuggestions && searchSuggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-80 overflow-y-auto">
+                <div 
+                  ref={searchSuggestionsRef}
+                  className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-md shadow-lg max-h-80 overflow-y-auto"
+                >
                   {searchSuggestions.map((suggestion, index) => (
                     <button
                       key={`${suggestion.type}-${suggestion.id || index}`}
@@ -386,6 +404,14 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                   console.log("Location input focused, suggestions available:", suggestions.length);
                   if (suggestions.length > 0) setShowSuggestions(true);
                 }}
+                onBlur={() => {
+                  // Small delay to allow click events on suggestions to fire first
+                  setTimeout(() => {
+                    if (!suggestionsRef.current?.contains(document.activeElement)) {
+                      setShowSuggestions(false);
+                    }
+                  }, 150);
+                }}
                 className="pl-10 h-10"
               />
               
@@ -393,7 +419,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
               {showSuggestions && suggestions.length > 0 && (
                 <div 
                   ref={suggestionsRef}
-                  className="absolute top-full left-0 right-0 z-50 mt-1 bg-popover border rounded-md shadow-lg max-h-64 overflow-y-auto"
+                  className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border border-border rounded-md shadow-lg max-h-64 overflow-y-auto"
                 >
                   {suggestions.map((suggestion) => (
                     <button
