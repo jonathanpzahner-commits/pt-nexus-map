@@ -70,7 +70,11 @@ const Index = () => {
               <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">
                 PT<span className="italic font-light text-accent">Eco</span>
               </h1>
-              <p className="text-sm text-muted-foreground font-medium">Connecting Physical Therapy Professionals</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-muted-foreground font-medium">Connecting Physical Therapy Professionals</p>
+                <span className="text-xs text-muted-foreground/70">•</span>
+                <p className="text-xs text-muted-foreground/90 font-medium">A Henry Holland Health Company</p>
+              </div>
             </div>
           </div>
           
