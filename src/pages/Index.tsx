@@ -38,16 +38,39 @@ const Index = () => {
         <div className="flex justify-between items-center max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-12 h-12 bg-gradient-hero rounded-xl flex items-center justify-center shadow-premium">
-                <svg viewBox="0 0 32 32" className="w-7 h-7 text-white">
-                  <path fill="currentColor" d="M16 2L8 8v6c0 7.18 4.82 13.94 12 15.5 7.18-1.56 12-8.32 12-15.5V8l-8-6zm4 18h-8v-2h8v2zm0-4h-8v-2h8v2zm0-4h-8V8h8v4z"/>
-                </svg>
-              </div>
-              <div className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full border-2 border-background"></div>
+              {/* Network Connection Symbol */}
+              <svg viewBox="0 0 40 40" className="w-10 h-10">
+                {/* Connection lines */}
+                <path 
+                  d="M8 12 L20 8 L32 12 M8 28 L20 32 L32 28 M12 20 L28 20" 
+                  stroke="url(#gradient1)" 
+                  strokeWidth="2" 
+                  fill="none"
+                  className="animate-pulse"
+                />
+                {/* Network nodes */}
+                <circle cx="8" cy="12" r="3" fill="hsl(215 84% 35%)" />
+                <circle cx="20" cy="8" r="3" fill="hsl(180 84% 55%)" />
+                <circle cx="32" cy="12" r="3" fill="hsl(215 84% 35%)" />
+                <circle cx="8" cy="28" r="3" fill="hsl(180 84% 55%)" />
+                <circle cx="20" cy="32" r="3" fill="hsl(215 84% 35%)" />
+                <circle cx="32" cy="28" r="3" fill="hsl(180 84% 55%)" />
+                <circle cx="12" cy="20" r="2.5" fill="hsl(215 84% 50%)" />
+                <circle cx="28" cy="20" r="2.5" fill="hsl(215 84% 50%)" />
+                
+                <defs>
+                  <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="hsl(215 84% 35%)" />
+                    <stop offset="100%" stopColor="hsl(180 84% 55%)" />
+                  </linearGradient>
+                </defs>
+              </svg>
             </div>
             <div>
-              <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">PT Ecosystem</h1>
-              <p className="text-sm text-muted-foreground font-medium">Professional Healthcare Network</p>
+              <h1 className="text-2xl font-display font-bold text-foreground tracking-tight">
+                PT<span className="italic font-light text-accent">Eco</span>
+              </h1>
+              <p className="text-sm text-muted-foreground font-medium">Connecting Physical Therapy Professionals</p>
             </div>
           </div>
           
