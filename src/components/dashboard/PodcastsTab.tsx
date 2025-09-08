@@ -6,13 +6,14 @@ import { Mic, Play, Clock, Calendar, ExternalLink } from 'lucide-react';
 export const PodcastsTab = () => {
   const featuredPodcasts = [
     {
-      title: "PT Talk: Modern Practice Management",
-      host: "Dr. Sarah Martinez",
+      title: "The Learning Curve with Castelle",
+      host: "Summit Professional Education",
       duration: "45 min",
       date: "Dec 15, 2024",
-      description: "Exploring innovative approaches to practice management and patient care in modern physical therapy clinics.",
-      topics: ["Practice Management", "Patient Care", "Technology"],
-      listens: "12.4K"
+      description: "Direct Access, Direct Impact: A Case for PTs as Primary Care Providers",
+      topics: ["Direct Access", "Primary Care", "Professional Development"],
+      listens: "15.8K",
+      youtubeUrl: "https://www.youtube.com/watch?v=OZFr64CMAqM&t=786s"
     },
     {
       title: "Movement Science Weekly",
@@ -123,9 +124,14 @@ export const PodcastsTab = () => {
                     <p className="text-sm text-muted-foreground mb-2">Hosted by {podcast.host}</p>
                     <p className="text-sm text-muted-foreground mb-3">{podcast.description}</p>
                   </div>
-                  <Button size="sm" variant="outline" className="ml-4">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="ml-4"
+                    onClick={() => podcast.youtubeUrl && window.open(podcast.youtubeUrl, '_blank')}
+                  >
                     <Play className="h-4 w-4 mr-2" />
-                    Play
+                    {podcast.youtubeUrl ? 'Watch' : 'Play'}
                   </Button>
                 </div>
                 
