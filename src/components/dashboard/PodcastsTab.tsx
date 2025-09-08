@@ -8,30 +8,30 @@ export const PodcastsTab = () => {
     {
       title: "The Learning Curve with Castelle",
       host: "Summit Professional Education",
-      duration: "45 min",
-      date: "Dec 15, 2024",
-      description: "Direct Access, Direct Impact: A Case for PTs as Primary Care Providers",
+      description: "Direct Access, Direct Impact: A Case for PTs as Primary Care Providers. This podcast explores cutting-edge topics in physical therapy practice and professional development.",
       topics: ["Direct Access", "Primary Care", "Professional Development"],
-      listens: "15.8K",
+      episodeCount: 12,
+      totalListens: "45.2K",
+      latestEpisode: "Dec 15, 2024",
       youtubeUrl: "https://www.youtube.com/watch?v=OZFr64CMAqM&t=786s"
     },
     {
       title: "Movement Science Weekly",
       host: "Dr. Michael Chen",
-      duration: "32 min", 
-      date: "Dec 12, 2024",
-      description: "Deep dive into the latest research on movement patterns and rehabilitation techniques.",
+      description: "Deep dive into the latest research on movement patterns and rehabilitation techniques. Weekly discussions on evidence-based practice.",
       topics: ["Research", "Movement Science", "Rehabilitation"],
-      listens: "8.7K"
+      episodeCount: 24,
+      totalListens: "32.7K",
+      latestEpisode: "Dec 12, 2024"
     },
     {
       title: "The Business of PT",
       host: "Jennifer Thompson, DPT",
-      duration: "28 min",
-      date: "Dec 10, 2024", 
-      description: "Strategies for growing your physical therapy practice and building a sustainable business model.",
+      description: "Strategies for growing your physical therapy practice and building a sustainable business model. Essential listening for practice owners.",
       topics: ["Business", "Growth", "Strategy"],
-      listens: "15.2K"
+      episodeCount: 18,
+      totalListens: "28.9K",
+      latestEpisode: "Dec 10, 2024"
     }
   ];
 
@@ -113,10 +113,10 @@ export const PodcastsTab = () => {
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Featured Podcasts */}
         <div className="lg:col-span-2 space-y-4">
-          <h3 className="text-xl font-semibold text-foreground">Featured Episodes</h3>
+          <h3 className="text-xl font-semibold text-foreground">Featured Podcast Series</h3>
           
           {featuredPodcasts.map((podcast, index) => (
-            <Card key={index} className="hover:shadow-md transition-shadow">
+            <Card key={index} className="hover:shadow-md transition-all duration-200 cursor-pointer hover-scale">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1">
@@ -131,7 +131,7 @@ export const PodcastsTab = () => {
                     onClick={() => podcast.youtubeUrl && window.open(podcast.youtubeUrl, '_blank')}
                   >
                     <Play className="h-4 w-4 mr-2" />
-                    {podcast.youtubeUrl ? 'Watch' : 'Play'}
+                    {podcast.youtubeUrl ? 'Watch Latest' : 'View Episodes'}
                   </Button>
                 </div>
                 
@@ -145,16 +145,16 @@ export const PodcastsTab = () => {
                 
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                   <span className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    {podcast.duration}
+                    <Mic className="h-3 w-3" />
+                    {podcast.episodeCount} episodes
                   </span>
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    {podcast.date}
+                    Latest: {podcast.latestEpisode}
                   </span>
                   <span className="flex items-center gap-1">
                     <Play className="h-3 w-3" />
-                    {podcast.listens} listens
+                    {podcast.totalListens} total listens
                   </span>
                 </div>
               </CardContent>
@@ -163,7 +163,7 @@ export const PodcastsTab = () => {
           
           <div className="text-center">
             <Button variant="outline">
-              View All Episodes
+              View All Podcast Series
               <ExternalLink className="h-4 w-4 ml-2" />
             </Button>
           </div>
