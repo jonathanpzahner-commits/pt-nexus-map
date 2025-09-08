@@ -136,7 +136,7 @@ const Dashboard = () => {
 
       {/* Main Navigation */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-14 h-12">
+        <TabsList className="flex w-full h-auto flex-wrap justify-start gap-1 p-1">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Home className="h-4 w-4" />
             <span className="hidden sm:inline">Overview</span>
