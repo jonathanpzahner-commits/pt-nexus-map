@@ -71,7 +71,7 @@ const Index = () => {
                 PT<span className="italic font-light text-accent">Eco</span>
               </h1>
               <div className="flex items-center gap-2">
-                <p className="text-base text-accent font-semibold tracking-wide">Making the PT community feel a little smaller</p>
+                <p className="text-sm text-accent font-semibold tracking-wide">Making the PT community feel a little smaller</p>
                 <span className="text-xs text-muted-foreground/70">•</span>
                 <p className="text-xs text-muted-foreground/90 font-medium">A Henry Holland Health Company</p>
               </div>
