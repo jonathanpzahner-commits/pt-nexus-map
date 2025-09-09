@@ -137,59 +137,10 @@ const Index = () => {
       </header>
       
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto p-8">
-        <div className="animate-fade-in prose prose-lg max-w-none">
-          <div className="bg-card/50 backdrop-blur-sm border border-border/60 rounded-lg p-8 shadow-elegant">
-            <h1 className="text-3xl font-bold text-foreground mb-6">PT Ecosystem Platform</h1>
-            
-            <div className="text-foreground/90 leading-relaxed space-y-4">
-              <p className="text-lg">
-                The unified market-intelligence and community layer for physical therapy — a comprehensive platform that maps every company, clinic, consultant, and clinician in the ecosystem.
-              </p>
-              
-              <p>
-                Our platform consolidates fragmented job boards, continuing education registries, and company data into one searchable, API-ready knowledge graph, while adding a social hub for Reddit-style discussions, mentorship programs, professional groups, research collaboration, industry events, and a vetted consultant marketplace.
-              </p>
-              
-              <div className="my-6">
-                <h2 className="text-xl font-semibold text-foreground mb-3">Value Proposition by Stakeholder</h2>
-                
-                <div className="space-y-3">
-                  <p><strong>Recruiters & Operators:</strong> Hire and expand faster with comprehensive talent mapping and direct access to verified professionals.</p>
-                  
-                  <p><strong>Consultants:</strong> Win more work through verified expertise profiles and direct client connections.</p>
-                  
-                  <p><strong>Clinicians:</strong> Discover career opportunities, find mentors, and access continuing education that matches their specialization.</p>
-                  
-                  <p><strong>Students:</strong> Find PT schools that match their budget, location preferences, and career goals.</p>
-                  
-                  <p><strong>Companies:</strong> License comprehensive market data or integrate via plugins to power business development, recruiting strategies, and education targeting.</p>
-                </div>
-              </div>
-              
-              <div className="my-6">
-                <h2 className="text-xl font-semibold text-foreground mb-3">Market Opportunity</h2>
-                <p>
-                  Physical therapy is a $40B+ market with highly fragmented data sources. Our platform creates the first comprehensive ecosystem map, enabling data-driven decisions across hiring, business development, education, and professional networking.
-                </p>
-              </div>
-              
-              <div className="my-6">
-                <h2 className="text-xl font-semibold text-foreground mb-3">Revenue Streams</h2>
-                <ul className="list-disc pl-6 space-y-1">
-                  <li>Data licensing to healthcare companies and PE firms</li>
-                  <li>API subscriptions for recruitment and business development tools</li>
-                  <li>Premium community memberships</li>
-                  <li>Consultant marketplace transaction fees</li>
-                  <li>Targeted advertising for education and career services</li>
-                </ul>
-              </div>
-              
-              <p className="text-lg font-medium text-foreground">
-                We're building the definitive platform where the entire PT ecosystem connects, collaborates, and grows together.
-              </p>
-            </div>
-          </div>
+      <main className="max-w-7xl mx-auto p-6">
+        <div className="animate-fade-in">
+          <ProfileCompletionBanner />
+          <Dashboard />
         </div>
       </main>
     </div>
