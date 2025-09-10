@@ -38,7 +38,7 @@ const EntityDetails = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Entity not found</h2>
-          <Button onClick={() => navigate(-1)}>Go Back</Button>
+          <Button onClick={() => navigate('/')}>Go Back</Button>
         </div>
       </div>
     );
@@ -635,7 +635,7 @@ const EntityDetails = () => {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border p-4">
         <div className="flex items-center gap-4 max-w-7xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
+          <Button variant="ghost" onClick={() => navigate('/')}>
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Map
           </Button>
