@@ -43,6 +43,7 @@ import { ConsultantsTab } from './dashboard/ConsultantsTab';
 import { CRMDashboard } from './crm/CRMDashboard';
 import { ApiManagementTab } from './dashboard/ApiManagementTab';
 import { PodcastsTab } from './dashboard/PodcastsTab';
+import { WorkingSearchDemo } from './search/WorkingSearchDemo';
 
 // import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
