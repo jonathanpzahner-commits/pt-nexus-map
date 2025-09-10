@@ -249,7 +249,7 @@ const Dashboard = () => {
           <div className="grid gap-6">
             <div className="flex items-center gap-3">
               <Handshake className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">Partnership Management</h2>
+              <h2 className="text-2xl font-bold text-foreground">Partnership Opportunities</h2>
             </div>
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -261,8 +261,8 @@ const Dashboard = () => {
                   <h3 className="font-semibold text-foreground">Education Partners</h3>
                 </div>
                 <p className="text-sm text-muted-foreground mb-4">Connect with continuing education providers and academic institutions.</p>
-                <div className="text-2xl font-bold text-primary mb-1">47</div>
-                <p className="text-xs text-muted-foreground">Active partnerships</p>
+                <div className="text-2xl font-bold text-primary mb-1">{stats?.schools || 0}</div>
+                <p className="text-xs text-muted-foreground">Academic institutions</p>
               </div>
               
               <div className="p-6 bg-card rounded-xl border border-border shadow-soft">
@@ -270,23 +270,23 @@ const Dashboard = () => {
                   <div className="p-2 bg-accent/10 rounded-lg">
                     <Users className="h-5 w-5 text-accent" />
                   </div>
-                  <h3 className="font-semibold text-foreground">Referral Network</h3>
+                  <h3 className="font-semibold text-foreground">Provider Network</h3>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">Manage professional referral relationships and collaborations.</p>
-                <div className="text-2xl font-bold text-accent mb-1">284</div>
-                <p className="text-xs text-muted-foreground">Network connections</p>
+                <p className="text-sm text-muted-foreground mb-4">Comprehensive network of licensed physical therapy professionals.</p>
+                <div className="text-2xl font-bold text-accent mb-1">{stats?.providers.toLocaleString() || 0}</div>
+                <p className="text-xs text-muted-foreground">Licensed providers</p>
               </div>
               
               <div className="p-6 bg-card rounded-xl border border-border shadow-soft">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="p-2 bg-orange-500/10 rounded-lg">
-                    <TrendingUp className="h-5 w-5 text-orange-500" />
+                    <Building className="h-5 w-5 text-orange-500" />
                   </div>
-                  <h3 className="font-semibold text-foreground">Growth Metrics</h3>
+                  <h3 className="font-semibold text-foreground">Business Network</h3>
                 </div>
-                <p className="text-sm text-muted-foreground mb-4">Track partnership performance and engagement.</p>
-                <div className="text-2xl font-bold text-orange-500 mb-1">+23%</div>
-                <p className="text-xs text-muted-foreground">Partnership growth</p>
+                <p className="text-sm text-muted-foreground mb-4">Complete ecosystem of PT-related companies and organizations.</p>
+                <div className="text-2xl font-bold text-orange-500 mb-1">{stats?.companies.toLocaleString() || 0}</div>
+                <p className="text-xs text-muted-foreground">Companies mapped</p>
               </div>
             </div>
           </div>

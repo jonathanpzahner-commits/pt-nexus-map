@@ -79,8 +79,8 @@ export const ContinuingEducationTab = () => {
                 <BookOpen className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Available Courses</p>
-                <p className="text-2xl font-bold text-foreground">247</p>
+                <p className="text-sm text-muted-foreground">Platform Status</p>
+                <p className="text-2xl font-bold text-foreground">Beta</p>
               </div>
             </div>
           </CardContent>
@@ -93,8 +93,8 @@ export const ContinuingEducationTab = () => {
                 <Users className="h-5 w-5 text-accent" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Active Learners</p>
-                <p className="text-2xl font-bold text-foreground">3,847</p>
+                <p className="text-sm text-muted-foreground">Launch Target</p>
+                <p className="text-2xl font-bold text-foreground">Q2 2025</p>
               </div>
             </div>
           </CardContent>
@@ -107,8 +107,8 @@ export const ContinuingEducationTab = () => {
                 <Award className="h-5 w-5 text-orange-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Certified Providers</p>
-                <p className="text-2xl font-bold text-foreground">89</p>
+                <p className="text-sm text-muted-foreground">Accredited</p>
+                <p className="text-2xl font-bold text-foreground">Yes</p>
               </div>
             </div>
           </CardContent>
@@ -121,8 +121,8 @@ export const ContinuingEducationTab = () => {
                 <TrendingUp className="h-5 w-5 text-green-500" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Monthly Growth</p>
-                <p className="text-2xl font-bold text-foreground">+23%</p>
+                <p className="text-sm text-muted-foreground">Categories</p>
+                <p className="text-2xl font-bold text-foreground">12+</p>
               </div>
             </div>
           </CardContent>
