@@ -196,7 +196,7 @@ const Dashboard = () => {
           </TabsTrigger>
           <TabsTrigger value="api" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">API</span>
+            <span className="hidden sm:inline">Platform Test</span>
           </TabsTrigger>
         </TabsList>
 
@@ -329,7 +329,7 @@ const Dashboard = () => {
         </TabsContent>
 
         <TabsContent value="api" className="space-y-4">
-          <ApiManagementTab />
+          <WorkingSearchDemo />
         </TabsContent>
       </Tabs>
 
