@@ -12,9 +12,47 @@ serve(async (req) => {
   }
 
   try {
-    const { address, city, state, zipCode } = await req.json();
+    const body = await req.json();
+    const { address, city, state, zipCode, latitude, longitude, reverse } = body;
     
-    // Build search query for geocoding
+    const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
+    if (!mapboxToken) {
+      throw new Error("Mapbox token not configured");
+    }
+
+    // Handle reverse geocoding (coordinates to address)
+    if (reverse && latitude && longitude) {
+      const reverseUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxToken}&limit=1&types=place,region,country`;
+      
+      const response = await fetch(reverseUrl);
+      const data = await response.json();
+
+      if (!data.features || data.features.length === 0) {
+        throw new Error("Location not found");
+      }
+
+      const feature = data.features[0];
+      const context = feature.context || [];
+      
+      // Extract state from context
+      const stateFeature = context.find((c: any) => c.id.includes('region'));
+      const state = stateFeature ? stateFeature.text : null;
+      
+      return new Response(
+        JSON.stringify({
+          latitude: parseFloat(latitude),
+          longitude: parseFloat(longitude),
+          address: feature.place_name,
+          state: state,
+          city: feature.text
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Handle forward geocoding (address to coordinates)
     let searchQuery = "";
     if (address) {
       searchQuery = address;
@@ -30,12 +68,6 @@ serve(async (req) => {
       throw new Error("No location information provided");
     }
 
-    // Use Mapbox Geocoding API
-    const mapboxToken = Deno.env.get("MAPBOX_PUBLIC_TOKEN");
-    if (!mapboxToken) {
-      throw new Error("Mapbox token not configured");
-    }
-
     const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxToken}&country=US&limit=1`;
     
     const response = await fetch(geocodeUrl);
@@ -46,12 +78,12 @@ serve(async (req) => {
     }
 
     const feature = data.features[0];
-    const [longitude, latitude] = feature.center;
+    const [lon, lat] = feature.center;
 
     return new Response(
       JSON.stringify({
-        latitude,
-        longitude,
+        latitude: lat,
+        longitude: lon,
         address: feature.place_name,
       }),
       {
