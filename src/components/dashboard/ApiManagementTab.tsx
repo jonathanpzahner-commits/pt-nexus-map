@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Key, Copy, Trash2, Plus, CreditCard, Activity, Eye, EyeOff } from "lucide-react";
+import { WorkingSearchDemo } from '@/components/search/WorkingSearchDemo';
 
 interface ApiKey {
   id: string;
@@ -45,9 +46,7 @@ export const ApiManagementTab = () => {
 
   const fetchApiKeys = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('api-key-management', {
-        method: 'GET'
-      });
+      const { data, error } = await supabase.functions.invoke('api-key-management');
 
       if (error) throw error;
       setApiKeys(data.api_keys || []);
@@ -63,8 +62,15 @@ export const ApiManagementTab = () => {
 
   const fetchCredits = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('credit-management/balance');
-      if (error) throw error;
+      // Call the balance endpoint
+      const response = await fetch(`https://bvplrcqhscqcsyxuxbcr.supabase.co/functions/v1/credit-management/balance`, {
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
       setCredits(data);
     } catch (error) {
       console.error("Error fetching credits:", error);
@@ -73,8 +79,15 @@ export const ApiManagementTab = () => {
 
   const fetchTransactions = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('credit-management/transactions');
-      if (error) throw error;
+      // Call the transactions endpoint
+      const response = await fetch(`https://bvplrcqhscqcsyxuxbcr.supabase.co/functions/v1/credit-management/transactions`, {
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
       setTransactions(data.transactions || []);
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -102,7 +115,6 @@ export const ApiManagementTab = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('api-key-management', {
-        method: 'POST',
         body: {
           name: newKeyName,
           permissions: { read: true, export: true },
@@ -156,15 +168,20 @@ export const ApiManagementTab = () => {
 
   const purchaseCredits = async () => {
     try {
-      const { data, error } = await supabase.functions.invoke('credit-management/purchase', {
+      // Call the purchase endpoint
+      const response = await fetch(`https://bvplrcqhscqcsyxuxbcr.supabase.co/functions/v1/credit-management/purchase`, {
         method: 'POST',
-        body: {
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
           amount: purchaseAmount,
           payment_method: "demo"
-        }
+        })
       });
-
-      if (error) throw error;
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
 
       await Promise.all([fetchCredits(), fetchTransactions()]);
       setIsPurchaseDialogOpen(false);
@@ -221,6 +238,8 @@ export const ApiManagementTab = () => {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
+          <WorkingSearchDemo />
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

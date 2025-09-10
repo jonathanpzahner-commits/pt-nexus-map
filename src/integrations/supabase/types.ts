@@ -1362,7 +1362,6 @@ export type Database = {
           created_at: string
           description: string
           distance_miles: number
-          employee_count: number
           founded_year: number
           id: string
           latitude: number
