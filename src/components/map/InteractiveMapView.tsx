@@ -219,8 +219,14 @@ export const InteractiveMapView = ({ mapboxToken, onTokenSubmit }: InteractiveMa
       });
     }
 
-    await fetchDataWithinRadius(coords, radius[0]);
-    toast.success(`Found locations within ${radius[0]} miles of ${location}`);
+    const results = await fetchDataWithinRadius(coords, radius[0]);
+    
+    // Count only providers that have coordinates (will be displayed on map)
+    const geocodedProviders = results.providers.filter((p: any) => p.latitude && p.longitude);
+    const geocodedCompanies = results.companies.filter((c: any) => c.latitude && c.longitude);
+    const totalMappable = geocodedProviders.length + geocodedCompanies.length + results.schools.length + results.jobListings.length;
+    
+    toast.success(`Found ${totalMappable} mappable locations within ${radius[0]} miles of ${location} (${geocodedProviders.length} PTs with coordinates, ${geocodedCompanies.length} companies, ${results.schools.length} schools, ${results.jobListings.length} jobs)`);
   };
 
   const handleSearch = async () => {

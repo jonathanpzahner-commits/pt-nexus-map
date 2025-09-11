@@ -90,6 +90,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
             const { data: radiusResults, error: radiusError } = await radiusQuery;
             
             if (!radiusError && radiusResults) {
+              let validProviderCount = 0;
               radiusResults.forEach((provider: any) => {
                 // Skip generic NPI providers with placeholder names
                 if (provider.name?.match(/^Provider \d+-\d+$/)) {
@@ -108,8 +109,9 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
                   description: provider.bio,
                   data: provider,
                 });
+                validProviderCount++;
               });
-              totalCount += radiusResults.length;
+              totalCount += validProviderCount; // Only count providers actually added to results
             } else {
               console.warn('Radius search failed, falling back to regular search:', radiusError);
               // Fall back to regular search
@@ -141,6 +143,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
           if (error) throw error;
 
           if (providers) {
+            let validProviderCount = 0;
             providers.forEach(provider => {
               // Skip generic NPI providers with placeholder names
               if (provider.name?.match(/^Provider \d+-\d+$/)) {
@@ -159,8 +162,11 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
                 description: provider.bio,
                 data: provider,
               });
+              validProviderCount++;
             });
-            totalCount += count || 0;
+            // Adjust count to reflect only valid providers that were actually added
+            const actualCount = count ? Math.min(validProviderCount, count) : validProviderCount;
+            totalCount += actualCount;
           }
         }
       }
