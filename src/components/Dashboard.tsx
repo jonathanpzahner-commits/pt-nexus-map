@@ -21,8 +21,7 @@ import {
   Handshake,
   MapPin,
   TrendingUp,
-  BookOpen,
-  Database
+  BookOpen
 } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
@@ -34,7 +33,6 @@ import { SimpleBulkUpload } from './upload/SimpleBulkUpload';
 import { GeocodingManager } from './search/GeocodingManager';
 import { FastGeocodingManager } from './dashboard/FastGeocodingManager';
 import CompanyGeocodingManager from './dashboard/CompanyGeocodingManager';
-import DemoDataManager from './demo/DemoDataManager';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
@@ -46,7 +44,6 @@ import { ConsultantsTab } from './dashboard/ConsultantsTab';
 import { CRMDashboard } from './crm/CRMDashboard';
 import { ApiManagementTab } from './dashboard/ApiManagementTab';
 import { PodcastsTab } from './dashboard/PodcastsTab';
-import { WorkingSearchDemo } from './search/WorkingSearchDemo';
 
 // import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
@@ -197,14 +194,6 @@ const Dashboard = () => {
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Survey</span>
           </TabsTrigger>
-          <TabsTrigger value="api" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            <span className="hidden sm:inline">Platform Test</span>
-          </TabsTrigger>
-          <TabsTrigger value="demo" className="flex items-center gap-2">
-            <Database className="h-4 w-4" />
-            <span className="hidden sm:inline">Demo Mode</span>
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -336,14 +325,6 @@ const Dashboard = () => {
 
         <TabsContent value="survey" className="space-y-4">
           <ActiveSurveysTab />
-        </TabsContent>
-
-        <TabsContent value="api" className="space-y-4">
-          <WorkingSearchDemo />
-        </TabsContent>
-
-        <TabsContent value="demo" className="space-y-4">
-          <DemoDataManager />
         </TabsContent>
       </Tabs>
 
