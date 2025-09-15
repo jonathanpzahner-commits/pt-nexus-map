@@ -457,7 +457,17 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
         totalPages: Math.ceil(totalCount / RESULTS_PER_PAGE),
       };
     },
-    enabled: true,
+    enabled: (searchQuery.trim().length > 2) || Boolean(
+      filters.location ||
+      filters.specialization ||
+      filters.companyType ||
+      filters.employmentType ||
+      filters.experienceLevel ||
+      filters.primarySetting ||
+      filters.subSetting ||
+      filters.specialty ||
+      filters.certification
+    ),
   });
 
   const updateFilters = useCallback((newFilters: Partial<SearchFilters>) => {
