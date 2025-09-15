@@ -484,27 +484,8 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
         </CardContent>
       </Card>
 
-      {/* Example Profile Placeholder */}
-      {!searchQuery && results.length === 0 && !isLoading && (
-        <Card className="opacity-60 pointer-events-none">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
-                <Search className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-medium text-muted-foreground">Dr. Sarah Johnson</h3>
-                <p className="text-sm text-muted-foreground">Physical Therapist • Sports Medicine</p>
-                <p className="text-xs text-muted-foreground">New York, NY • Example result</p>
-              </div>
-              <Badge variant="secondary" className="opacity-50">Example</Badge>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Results Summary */}
-      {(searchQuery || totalResults > 0) && (
+      {(searchQuery.trim().length > 0 || activeFiltersCount > 0) && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>{totalResults.toLocaleString()} results found</span>
           {activeFiltersCount > 0 && (
@@ -616,62 +597,6 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                       </Select>
                     </div>
                   </>
-                )}
-              </div>
-                    <Label className="text-sm font-medium">Company Type</Label>
-                    <Select value={filters.companyType || "all"} onValueChange={(value) => updateFilters({ companyType: value === "all" ? "" : value })}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Any type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Any type</SelectItem>
-                        <SelectItem value="Private Practice">Private Practice</SelectItem>
-                        <SelectItem value="Hospital System">Hospital System</SelectItem>
-                        <SelectItem value="Rehabilitation Center">Rehabilitation Center</SelectItem>
-                        <SelectItem value="Sports Medicine">Sports Medicine</SelectItem>
-                        <SelectItem value="Home Health">Home Health</SelectItem>
-                        <SelectItem value="Outpatient Clinic">Outpatient Clinic</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {(!contextTypes || contextTypes.includes('job_listings')) && (
-                  <div>
-                    <Label className="text-sm font-medium">Employment Type</Label>
-                    <Select value={filters.employmentType || "all"} onValueChange={(value) => updateFilters({ employmentType: value === "all" ? "" : value })}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Any type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Any type</SelectItem>
-                        <SelectItem value="Full-time">Full-time</SelectItem>
-                        <SelectItem value="Part-time">Part-time</SelectItem>
-                        <SelectItem value="Contract">Contract</SelectItem>
-                        <SelectItem value="Travel">Travel</SelectItem>
-                        <SelectItem value="Remote">Remote</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {(!contextTypes || contextTypes.some(type => ['providers', 'job_listings'].includes(type))) && (
-                  <div>
-                    <Label className="text-sm font-medium">Experience Level</Label>
-                    <Select value={filters.experienceLevel || "all"} onValueChange={(value) => updateFilters({ experienceLevel: value === "all" ? "" : value })}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Any level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Any level</SelectItem>
-                        <SelectItem value="Entry Level">Entry Level</SelectItem>
-                        <SelectItem value="Mid Level">Mid Level</SelectItem>
-                        <SelectItem value="Senior Level">Senior Level</SelectItem>
-                        <SelectItem value="Director">Director</SelectItem>
-                        <SelectItem value="Executive">Executive</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 )}
               </div>
             </CardContent>
