@@ -35,6 +35,7 @@ import { FastGeocodingManager } from './dashboard/FastGeocodingManager';
 import CompanyGeocodingManager from './dashboard/CompanyGeocodingManager';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
+import { BusinessPartnersTab } from './dashboard/BusinessPartnersTab';
 import { CommunityHub } from './community/CommunityHub';
 import { ContinuingEducationTab } from './dashboard/ContinuingEducationTab';
 import { ActiveSurveysTab } from './dashboard/ActiveSurveysTab';
@@ -246,50 +247,7 @@ const Dashboard = () => {
         </TabsContent>
         
         <TabsContent value="partnerships" className="space-y-4">
-          <div className="grid gap-6">
-            <div className="flex items-center gap-3">
-              <Handshake className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold text-foreground">Partnership Opportunities</h2>
-            </div>
-            
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="p-6 bg-card rounded-xl border border-border shadow-soft">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Building className="h-5 w-5 text-primary" />
-                  </div>
-                  <h3 className="font-semibold text-foreground">Education Partners</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Connect with continuing education providers and academic institutions.</p>
-                <div className="text-2xl font-bold text-primary mb-1">{stats?.schools || 0}</div>
-                <p className="text-xs text-muted-foreground">Academic institutions</p>
-              </div>
-              
-              <div className="p-6 bg-card rounded-xl border border-border shadow-soft">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-accent/10 rounded-lg">
-                    <Users className="h-5 w-5 text-accent" />
-                  </div>
-                  <h3 className="font-semibold text-foreground">Provider Network</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Comprehensive network of licensed physical therapy professionals.</p>
-                <div className="text-2xl font-bold text-accent mb-1">{stats?.providers.toLocaleString() || 0}</div>
-                <p className="text-xs text-muted-foreground">Licensed providers</p>
-              </div>
-              
-              <div className="p-6 bg-card rounded-xl border border-border shadow-soft">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-orange-500/10 rounded-lg">
-                    <Building className="h-5 w-5 text-orange-500" />
-                  </div>
-                  <h3 className="font-semibold text-foreground">Business Network</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">Complete ecosystem of PT-related companies and organizations.</p>
-                <div className="text-2xl font-bold text-orange-500 mb-1">{stats?.companies.toLocaleString() || 0}</div>
-                <p className="text-xs text-muted-foreground">Companies mapped</p>
-              </div>
-            </div>
-          </div>
+          <BusinessPartnersTab />
         </TabsContent>
         
         <TabsContent value="map" className="space-y-4">
