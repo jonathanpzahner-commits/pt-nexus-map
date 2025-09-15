@@ -337,7 +337,11 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
     filters.companyType,
     filters.employmentType,
     filters.experienceLevel,
-  ].filter(Boolean).length + (availableEntityTypes.length - filters.entityTypes.length);
+    filters.primarySetting,
+    filters.subSetting,
+    filters.specialty,
+    filters.certification,
+  ].filter(Boolean).length;
 
   return (
     <div className="space-y-6">
@@ -484,8 +488,26 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
         </CardContent>
       </Card>
 
-      {/* Results Summary */}
-      {(searchQuery.trim().length > 0 || activeFiltersCount > 0) && (
+      {/* Example Profile Placeholder - Only show when no search and no results */}
+      {!searchQuery.trim() && !isLoading && results.length === 0 && (
+        <Card className="opacity-60 pointer-events-none">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center">
+                <Search className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-medium text-muted-foreground">Dr. Sarah Johnson, DPT</h3>
+                <p className="text-sm text-muted-foreground">Physical Therapist • Sports Medicine</p>
+                <p className="text-xs text-muted-foreground">Seattle, WA • Example search result</p>
+              </div>
+              <Badge variant="secondary" className="opacity-50">Example</Badge>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {/* Results Summary - Only show when actively searching */}
+      {(searchQuery.trim().length > 0 || activeFiltersCount > 0) && totalResults >= 0 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>{totalResults.toLocaleString()} results found</span>
           {activeFiltersCount > 0 && (
@@ -604,8 +626,8 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Search Results */}
-      {(searchQuery || isLoading || totalResults > 0 || (!searchQuery && !isLoading)) && (
+      {/* Search Results - Only show when there's a search query or active filters */}
+      {(searchQuery.trim().length > 0 || activeFiltersCount > 0) && (
         <SearchResults results={results as any} isLoading={isLoading} />
       )}
     </div>
