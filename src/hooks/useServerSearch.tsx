@@ -12,6 +12,11 @@ export interface SearchFilters {
   radius: number; // in miles
   userLatitude?: number;
   userLongitude?: number;
+  // Provider-specific filters
+  primarySetting?: string;
+  subSetting?: string;
+  specialty?: string;
+  certification?: string;
 }
 
 export interface SearchResult {
@@ -82,9 +87,14 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
               radiusQuery = radiusQuery.or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,license_number.ilike.%${searchTerm}%,license_state.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,website.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,current_job_title.ilike.%${searchTerm}%,bio.ilike.%${searchTerm}%,additional_info.ilike.%${searchTerm}%,source.ilike.%${searchTerm}%,specializations.cs.{${searchTerm}}`);
             }
 
-            // Apply specialization filter
+            // Apply specialization filter (legacy)
             if (filters.specialization.trim()) {
               radiusQuery = radiusQuery.contains('specializations', [filters.specialization]);
+            }
+
+            // Apply new provider filters
+            if (filters.specialty?.trim()) {
+              radiusQuery = radiusQuery.contains('specializations', [filters.specialty]);
             }
 
             const { data: radiusResults, error: radiusError } = await radiusQuery;
@@ -134,9 +144,14 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
             query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%,zip_code.ilike.%${locationTerm}%`);
           }
 
-          // Apply specialization filter
+          // Apply specialization filter (legacy)
           if (filters.specialization.trim()) {
             query = query.contains('specializations', [filters.specialization]);
+          }
+
+          // Apply new provider filters  
+          if (filters.specialty?.trim()) {
+            query = query.contains('specializations', [filters.specialty]);
           }
 
           const { data: providers, error, count } = await query;

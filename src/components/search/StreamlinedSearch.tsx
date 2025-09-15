@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { SearchResults } from './SearchResults';
+import { ProviderFilters } from './ProviderFilters';
 import { useServerSearch } from '@/hooks/useServerSearch';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -82,7 +83,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
     { id: 'schools', label: 'Schools', color: 'bg-green-500' },
     { id: 'job_listings', label: 'Jobs', color: 'bg-red-500' },
     { id: 'consultant_companies', label: 'Consultants', color: 'bg-purple-500' },
-    { id: 'equipment_companies', label: 'Equipment', color: 'bg-orange-500' },
+    { id: 'equipment_companies', label: 'Equipment Vendors', color: 'bg-orange-500' },
     { id: 'pe_firms', label: 'PE Firms', color: 'bg-gray-500' },
     { id: 'profiles', label: 'Profiles', color: 'bg-pink-500' },
   ];
@@ -155,6 +156,71 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
       const searchTerm = query.toLowerCase();
       const suggestions: any[] = [];
 
+      // Import examples data
+      const { SEARCH_EXAMPLES } = await import('@/data/providerFilters');
+
+      // If query is empty or very short, show examples instead of database results
+      if (searchTerm.length < 3) {
+        // Add examples for each category
+        const contextTypesToShow = contextTypes || ['providers', 'companies', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'];
+        
+        if (contextTypesToShow.includes('consultant_companies')) {
+          SEARCH_EXAMPLES.consultants.forEach(example => {
+            suggestions.push({
+              id: `example-consultant-${example.name}`,
+              type: 'example',
+              title: example.name,
+              subtitle: example.specialty,
+              location: example.location,
+              category: 'Consultants'
+            });
+          });
+        }
+
+        if (contextTypesToShow.includes('equipment_companies')) {
+          SEARCH_EXAMPLES.equipment_vendors.forEach(example => {
+            suggestions.push({
+              id: `example-equipment-${example.name}`,
+              type: 'example',
+              title: example.name,
+              subtitle: example.specialty,
+              location: example.location,
+              category: 'Equipment Vendors'
+            });
+          });
+        }
+
+        if (contextTypesToShow.includes('pe_firms')) {
+          SEARCH_EXAMPLES.pe_firms.forEach(example => {
+            suggestions.push({
+              id: `example-pe-${example.name}`,
+              type: 'example',
+              title: example.name,
+              subtitle: example.specialty,
+              location: example.location,
+              category: 'PE Firms'
+            });
+          });
+        }
+
+        if (contextTypesToShow.includes('profiles')) {
+          SEARCH_EXAMPLES.profiles.forEach(example => {
+            suggestions.push({
+              id: `example-profile-${example.name}`,
+              type: 'example',
+              title: example.name,
+              subtitle: example.specialty,
+              location: example.location,
+              category: 'Profiles'
+            });
+          });
+        }
+
+        setSearchSuggestions(suggestions.slice(0, 10));
+        setShowSearchSuggestions(suggestions.length > 0);
+        return;
+      }
+
       // Enhanced search with location detection
       const isLocationQuery = /\b(in|at|near|from)\s+([a-zA-Z\s,]+)$/i.test(query) || 
                              /^[a-zA-Z\s,]+(?:,\s*[A-Z]{2})?$/.test(query);
@@ -179,46 +245,6 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
         }
       }
 
-      // Get company suggestions with enhanced search
-      const { data: companies } = await supabase
-        .from('companies')
-        .select('id, name, company_type, city, state, services')
-        .or(`name.ilike.%${searchTerm}%,company_type.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,services.cs.{${searchTerm}}`)
-        .limit(3);
-
-      if (companies) {
-        companies.forEach(company => {
-          suggestions.push({
-            id: company.id,
-            type: 'company',
-            title: company.name,
-            subtitle: company.company_type || 'Company',
-            location: company.city && company.state ? `${company.city}, ${company.state}` : '',
-            category: 'Companies'
-          });
-        });
-      }
-
-      // Get provider suggestions with better matching
-      const { data: providers } = await supabase
-        .from('providers')
-        .select('id, name, first_name, last_name, current_job_title, city, state, specializations, current_employer')
-        .or(`name.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,current_job_title.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,specializations.cs.{${searchTerm}}`)
-        .limit(3);
-
-      if (providers) {
-        providers.forEach(provider => {
-          suggestions.push({
-            id: provider.id,
-            type: 'provider',
-            title: provider.name || `${provider.first_name || ''} ${provider.last_name || ''}`.trim(),
-            subtitle: provider.current_job_title || 'Physical Therapist',
-            location: provider.city && provider.state ? `${provider.city}, ${provider.state}` : '',
-            category: 'Providers'
-          });
-        });
-      }
-
       // Enhanced specialization matching
       const specializations = [
         'Orthopedic', 'Sports Medicine', 'Neurology', 'Neurological', 'Geriatric', 'Pediatric',
@@ -238,26 +264,6 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
           });
         }
       });
-
-      // Get job listings
-      const { data: jobs } = await supabase
-        .from('job_listings')
-        .select('id, title, city, state, employment_type')
-        .or(`title.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,employment_type.ilike.%${searchTerm}%`)
-        .limit(2);
-
-      if (jobs) {
-        jobs.forEach(job => {
-          suggestions.push({
-            id: job.id,
-            type: 'job_listing',
-            title: job.title,
-            subtitle: job.employment_type || 'Job Opening',
-            location: job.city && job.state ? `${job.city}, ${job.state}` : '',
-            category: 'Jobs'
-          });
-        });
-      }
 
       setSearchSuggestions(suggestions.slice(0, 10));
       setShowSearchSuggestions(suggestions.length > 0);
@@ -539,8 +545,16 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
 
               {/* Additional Filters */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Provider-specific filters */}
+                {(!contextTypes || contextTypes.includes('providers')) && (
+                  <>
+                    <ProviderFilters filters={filters} updateFilters={updateFilters} />
+                  </>
+                )}
+
+                {/* Legacy specialization for backwards compatibility */}
                 <div>
-                  <Label className="text-sm font-medium">Specialization</Label>
+                  <Label className="text-sm font-medium">Specialization (Legacy)</Label>
                   <Input
                     placeholder="e.g., Orthopedic, Sports"
                     value={filters.specialization || ''}
@@ -552,6 +566,58 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                 {/* Conditional filters based on context */}
                 {(!contextTypes || contextTypes.some(type => ['companies', 'consultant_companies', 'equipment_companies'].includes(type))) && (
                   <div>
+                    <Label className="text-sm font-medium">Company Type</Label>
+                    <Select value={filters.companyType || ''} onValueChange={(value) => updateFilters({ companyType: value })}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Types</SelectItem>
+                        <SelectItem value="Multi-Site Operator">Multi-Site Operator</SelectItem>
+                        <SelectItem value="Private Practice">Private Practice</SelectItem>
+                        <SelectItem value="Hospital System">Hospital System</SelectItem>
+                        <SelectItem value="Rehabilitation Agency">Rehabilitation Agency</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {(!contextTypes || contextTypes.includes('job_listings')) && (
+                  <>
+                    <div>
+                      <Label className="text-sm font-medium">Employment Type</Label>
+                      <Select value={filters.employmentType || ''} onValueChange={(value) => updateFilters({ employmentType: value })}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Types</SelectItem>
+                          <SelectItem value="Full-time">Full-time</SelectItem>
+                          <SelectItem value="Part-time">Part-time</SelectItem>
+                          <SelectItem value="Contract">Contract</SelectItem>
+                          <SelectItem value="Per Diem">Per Diem</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium">Experience Level</Label>
+                      <Select value={filters.experienceLevel || ''} onValueChange={(value) => updateFilters({ experienceLevel: value })}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All Levels</SelectItem>
+                          <SelectItem value="Entry Level">Entry Level</SelectItem>
+                          <SelectItem value="Mid Level">Mid Level</SelectItem>
+                          <SelectItem value="Senior Level">Senior Level</SelectItem>
+                          <SelectItem value="Executive">Executive</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </>
+                )}
+              </div>
                     <Label className="text-sm font-medium">Company Type</Label>
                     <Select value={filters.companyType || "all"} onValueChange={(value) => updateFilters({ companyType: value === "all" ? "" : value })}>
                       <SelectTrigger className="mt-1">
