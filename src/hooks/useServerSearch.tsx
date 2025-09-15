@@ -17,6 +17,9 @@ export interface SearchFilters {
   subSetting?: string;
   specialty?: string;
   certification?: string;
+  // Consultant-specific filters
+  consultantCategory?: string;
+  consultantSpecialty?: string;
 }
 
 export interface SearchResult {
@@ -316,6 +319,11 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
           query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%`);
         }
 
+        // Apply new consultant filters
+        if (filters.consultantCategory?.trim()) {
+          query = query.contains('consulting_categories', [filters.consultantCategory]);
+        }
+
         const { data: consultants, error, count } = await query;
         if (error) throw error;
 
@@ -466,7 +474,9 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
       filters.primarySetting ||
       filters.subSetting ||
       filters.specialty ||
-      filters.certification
+      filters.certification ||
+      filters.consultantCategory ||
+      filters.consultantSpecialty
     ),
   });
 

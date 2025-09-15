@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { SearchResults } from './SearchResults';
 import { ProviderFilters } from './ProviderFilters';
+import { ConsultantFilters } from './ConsultantFilters';
 import { useServerSearch } from '@/hooks/useServerSearch';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -341,6 +342,8 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
     filters.subSetting,
     filters.specialty,
     filters.certification,
+    filters.consultantCategory,
+    filters.consultantSpecialty,
   ].filter(Boolean).length;
 
   return (
@@ -580,8 +583,18 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                    </div>
                  )}
 
-                 {/* Legacy specialization - only show when not showing provider filters */}
-                 {!((!contextTypes || contextTypes.includes('providers')) && filters.entityTypes.includes('providers')) && (
+                 {/* Consultant-specific filters - Only show when consultants are selected */}
+                 {(!contextTypes || contextTypes.includes('consultant_companies')) && filters.entityTypes.includes('consultant_companies') && (
+                   <div className="md:col-span-3 space-y-4">
+                     <ConsultantFilters filters={filters} updateFilters={updateFilters} />
+                   </div>
+                 )}
+
+                 {/* Legacy specialization - only show when not showing provider or consultant filters */}
+                 {!(
+                   ((!contextTypes || contextTypes.includes('providers')) && filters.entityTypes.includes('providers')) ||
+                   ((!contextTypes || contextTypes.includes('consultant_companies')) && filters.entityTypes.includes('consultant_companies'))
+                 ) && (
                    <div>
                      <Label className="text-sm font-medium">Specialization</Label>
                      <Input
@@ -649,7 +662,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                      </div>
                    </>
                  )}
-              </div>
+               </div>
             </CardContent>
           </Card>
         </CollapsibleContent>

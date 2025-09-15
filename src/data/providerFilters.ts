@@ -147,6 +147,76 @@ export const CERTIFICATIONS = [
   'Dry Needling (state-dependent)'
 ];
 
+// Consultant categories based on ConsultantsTab
+export const CONSULTANT_CATEGORIES = [
+  'Talent',
+  'M&A',
+  'Education', 
+  'Front Office-Billing',
+  'Human Resources',
+  'Technology',
+  'Growth'
+];
+
+export const CONSULTANT_SPECIALTIES: Record<string, string[]> = {
+  'Talent': [
+    'Executive Recruitment',
+    'Permanent Placement', 
+    'Travel PT Staffing',
+    'Contract Staffing',
+    'Interim Leadership',
+    'Talent Acquisition'
+  ],
+  'M&A': [
+    'Practice Acquisitions',
+    'Business Valuation',
+    'Strategic Partnerships',
+    'Due Diligence',
+    'Transaction Advisory',
+    'Exit Planning'
+  ],
+  'Education': [
+    'CEU Programs',
+    'Specialty Certifications',
+    'Leadership Development',
+    'Clinical Training',
+    'Compliance Training',
+    'Professional Development'
+  ],
+  'Front Office-Billing': [
+    'Revenue Cycle Mgmt',
+    'Insurance Optimization', 
+    'Billing Compliance',
+    'Prior Authorization',
+    'Claims Management',
+    'Financial Analytics'
+  ],
+  'Human Resources': [
+    'HR Compliance',
+    'Employee Relations',
+    'Performance Management',
+    'Benefits Administration',
+    'Recruitment Strategy',
+    'Organizational Development'
+  ],
+  'Technology': [
+    'EMR Implementation',
+    'Practice Management',
+    'Telehealth Integration',
+    'Digital Marketing',
+    'Data Analytics',
+    'IT Infrastructure'
+  ],
+  'Growth': [
+    'Market Expansion',
+    'Digital Marketing',
+    'Strategic Planning',
+    'Business Development',
+    'Brand Strategy',
+    'Operational Excellence'
+  ]
+};
+
 // Example data for search suggestions
 export const SEARCH_EXAMPLES = {
   consultants: [
