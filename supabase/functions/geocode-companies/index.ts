@@ -22,7 +22,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { batch_size = 50 } = await req.json().catch(() => ({}));
+    const { batch_size = 20, background_mode = false } = await req.json().catch(() => ({}));
 
     console.log(`Starting company geocoding with batch size: ${batch_size}`);
 
@@ -108,8 +108,8 @@ serve(async (req) => {
           failed++;
         }
 
-        // Rate limiting - wait 100ms between requests
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Rate limiting - wait 200ms between requests for better API compliance
+        await new Promise(resolve => setTimeout(resolve, 200));
 
       } catch (error) {
         console.error(`Error geocoding company ${company.name}:`, error);
