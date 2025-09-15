@@ -32,6 +32,7 @@ import { GlobalSearch } from './search/GlobalSearch';
 import { SimpleBulkUpload } from './upload/SimpleBulkUpload';
 import { GeocodingManager } from './search/GeocodingManager';
 import { FastGeocodingManager } from './dashboard/FastGeocodingManager';
+import CompanyGeocodingManager from './dashboard/CompanyGeocodingManager';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
@@ -223,11 +224,14 @@ const Dashboard = () => {
         </TabsContent>
         
         <TabsContent value="companies" className="space-y-4">
-          <SearchOnlyTab 
-            title="PT Companies & Practices"
-            description="Find PT clinics, hospitals, and healthcare companies by type, size, location, and services"
-            icon={Building}
-          />
+          <div className="space-y-4">
+            <SearchOnlyTab 
+              title="PT Companies & Practices"
+              description="Find PT clinics, hospitals, and healthcare companies by type, size, location, and services"
+              icon={Building}
+            />
+            <CompanyGeocodingManager />
+          </div>
         </TabsContent>
         
         <TabsContent value="schools" className="space-y-4">
