@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { SearchResults } from './SearchResults';
 import { ProviderFilters } from './ProviderFilters';
 import { ConsultantFilters } from './ConsultantFilters';
+import { SchoolFilters } from './SchoolFilters';
 import { useServerSearch } from '@/hooks/useServerSearch';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -583,12 +584,19 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                    </div>
                  )}
 
-                 {/* Consultant-specific filters - Only show when consultants are selected */}
-                 {(!contextTypes || contextTypes.includes('consultant_companies')) && filters.entityTypes.includes('consultant_companies') && (
-                   <div className="md:col-span-3 space-y-4">
-                     <ConsultantFilters filters={filters} updateFilters={updateFilters} />
-                   </div>
-                 )}
+                  {/* Consultant-specific filters - Only show when consultants are selected */}
+                  {(!contextTypes || contextTypes.includes('consultant_companies')) && filters.entityTypes.includes('consultant_companies') && (
+                    <div className="md:col-span-3 space-y-4">
+                      <ConsultantFilters filters={filters} updateFilters={updateFilters} />
+                    </div>
+                  )}
+
+                  {/* School-specific filters - Only show when schools are selected */}
+                  {(!contextTypes || contextTypes.includes('schools')) && filters.entityTypes.includes('schools') && (
+                    <div className="md:col-span-3 space-y-4">
+                      <SchoolFilters filters={filters} updateFilters={updateFilters} />
+                    </div>
+                  )}
 
                  {/* Legacy specialization - only show when not showing provider or consultant filters */}
                  {!(

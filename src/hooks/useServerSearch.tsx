@@ -14,6 +14,16 @@ const createDefaultFilters = (preselectedTypes?: SearchFilters['entityTypes']): 
   radius: 50, // 50 miles default
   userLatitude: undefined,
   userLongitude: undefined,
+  primarySetting: '',
+  subSetting: '',
+  specialty: '',
+  certification: '',
+  consultantCategory: '',
+  consultantSpecialty: '',
+  costCategory: '',
+  programLength: '',
+  programType: '',
+  accreditation: '',
 });
 
 const RESULTS_PER_PAGE = 50;

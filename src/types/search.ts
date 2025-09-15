@@ -28,6 +28,11 @@ export interface SearchFilters {
   // Consultant-specific filters
   consultantCategory?: string;
   consultantSpecialty?: string;
+  // School-specific filters
+  costCategory?: string;
+  programLength?: string;
+  programType?: string;
+  accreditation?: string;
 }
 
 export type SearchResultType =
