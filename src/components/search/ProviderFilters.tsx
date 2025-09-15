@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { PRIMARY_SETTINGS, SUB_SETTINGS, SPECIALTIES, CERTIFICATIONS } from '@/data/providerFilters';
-import { SearchFilters } from '@/hooks/useServerSearch';
+import { SearchFilters } from '@/types/search';
 
 interface ProviderFiltersProps {
   filters: SearchFilters & {

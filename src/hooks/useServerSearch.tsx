@@ -2,35 +2,7 @@ import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-export interface SearchFilters {
-  entityTypes: ('companies' | 'schools' | 'providers' | 'job_listings' | 'consultant_companies' | 'equipment_companies' | 'pe_firms' | 'profiles')[];
-  location: string;
-  specialization: string;
-  companyType: string;
-  employmentType: string;
-  experienceLevel: string;
-  radius: number; // in miles
-  userLatitude?: number;
-  userLongitude?: number;
-  // Provider-specific filters
-  primarySetting?: string;
-  subSetting?: string;
-  specialty?: string;
-  certification?: string;
-  // Consultant-specific filters
-  consultantCategory?: string;
-  consultantSpecialty?: string;
-}
-
-export interface SearchResult {
-  id: string;
-  type: 'company' | 'school' | 'provider' | 'job_listing' | 'consultant_company' | 'equipment_company' | 'pe_firm' | 'profile';
-  title: string;
-  subtitle: string;
-  location: string;
-  description?: string;
-  data: any;
-}
+import { SearchFilters, SearchResult } from '@/types/search';
 
 const createDefaultFilters = (preselectedTypes?: SearchFilters['entityTypes']): SearchFilters => ({
   entityTypes: preselectedTypes || ['companies', 'schools', 'providers', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'],

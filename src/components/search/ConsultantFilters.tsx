@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CONSULTANT_CATEGORIES, CONSULTANT_SPECIALTIES } from '@/data/providerFilters';
-import { SearchFilters } from '@/hooks/useServerSearch';
+import { SearchFilters } from '@/types/search';
 
 interface ConsultantFiltersProps {
   filters: SearchFilters & {

@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown, X, Filter } from 'lucide-react';
 import { useState } from 'react';
-import { SearchFilters as SearchFiltersType } from '@/hooks/useServerSearch';
+import { SearchFilters as SearchFiltersType } from '@/types/search';
 
 interface SearchFiltersProps {
   filters: SearchFiltersType;
