@@ -46,6 +46,40 @@ interface BusinessPartner {
   }>;
 }
 
+// Mock data for possible introductions
+const mockIntroductions = [
+  {
+    id: '1',
+    partner1: 'Sarah Mitchell (PT Excellence Consultants)',
+    partner2: 'Dr. Jennifer Rodriguez (Prime Rehab Network)',
+    reason: 'Sarah specializes in operational efficiency - could help Jennifer with her contract renewal strategy',
+    synergy: 'high',
+    mutualBenefit: 'Sarah gains new client, Jennifer gets expert consultation'
+  },
+  {
+    id: '2',
+    partner1: 'Michael Chen (HealthTech Solutions)',
+    partner2: 'David Thompson (Apex Physical Therapy)',
+    reason: 'David is exploring tech upgrades - Michael has the perfect EMR solutions for growing practices',
+    synergy: 'medium',
+    mutualBenefit: 'Michael expands client base, David gets cutting-edge technology'
+  },
+  {
+    id: '3',
+    partner1: 'Dr. Jennifer Rodriguez (Prime Rehab Network)',
+    partner2: 'David Thompson (Apex Physical Therapy)',
+    reason: 'Both CEOs could share insights on scaling operations and joint venture opportunities',
+    synergy: 'high',
+    mutualBenefit: 'Knowledge sharing and potential strategic partnership'
+  }
+];
+
+const synergyColors = {
+  high: 'bg-green-100 text-green-800 border-green-200',
+  medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  low: 'bg-gray-100 text-gray-800 border-gray-200'
+};
+
 // Mock data for demonstration
 const mockPartners: BusinessPartner[] = [
   {
@@ -341,6 +375,52 @@ export const BusinessPartnersTab = () => {
             </div>
           </Card>
         ))}
+      </div>
+
+      {/* Possible Introductions Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Users className="h-5 w-5 text-primary" />
+          <h3 className="text-xl font-semibold">Possible Introductions</h3>
+          <Badge variant="outline">{mockIntroductions.length} opportunities</Badge>
+        </div>
+        
+        <div className="grid gap-4">
+          {mockIntroductions.map((intro) => (
+            <Card key={intro.id} className="p-4">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-sm">{intro.partner1}</span>
+                      <span className="text-muted-foreground">↔</span>
+                      <span className="font-medium text-sm">{intro.partner2}</span>
+                    </div>
+                    <Badge className={synergyColors[intro.synergy]}>
+                      {intro.synergy} synergy
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Introduction Opportunity:</p>
+                      <p className="text-sm">{intro.reason}</p>
+                    </div>
+                    
+                    <div>
+                      <p className="text-sm text-muted-foreground">Mutual Benefit:</p>
+                      <p className="text-sm">{intro.mutualBenefit}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button size="sm" className="ml-4">
+                  Facilitate Introduction
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {filteredPartners.length === 0 && (
