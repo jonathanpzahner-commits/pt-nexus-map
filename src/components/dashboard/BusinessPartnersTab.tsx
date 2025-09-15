@@ -38,10 +38,11 @@ interface BusinessPartner {
     type: string;
     description: string;
   }>;
-  opportunities: Array<{
-    title: string;
-    value: string;
-    status: string;
+  industryMovements: Array<{
+    date: string;
+    type: string;
+    description: string;
+    impact: 'positive' | 'neutral' | 'negative';
   }>;
 }
 
@@ -66,9 +67,9 @@ const mockPartners: BusinessPartner[] = [
       { date: '2024-01-15', type: 'Meeting', description: 'Q4 strategic planning session' },
       { date: '2024-01-10', type: 'Email', description: 'Sent proposal for operational efficiency review' }
     ],
-    opportunities: [
-      { title: 'Q4 Strategic Review', value: '$15,000', status: 'pending' },
-      { title: 'Staff Training Program', value: '$8,000', status: 'discussing' }
+    industryMovements: [
+      { date: '2024-01-14', type: 'Expansion', description: 'Opened new clinic location in Austin', impact: 'positive' },
+      { date: '2024-01-08', type: 'Partnership', description: 'Announced partnership with major health system', impact: 'positive' }
     ]
   },
   {
@@ -89,8 +90,8 @@ const mockPartners: BusinessPartner[] = [
       { date: '2024-01-12', type: 'Demo', description: 'New EMR features demonstration' },
       { date: '2024-01-08', type: 'Call', description: 'Discussed integration timeline' }
     ],
-    opportunities: [
-      { title: 'EMR System Upgrade', value: '$25,000', status: 'active' }
+    industryMovements: [
+      { date: '2024-01-13', type: 'Product Launch', description: 'Released AI-powered patient analytics tool', impact: 'positive' }
     ]
   },
   {
@@ -110,8 +111,9 @@ const mockPartners: BusinessPartner[] = [
       { date: '2024-01-14', type: 'Contract', description: 'Contract renewal discussion' },
       { date: '2024-01-09', type: 'Meeting', description: 'Quarterly business review' }
     ],
-    opportunities: [
-      { title: '2024 Service Contract', value: '$120,000', status: 'negotiating' }
+    industryMovements: [
+      { date: '2024-01-12', type: 'Acquisition', description: 'Acquired 2 competing clinics in metro area', impact: 'positive' },
+      { date: '2024-01-07', type: 'Award', description: 'Received "Best Workplace" award', impact: 'positive' }
     ]
   },
   {
@@ -131,8 +133,9 @@ const mockPartners: BusinessPartner[] = [
       { date: '2024-01-11', type: 'Networking', description: 'Industry conference discussion' },
       { date: '2024-01-05', type: 'Email', description: 'Partnership proposal exchange' }
     ],
-    opportunities: [
-      { title: 'Joint Marketing Initiative', value: '$30,000', status: 'exploring' }
+    industryMovements: [
+      { date: '2024-01-10', type: 'Investment', description: 'Secured $2M Series A funding round', impact: 'positive' },
+      { date: '2024-01-06', type: 'Leadership', description: 'Hired new VP of Operations', impact: 'neutral' }
     ]
   }
 ];
@@ -161,10 +164,8 @@ export const BusinessPartnersTab = () => {
     return matchesSearch && matchesFilter;
   });
 
-  const totalValue = mockPartners.reduce((sum, partner) => {
-    return sum + partner.opportunities.reduce((oppSum, opp) => {
-      return oppSum + parseInt(opp.value.replace(/[$,]/g, ''));
-    }, 0);
+  const totalMovements = mockPartners.reduce((sum, partner) => {
+    return sum + partner.industryMovements.length;
   }, 0);
 
   return (
@@ -200,8 +201,8 @@ export const BusinessPartnersTab = () => {
             <div className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-green-600" />
               <div>
-                <p className="text-sm text-muted-foreground">Pipeline Value</p>
-                <p className="text-2xl font-bold">${(totalValue / 1000).toFixed(0)}K</p>
+                <p className="text-sm text-muted-foreground">Industry Movements</p>
+                <p className="text-2xl font-bold">{totalMovements}</p>
               </div>
             </div>
           </CardContent>
@@ -224,9 +225,9 @@ export const BusinessPartnersTab = () => {
             <div className="flex items-center gap-2">
               <Activity className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="text-sm text-muted-foreground">Active Opportunities</p>
+                <p className="text-sm text-muted-foreground">Recent Activities</p>
                 <p className="text-2xl font-bold">
-                  {mockPartners.reduce((sum, p) => sum + p.opportunities.length, 0)}
+                  {mockPartners.reduce((sum, p) => sum + p.recentActivity.length, 0)}
                 </p>
               </div>
             </div>
@@ -299,15 +300,24 @@ export const BusinessPartnersTab = () => {
                     </div>
                   </div>
                   
-                  {partner.opportunities.length > 0 && (
+                  {partner.industryMovements.length > 0 && (
                     <div className="mt-3 p-3 bg-muted/50 rounded-lg">
-                      <p className="text-sm font-medium mb-2">Active Opportunities:</p>
-                      {partner.opportunities.map((opp, index) => (
+                      <p className="text-sm font-medium mb-2">Recent Industry Movements:</p>
+                      {partner.industryMovements.map((movement, index) => (
                         <div key={index} className="flex items-center justify-between text-sm">
-                          <span>{opp.title}</span>
+                          <span>{movement.description}</span>
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{opp.value}</span>
-                            <Badge variant="outline" className="text-xs">{opp.status}</Badge>
+                            <span className="text-xs text-muted-foreground">{movement.date}</span>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                movement.impact === 'positive' ? 'border-green-500 text-green-600' :
+                                movement.impact === 'negative' ? 'border-red-500 text-red-600' :
+                                'border-gray-500 text-gray-600'
+                              }`}
+                            >
+                              {movement.type}
+                            </Badge>
                           </div>
                         </div>
                       ))}
