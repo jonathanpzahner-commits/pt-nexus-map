@@ -546,80 +546,84 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
 
               <Separator />
 
-              {/* Additional Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Provider-specific filters */}
-                {(!contextTypes || contextTypes.includes('providers')) && (
-                  <>
-                    <ProviderFilters filters={filters} updateFilters={updateFilters} />
-                  </>
-                )}
+               {/* Additional Filters */}
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                 {/* Provider-specific filters - Only show when providers are selected */}
+                 {(!contextTypes || contextTypes.includes('providers')) && filters.entityTypes.includes('providers') && (
+                   <div className="md:col-span-3 space-y-4">
+                     <ProviderFilters filters={filters} updateFilters={updateFilters} />
+                   </div>
+                 )}
 
-                {/* Legacy specialization for backwards compatibility */}
-                <div>
-                  <Label className="text-sm font-medium">Specialization (Legacy)</Label>
-                  <Input
-                    placeholder="e.g., Orthopedic, Sports"
-                    value={filters.specialization || ''}
-                    onChange={(e) => updateFilters({ specialization: e.target.value })}
-                    className="mt-1"
-                  />
-                </div>
+                 {/* Legacy specialization - only show when not showing provider filters */}
+                 {!((!contextTypes || contextTypes.includes('providers')) && filters.entityTypes.includes('providers')) && (
+                   <div>
+                     <Label className="text-sm font-medium">Specialization</Label>
+                     <Input
+                       placeholder="e.g., Orthopedic, Sports"
+                       value={filters.specialization || ''}
+                       onChange={(e) => updateFilters({ specialization: e.target.value })}
+                       className="mt-1"
+                     />
+                   </div>
+                 )}
 
-                {/* Conditional filters based on context */}
-                {(!contextTypes || contextTypes.some(type => ['companies', 'consultant_companies', 'equipment_companies'].includes(type))) && (
-                  <div>
-                    <Label className="text-sm font-medium">Company Type</Label>
-                    <Select value={filters.companyType || 'all'} onValueChange={(value) => updateFilters({ companyType: value === 'all' ? '' : value })}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Any type" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Any type</SelectItem>
-                        <SelectItem value="Multi-Site Operator">Multi-Site Operator</SelectItem>
-                        <SelectItem value="Private Practice">Private Practice</SelectItem>
-                        <SelectItem value="Hospital System">Hospital System</SelectItem>
-                        <SelectItem value="Rehabilitation Agency">Rehabilitation Agency</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                 {/* Company Type - only show when relevant entity types are selected */}
+                 {(!contextTypes || contextTypes.some(type => ['companies', 'consultant_companies', 'equipment_companies'].includes(type))) && 
+                  filters.entityTypes.some(type => ['companies', 'consultant_companies', 'equipment_companies'].includes(type)) && (
+                   <div>
+                     <Label className="text-sm font-medium">Company Type</Label>
+                     <Select value={filters.companyType || 'all'} onValueChange={(value) => updateFilters({ companyType: value === 'all' ? '' : value })}>
+                       <SelectTrigger className="mt-1">
+                         <SelectValue placeholder="Any type" />
+                       </SelectTrigger>
+                       <SelectContent>
+                         <SelectItem value="all">Any type</SelectItem>
+                         <SelectItem value="Multi-Site Operator">Multi-Site Operator</SelectItem>
+                         <SelectItem value="Private Practice">Private Practice</SelectItem>
+                         <SelectItem value="Hospital System">Hospital System</SelectItem>
+                         <SelectItem value="Rehabilitation Agency">Rehabilitation Agency</SelectItem>
+                       </SelectContent>
+                     </Select>
+                   </div>
+                 )}
 
-                {(!contextTypes || contextTypes.includes('job_listings')) && (
-                  <>
-                    <div>
-                      <Label className="text-sm font-medium">Employment Type</Label>
-                      <Select value={filters.employmentType || 'all'} onValueChange={(value) => updateFilters({ employmentType: value === 'all' ? '' : value })}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Any type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Any type</SelectItem>
-                          <SelectItem value="Full-time">Full-time</SelectItem>
-                          <SelectItem value="Part-time">Part-time</SelectItem>
-                          <SelectItem value="Contract">Contract</SelectItem>
-                          <SelectItem value="Per Diem">Per Diem</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                 {/* Job-specific filters - only show when job listings are selected */}
+                 {(!contextTypes || contextTypes.includes('job_listings')) && filters.entityTypes.includes('job_listings') && (
+                   <>
+                     <div>
+                       <Label className="text-sm font-medium">Employment Type</Label>
+                       <Select value={filters.employmentType || 'all'} onValueChange={(value) => updateFilters({ employmentType: value === 'all' ? '' : value })}>
+                         <SelectTrigger className="mt-1">
+                           <SelectValue placeholder="Any type" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="all">Any type</SelectItem>
+                           <SelectItem value="Full-time">Full-time</SelectItem>
+                           <SelectItem value="Part-time">Part-time</SelectItem>
+                           <SelectItem value="Contract">Contract</SelectItem>
+                           <SelectItem value="Per Diem">Per Diem</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
 
-                    <div>
-                      <Label className="text-sm font-medium">Experience Level</Label>
-                      <Select value={filters.experienceLevel || 'all'} onValueChange={(value) => updateFilters({ experienceLevel: value === 'all' ? '' : value })}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Any level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Any level</SelectItem>
-                          <SelectItem value="Entry Level">Entry Level</SelectItem>
-                          <SelectItem value="Mid Level">Mid Level</SelectItem>
-                          <SelectItem value="Senior Level">Senior Level</SelectItem>
-                          <SelectItem value="Executive">Executive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </>
-                )}
+                     <div>
+                       <Label className="text-sm font-medium">Experience Level</Label>
+                       <Select value={filters.experienceLevel || 'all'} onValueChange={(value) => updateFilters({ experienceLevel: value === 'all' ? '' : value })}>
+                         <SelectTrigger className="mt-1">
+                           <SelectValue placeholder="Any level" />
+                         </SelectTrigger>
+                         <SelectContent>
+                           <SelectItem value="all">Any level</SelectItem>
+                           <SelectItem value="Entry Level">Entry Level</SelectItem>
+                           <SelectItem value="Mid Level">Mid Level</SelectItem>
+                           <SelectItem value="Senior Level">Senior Level</SelectItem>
+                           <SelectItem value="Executive">Executive</SelectItem>
+                         </SelectContent>
+                       </Select>
+                     </div>
+                   </>
+                 )}
               </div>
             </CardContent>
           </Card>
