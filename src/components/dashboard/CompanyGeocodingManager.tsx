@@ -15,16 +15,36 @@ const CompanyGeocodingManager = () => {
   const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ['company-geocoding-stats'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      console.log('Fetching company geocoding statistics...');
+      
+      // Get total count
+      const { count: totalCount, error: totalError } = await supabase
         .from('companies')
-        .select('id, latitude, longitude');
+        .select('*', { count: 'exact', head: true });
       
-      if (error) throw error;
+      if (totalError) {
+        console.error('Error getting total count:', totalError);
+        throw totalError;
+      }
       
-      const total = data?.length || 0;
-      const geocoded = data?.filter(c => c.latitude && c.longitude).length || 0;
+      // Get geocoded count
+      const { count: geocodedCount, error: geocodedError } = await supabase
+        .from('companies')
+        .select('*', { count: 'exact', head: true })
+        .not('latitude', 'is', null)
+        .not('longitude', 'is', null);
+      
+      if (geocodedError) {
+        console.error('Error getting geocoded count:', geocodedError);
+        throw geocodedError;
+      }
+      
+      const total = totalCount || 0;
+      const geocoded = geocodedCount || 0;
       const remaining = total - geocoded;
       const percentage = total > 0 ? Math.round((geocoded / total) * 100) : 0;
+      
+      console.log('Company stats:', { total, geocoded, remaining, percentage });
       
       return { total, geocoded, remaining, percentage };
     },
