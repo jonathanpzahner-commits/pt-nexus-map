@@ -606,9 +606,9 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
                    </div>
                  )}
 
-                 {/* Company Type - only show when relevant entity types are selected */}
-                 {(!contextTypes || contextTypes.some(type => ['companies', 'consultant_companies', 'equipment_companies'].includes(type))) && 
-                  filters.entityTypes.some(type => ['companies', 'consultant_companies', 'equipment_companies'].includes(type)) && (
+                  {/* Company Type - only show when relevant entity types are selected */}
+                  {(!contextTypes || contextTypes.some(type => ['companies', 'equipment_companies'].includes(type))) && 
+                   filters.entityTypes.some(type => ['companies', 'equipment_companies'].includes(type)) && (
                    <div>
                      <Label className="text-sm font-medium">Company Type</Label>
                      <Select value={filters.companyType || 'all'} onValueChange={(value) => updateFilters({ companyType: value === 'all' ? '' : value })}>
