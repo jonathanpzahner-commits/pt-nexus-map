@@ -59,7 +59,6 @@ export const SchoolFilters: React.FC<SchoolFiltersProps> = ({ filters, updateFil
           <SelectContent>
             <SelectItem value="all">Any program type</SelectItem>
             <SelectItem value="Doctor of Physical Therapy (DPT)">Doctor of Physical Therapy (DPT)</SelectItem>
-            <SelectItem value="Master of Physical Therapy (MPT)">Master of Physical Therapy (MPT)</SelectItem>
             <SelectItem value="Physical Therapist Assistant (PTA)">Physical Therapist Assistant (PTA)</SelectItem>
             <SelectItem value="Continuing Education">Continuing Education</SelectItem>
             <SelectItem value="Residency Program">Residency Program</SelectItem>
