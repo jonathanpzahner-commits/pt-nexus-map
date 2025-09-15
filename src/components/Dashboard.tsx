@@ -21,7 +21,9 @@ import {
   Handshake,
   MapPin,
   TrendingUp,
-  BookOpen
+  BookOpen,
+  FileText,
+  Wrench
 } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
@@ -45,6 +47,8 @@ import { ConsultantsTab } from './dashboard/ConsultantsTab';
 import { CRMDashboard } from './crm/CRMDashboard';
 import { ApiManagementTab } from './dashboard/ApiManagementTab';
 import { PodcastsTab } from './dashboard/PodcastsTab';
+import { ResearchPublicationsTab } from './dashboard/ResearchPublicationsTab';
+import { ToolKitTab } from './dashboard/ToolKitTab';
 
 // import { PartnershipDashboard } from './partnerships/PartnershipDashboard';
 import { migrateCompanyLocations } from '@/utils/migrateCompanyLocations';
@@ -191,6 +195,14 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4" />
             <span className="hidden sm:inline">CRM</span>
           </TabsTrigger>
+          <TabsTrigger value="research" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span className="hidden sm:inline">Research</span>
+          </TabsTrigger>
+          <TabsTrigger value="toolkit" className="flex items-center gap-2">
+            <Wrench className="h-4 w-4" />
+            <span className="hidden sm:inline">Toolkit</span>
+          </TabsTrigger>
           <TabsTrigger value="survey" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Survey</span>
@@ -279,6 +291,14 @@ const Dashboard = () => {
 
         <TabsContent value="crm" className="space-y-4">
           <CRMDashboard />
+        </TabsContent>
+
+        <TabsContent value="research" className="space-y-4">
+          <ResearchPublicationsTab />
+        </TabsContent>
+
+        <TabsContent value="toolkit" className="space-y-4">
+          <ToolKitTab />
         </TabsContent>
 
         <TabsContent value="survey" className="space-y-4">
