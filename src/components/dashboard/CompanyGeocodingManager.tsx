@@ -7,48 +7,37 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
 import { AlertCircle, MapPin, Zap } from 'lucide-react';
 
+interface GeocodingProgress {
+  total: number;
+  geocoded: number;
+  remaining: number;
+  percentage: number;
+  last_updated: string;
+}
+
 const CompanyGeocodingManager = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [results, setResults] = useState<any>(null);
 
-  // Fetch company geocoding statistics
+  // Fetch company geocoding statistics using the new progress function
   const { data: stats, isLoading, refetch } = useQuery({
     queryKey: ['company-geocoding-stats'],
     queryFn: async () => {
       console.log('Fetching company geocoding statistics...');
       
-      // Get total count
-      const { count: totalCount, error: totalError } = await supabase
-        .from('companies')
-        .select('*', { count: 'exact', head: true });
+      // Use the database function for accurate stats
+      const { data, error } = await supabase
+        .rpc('get_geocoding_progress');
       
-      if (totalError) {
-        console.error('Error getting total count:', totalError);
-        throw totalError;
+      if (error) {
+        console.error('Error getting geocoding progress:', error);
+        throw error;
       }
       
-      // Get geocoded count
-      const { count: geocodedCount, error: geocodedError } = await supabase
-        .from('companies')
-        .select('*', { count: 'exact', head: true })
-        .not('latitude', 'is', null)
-        .not('longitude', 'is', null);
-      
-      if (geocodedError) {
-        console.error('Error getting geocoded count:', geocodedError);
-        throw geocodedError;
-      }
-      
-      const total = totalCount || 0;
-      const geocoded = geocodedCount || 0;
-      const remaining = total - geocoded;
-      const percentage = total > 0 ? Math.round((geocoded / total) * 100) : 0;
-      
-      console.log('Company stats:', { total, geocoded, remaining, percentage });
-      
-      return { total, geocoded, remaining, percentage };
+      console.log('Company geocoding progress:', data);
+      return data as unknown as GeocodingProgress;
     },
-    refetchInterval: 10000, // Refetch every 10 seconds
+    refetchInterval: 5000, // Refetch every 5 seconds for live updates
   });
 
   const startCompanyGeocoding = async () => {
@@ -112,9 +101,13 @@ const CompanyGeocodingManager = () => {
         <CardTitle className="flex items-center gap-2">
           <MapPin className="h-5 w-5" />
           Company Geocoding Manager
+          <div className="ml-auto flex items-center gap-2">
+            <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+            <span className="text-sm text-muted-foreground">Auto-processing active</span>
+          </div>
         </CardTitle>
         <CardDescription>
-          Add latitude and longitude coordinates to company addresses for map display
+          Background system automatically geocodes companies every 3 minutes (20 per batch)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -122,60 +115,40 @@ const CompanyGeocodingManager = () => {
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
               <span>Progress</span>
-              <span>{stats.geocoded.toLocaleString()} / {stats.total.toLocaleString()} companies</span>
+              <span>{stats.geocoded?.toLocaleString()} / {stats.total?.toLocaleString()} companies</span>
             </div>
             <Progress value={stats.percentage} className="h-2" />
             <div className="text-sm text-muted-foreground">
-              {stats.percentage}% complete • {stats.remaining.toLocaleString()} companies need geocoding
+              {stats.percentage}% complete • {stats.remaining?.toLocaleString()} companies remaining
             </div>
-          </div>
-        )}
-
-        {stats?.remaining > 0 && (
-          <div className="bg-muted/50 p-3 rounded-lg">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-medium">Ready to geocode companies</p>
-                <p className="text-muted-foreground">
-                  This will process companies in batches of 100 using the Mapbox geocoding API.
-                </p>
+            {stats.last_updated && (
+              <div className="text-xs text-muted-foreground">
+                Last updated: {new Date(stats.last_updated).toLocaleTimeString()}
               </div>
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          {stats?.remaining > 0 && (
-            <Button 
-              onClick={startCompanyGeocoding}
-              disabled={isRunning}
-              className="flex items-center gap-2"
-            >
-              <Zap className="h-4 w-4" />
-              {isRunning ? 'Geocoding...' : `Geocode Companies (${stats.remaining.toLocaleString()})`}
-            </Button>
-          )}
-        </div>
-
-        {results && (
-          <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-            <h4 className="font-medium mb-2">Last Batch Results:</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-green-600 font-medium">{results.processed || 0}</span>
-                <span className="text-muted-foreground"> companies geocoded</span>
-              </div>
-              <div>
-                <span className="text-red-600 font-medium">{results.failed || 0}</span>
-                <span className="text-muted-foreground"> failed</span>
-              </div>
-            </div>
-            {results.message && (
-              <p className="text-xs text-muted-foreground mt-2">{results.message}</p>
             )}
           </div>
         )}
+
+        <div className="bg-muted/50 p-4 rounded-lg">
+          <div className="flex items-start gap-3">
+            <div className="h-8 w-8 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center">
+              <Zap className="h-4 w-4 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="flex-1 space-y-2">
+              <div className="font-medium text-green-700 dark:text-green-300">
+                🤖 Background Processing Active
+              </div>
+              <div className="text-sm text-muted-foreground">
+                The system automatically geocodes 20 companies every 3 minutes. All {stats?.total?.toLocaleString()} companies will be processed without any manual intervention.
+              </div>
+              {stats?.remaining > 0 && (
+                <div className="text-xs text-muted-foreground">
+                  ⏱️ Estimated completion: ~{Math.ceil(stats.remaining / 20 * 3)} minutes at current rate
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         {stats?.remaining === 0 && (
           <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
@@ -183,7 +156,7 @@ const CompanyGeocodingManager = () => {
               ✅ All companies are geocoded!
             </div>
             <div className="text-sm text-green-600 dark:text-green-400 mt-1">
-              All {stats.total.toLocaleString()} companies now have coordinates for map display.
+              All {stats.total?.toLocaleString()} companies now have coordinates for map display.
             </div>
           </div>
         )}

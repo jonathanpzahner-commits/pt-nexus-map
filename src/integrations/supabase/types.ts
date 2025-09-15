@@ -1431,6 +1431,10 @@ export type Database = {
           zip_code: string
         }[]
       }
+      get_geocoding_progress: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       job_listings_within_radius: {
         Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
