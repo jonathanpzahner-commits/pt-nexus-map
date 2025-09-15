@@ -526,7 +526,32 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
             <CardContent className="p-4 space-y-4">
               {/* Entity Types */}
               <div>
-                <Label className="text-sm font-medium mb-3 block">Show</Label>
+                <div className="flex items-center justify-between mb-3">
+                  <Label className="text-sm font-medium">Show</Label>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const allTypes = availableEntityTypes.map(type => type.id);
+                        updateFilters({ entityTypes: allTypes as any });
+                      }}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Select All
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        updateFilters({ entityTypes: [] });
+                      }}
+                      className="h-6 px-2 text-xs"
+                    >
+                      Deselect All
+                    </Button>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {availableEntityTypes.map(type => (
                     <div key={type.id} className="flex items-center space-x-2">
