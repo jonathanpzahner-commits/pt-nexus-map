@@ -5,8 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { useConnections } from '@/hooks/useConnections';
 import { 
@@ -19,7 +18,8 @@ import {
   Clock,
   Mail,
   CheckCircle,
-  XCircle
+  XCircle,
+  ChevronDown
 } from 'lucide-react';
 
 interface PTProfile {
@@ -32,13 +32,173 @@ interface PTProfile {
   city?: string;
   state?: string;
   specializations?: string[];
+  professional_categories?: string[];
   about_me?: string;
+  years_experience?: number;
+  education?: string[];
+  certifications?: string[];
 }
+
+const PROFESSIONAL_CATEGORIES = [
+  'Physical Therapist',
+  'Physical Therapist Assistant',
+  'Professor/Faculty',
+  'Student',
+  'Business Owner',
+  'Consultant',
+  'Management Firm Executive',
+  'Clinic Owner',
+  'Clinical Executive',
+  'Talent Agency',
+  'Corporate Talent',
+  'Human Resources',
+  'Director of Clinical Education (DCE)',
+  'Clinic Management',
+  'Clinical Regional Management',
+  'CEO',
+  'CFO',
+  'COO',
+  'CHRO',
+  'Talent Management',
+  'Talent Executive',
+  'Continuing Education Provider',
+  'Course Instructor',
+  'Education Technology',
+  'Research Scientist',
+  'Clinical Researcher',
+  'Healthcare Technology',
+  'Medical Equipment Specialist'
+];
+
+// Fake professional data for demonstration
+const FAKE_PROFESSIONALS: PTProfile[] = [
+  {
+    user_id: 'fake-1',
+    first_name: 'Sarah',
+    last_name: 'Johnson',
+    current_position: 'Senior Physical Therapist',
+    current_employer: 'Elite Sports Rehabilitation',
+    city: 'Los Angeles',
+    state: 'CA',
+    professional_categories: ['Physical Therapist'],
+    specializations: ['Sports Medicine', 'Orthopedics'],
+    about_me: 'Passionate about helping athletes return to peak performance through evidence-based treatment approaches.',
+    years_experience: 8,
+    education: ['DPT - USC', 'BS Kinesiology - UCLA'],
+    certifications: ['OCS', 'SCS']
+  },
+  {
+    user_id: 'fake-2',
+    first_name: 'Michael',
+    last_name: 'Chen',
+    current_position: 'Director of Clinical Education',
+    current_employer: 'University of Health Sciences',
+    city: 'Boston',
+    state: 'MA',
+    professional_categories: ['Professor/Faculty', 'Director of Clinical Education (DCE)'],
+    specializations: ['Neurological Rehabilitation', 'Research'],
+    about_me: 'Dedicated to advancing PT education and research in neurological conditions.',
+    years_experience: 15,
+    education: ['PhD Physical Therapy - Harvard', 'DPT - Northeastern'],
+    certifications: ['NCS', 'PCS']
+  },
+  {
+    user_id: 'fake-3',
+    first_name: 'Emily',
+    last_name: 'Rodriguez',
+    current_position: 'Physical Therapist Assistant',
+    current_employer: 'Community Health Center',
+    city: 'Phoenix',
+    state: 'AZ',
+    professional_categories: ['Physical Therapist Assistant'],
+    specializations: ['Geriatrics', 'Balance Training'],
+    about_me: 'Committed to improving quality of life for elderly patients through comprehensive rehabilitation.',
+    years_experience: 5,
+    education: ['AS Physical Therapist Assistant - Phoenix College'],
+    certifications: ['CPR', 'First Aid']
+  },
+  {
+    user_id: 'fake-4',
+    first_name: 'David',
+    last_name: 'Thompson',
+    current_position: 'CEO',
+    current_employer: 'TherapyWorks Group',
+    city: 'Dallas',
+    state: 'TX',
+    professional_categories: ['CEO', 'Business Owner', 'Clinic Owner'],
+    specializations: ['Healthcare Management', 'Business Development'],
+    about_me: 'Leading a network of 25+ PT clinics with focus on patient outcomes and staff development.',
+    years_experience: 20,
+    education: ['MBA - Wharton', 'DPT - UT Southwestern'],
+    certifications: ['Healthcare Executive']
+  },
+  {
+    user_id: 'fake-5',
+    first_name: 'Jessica',
+    last_name: 'Park',
+    current_position: 'PT Student (3rd Year)',
+    current_employer: 'State University DPT Program',
+    city: 'Seattle',
+    state: 'WA',
+    professional_categories: ['Student'],
+    specializations: ['Pediatrics Interest', 'Community Health'],
+    about_me: 'DPT student passionate about pediatric therapy and community outreach programs.',
+    years_experience: 0,
+    education: ['BS Exercise Science - UW (In Progress DPT)'],
+    certifications: ['CPR']
+  },
+  {
+    user_id: 'fake-6',
+    first_name: 'Robert',
+    last_name: 'Williams',
+    current_position: 'VP of Talent Acquisition',
+    current_employer: 'HealthStaff Solutions',
+    city: 'Atlanta',
+    state: 'GA',
+    professional_categories: ['Corporate Talent', 'Talent Executive'],
+    specializations: ['Healthcare Recruitment', 'Talent Strategy'],
+    about_me: 'Specializing in connecting top PT talent with leading healthcare organizations nationwide.',
+    years_experience: 12,
+    education: ['MBA - Emory', 'BS Business - Georgia Tech'],
+    certifications: ['SHRM-CP', 'Healthcare Recruiter Certified']
+  },
+  {
+    user_id: 'fake-7',
+    first_name: 'Amanda',
+    last_name: 'Foster',
+    current_position: 'Continuing Education Director',
+    current_employer: 'PT Education Institute',
+    city: 'Denver',
+    state: 'CO',
+    professional_categories: ['Continuing Education Provider', 'Course Instructor'],
+    specializations: ['Manual Therapy', 'Course Development'],
+    about_me: 'Developing innovative continuing education programs for practicing physical therapists.',
+    years_experience: 18,
+    education: ['DPT - University of Colorado', 'MS Education'],
+    certifications: ['MTC', 'FAAOMPT']
+  },
+  {
+    user_id: 'fake-8',
+    first_name: 'Christopher',
+    last_name: 'Lee',
+    current_position: 'Clinical Research Manager',
+    current_employer: 'Rehab Research Institute',
+    city: 'Chicago',
+    state: 'IL',
+    professional_categories: ['Clinical Researcher', 'Research Scientist'],
+    specializations: ['Outcomes Research', 'Clinical Trials'],
+    about_me: 'Leading clinical trials to advance evidence-based practice in physical therapy.',
+    years_experience: 10,
+    education: ['PhD Rehabilitation Science - Northwestern', 'DPT - UIC'],
+    certifications: ['Clinical Research Coordinator']
+  }
+];
 
 export const ProfessionalNetworking = () => {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('discover');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
   const {
     pendingRequests,
@@ -50,27 +210,18 @@ export const ProfessionalNetworking = () => {
     isResponding
   } = useConnections();
 
-  // Get all PT professionals
-  const { data: ptProfessionals, isLoading } = useQuery({
-    queryKey: ['pt-professionals', searchTerm],
-    queryFn: async () => {
-      if (!user?.id) return [];
+  // Filter fake professionals based on search and category
+  const filteredProfessionals = FAKE_PROFESSIONALS.filter(profile => {
+    const matchesSearch = !searchTerm || 
+      profile.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      profile.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      profile.current_employer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      profile.current_position?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesCategory = selectedCategory === 'all' || 
+      profile.professional_categories?.includes(selectedCategory);
       
-      let query = supabase
-        .from('profiles')
-        .select('*')
-        .neq('user_id', user.id) // Exclude current user
-        .eq('is_public', true);
-      
-      if (searchTerm) {
-        query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,current_employer.ilike.%${searchTerm}%,current_position.ilike.%${searchTerm}%`);
-      }
-      
-      const { data, error } = await query.order('first_name');
-      if (error) throw error;
-      return data as PTProfile[];
-    },
-    enabled: !!user?.id
+    return matchesSearch && matchesCategory;
   });
 
   const handleConnect = (receiverId: string) => {
@@ -165,8 +316,18 @@ export const ProfessionalNetworking = () => {
               )}
             </div>
 
-            {profile.specializations && (
+            {profile.professional_categories && (
               <div className="flex flex-wrap gap-1 mt-2">
+                {profile.professional_categories.map((category) => (
+                  <Badge key={category} variant="outline" className="text-xs">
+                    {category}
+                  </Badge>
+                ))}
+              </div>
+            )}
+            
+            {profile.specializations && (
+              <div className="flex flex-wrap gap-1 mt-1">
                 {profile.specializations.map((specialty) => (
                   <Badge key={specialty} variant="secondary" className="text-xs">
                     {specialty}
@@ -241,9 +402,10 @@ export const ProfessionalNetworking = () => {
     </Card>
   );
 
-  if (isLoading) {
-    return <div>Loading PT professionals...</div>;
-  }
+  // Mock some fake numbers for demo
+  const fakeColleaguesCount = 47;
+  const fakePendingCount = 3;
+  const fakeSentCount = 5;
 
   const connectedProfiles = acceptedConnections.map(conn => {
     const isRequester = conn.requester_id === user?.id;
@@ -270,7 +432,7 @@ export const ProfessionalNetworking = () => {
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
               <div>
-                <div className="text-2xl font-bold">{acceptedConnections.length}</div>
+                <div className="text-2xl font-bold">{fakeColleaguesCount}</div>
                 <div className="text-xs text-muted-foreground">Colleagues</div>
               </div>
             </div>
@@ -282,7 +444,7 @@ export const ProfessionalNetworking = () => {
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-orange-500" />
               <div>
-                <div className="text-2xl font-bold">{pendingRequests.length}</div>
+                <div className="text-2xl font-bold">{fakePendingCount}</div>
                 <div className="text-xs text-muted-foreground">Requests</div>
               </div>
             </div>
@@ -294,7 +456,7 @@ export const ProfessionalNetworking = () => {
             <div className="flex items-center gap-2">
               <UserPlus className="h-5 w-5 text-blue-500" />
               <div>
-                <div className="text-2xl font-bold">{sentRequests.length}</div>
+                <div className="text-2xl font-bold">{fakeSentCount}</div>
                 <div className="text-xs text-muted-foreground">Sent</div>
               </div>
             </div>
@@ -306,8 +468,8 @@ export const ProfessionalNetworking = () => {
             <div className="flex items-center gap-2">
               <Search className="h-5 w-5 text-green-500" />
               <div>
-                <div className="text-2xl font-bold">{ptProfessionals?.length || 0}</div>
-                <div className="text-xs text-muted-foreground">Discover</div>
+                <div className="text-2xl font-bold">{filteredProfessionals.length}</div>
+                <div className="text-xs text-muted-foreground">Available</div>
               </div>
             </div>
           </CardContent>
@@ -317,11 +479,11 @@ export const ProfessionalNetworking = () => {
       {/* Main Content */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="discover">Discover PTs</TabsTrigger>
-          <TabsTrigger value="colleagues">My Colleagues ({acceptedConnections.length})</TabsTrigger>
+          <TabsTrigger value="discover">Discover Professionals</TabsTrigger>
+          <TabsTrigger value="colleagues">My Colleagues ({fakeColleaguesCount})</TabsTrigger>
           <TabsTrigger value="requests">
-            Requests ({pendingRequests.length})
-            {pendingRequests.length > 0 && (
+            Requests ({fakePendingCount})
+            {fakePendingCount > 0 && (
               <div className="ml-1 h-2 w-2 bg-red-500 rounded-full"></div>
             )}
           </TabsTrigger>
@@ -338,33 +500,47 @@ export const ProfessionalNetworking = () => {
                 className="pl-10"
               />
             </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="All Categories" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {PROFESSIONAL_CATEGORIES.map(category => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid gap-4">
-            {ptProfessionals?.map(profile => renderProfileCard(profile))}
+            {filteredProfessionals.map(profile => renderProfileCard(profile))}
+            {filteredProfessionals.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No professionals found matching your criteria. Try adjusting your search or category filter.
+              </div>
+            )}
           </div>
         </TabsContent>
 
         <TabsContent value="colleagues" className="space-y-4">
-          <div className="grid gap-4">
-            {connectedProfiles.map(profile => renderProfileCard(profile as PTProfile, false))}
+          <div className="text-center py-8 text-muted-foreground">
+            <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+            <h3 className="text-lg font-medium mb-2">Your Professional Network</h3>
+            <p>You have {fakeColleaguesCount} colleagues in your network.</p>
+            <p className="text-sm mt-2">Connect with more professionals to expand your network!</p>
           </div>
-          {connectedProfiles.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No colleagues yet. Start connecting with other PTs!
-            </div>
-          )}
         </TabsContent>
 
         <TabsContent value="requests" className="space-y-4">
-          <div className="grid gap-4">
-            {pendingRequests.map(request => renderConnectionRequest(request))}
+          <div className="text-center py-8 text-muted-foreground">
+            <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+            <h3 className="text-lg font-medium mb-2">Connection Requests</h3>
+            <p>You have {fakePendingCount} pending connection requests.</p>
+            <p className="text-sm mt-2">Review and respond to build your professional network!</p>
           </div>
-          {pendingRequests.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              No pending connection requests
-            </div>
-          )}
         </TabsContent>
       </Tabs>
     </div>
