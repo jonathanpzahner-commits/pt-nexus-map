@@ -21,7 +21,8 @@ import {
   Handshake,
   MapPin,
   TrendingUp,
-  BookOpen
+  BookOpen,
+  Database
 } from 'lucide-react';
 import ProvidersTab from './dashboard/ProvidersTab';
 import { CompaniesTab } from './dashboard/CompaniesTab';
@@ -33,6 +34,7 @@ import { SimpleBulkUpload } from './upload/SimpleBulkUpload';
 import { GeocodingManager } from './search/GeocodingManager';
 import { FastGeocodingManager } from './dashboard/FastGeocodingManager';
 import CompanyGeocodingManager from './dashboard/CompanyGeocodingManager';
+import DemoDataManager from './demo/DemoDataManager';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { CommunityHub } from './community/CommunityHub';
@@ -199,6 +201,10 @@ const Dashboard = () => {
             <Activity className="h-4 w-4" />
             <span className="hidden sm:inline">Platform Test</span>
           </TabsTrigger>
+          <TabsTrigger value="demo" className="flex items-center gap-2">
+            <Database className="h-4 w-4" />
+            <span className="hidden sm:inline">Demo Mode</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -334,6 +340,10 @@ const Dashboard = () => {
 
         <TabsContent value="api" className="space-y-4">
           <WorkingSearchDemo />
+        </TabsContent>
+
+        <TabsContent value="demo" className="space-y-4">
+          <DemoDataManager />
         </TabsContent>
       </Tabs>
 
