@@ -1147,6 +1147,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pt_connections: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       schools: {
         Row: {
           accreditation: string | null
@@ -1324,6 +1351,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_presence: {
+        Row: {
+          activity_status: string | null
+          created_at: string
+          id: string
+          is_online: boolean
+          last_seen: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_status?: string | null
+          created_at?: string
+          id?: string
+          is_online?: boolean
+          last_seen?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_status?: string | null
+          created_at?: string
+          id?: string
+          is_online?: boolean
+          last_seen?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1435,6 +1492,20 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
+      get_user_colleagues: {
+        Args: { p_user_id: string }
+        Returns: {
+          activity_status: string
+          colleague_id: string
+          current_employer: string
+          current_position: string
+          first_name: string
+          is_online: boolean
+          last_name: string
+          last_seen: string
+          profile_photo_url: string
+        }[]
+      }
       job_listings_within_radius: {
         Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
@@ -1524,6 +1595,14 @@ export type Database = {
       }
       trigger_company_geocoding: {
         Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      update_user_presence: {
+        Args: {
+          p_activity_status?: string
+          p_is_online: boolean
+          p_user_id: string
+        }
         Returns: undefined
       }
     }

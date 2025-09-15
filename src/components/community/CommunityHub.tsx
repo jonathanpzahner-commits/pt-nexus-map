@@ -18,6 +18,7 @@ import { ResearchCollaborations } from './ResearchCollaborations';
 import { CommunityEvents } from './CommunityEvents';
 import { IndustryNews } from './IndustryNews';
 import { ProfessionalNetworking } from './ProfessionalNetworking';
+import { OnlineColleagues } from './OnlineColleagues';
 
 export const CommunityHub = () => {
   const [activeTab, setActiveTab] = useState('discussions');
@@ -25,6 +26,7 @@ export const CommunityHub = () => {
   return (
     <div className="space-y-8">
       <CommunityHeader memberCount="12.4K" weeklyGrowth="+234" />
+      <OnlineColleagues />
       <CommunityGuidelines />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -51,7 +53,7 @@ export const CommunityHub = () => {
           </TabsTrigger>
           <TabsTrigger value="networking" className="flex items-center gap-2">
             <Network className="h-4 w-4" />
-            <span className="hidden sm:inline">Networking</span>
+            <span className="hidden sm:inline">Colleagues</span>
           </TabsTrigger>
         </TabsList>
 
