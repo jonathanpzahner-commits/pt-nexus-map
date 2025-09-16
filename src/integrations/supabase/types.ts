@@ -988,6 +988,7 @@ export type Database = {
           location: string | null
           phone: string | null
           preferred_contact_method: string | null
+          privacy_settings: Json | null
           profile_photo_url: string | null
           research_interests: string[] | null
           resume_url: string | null
@@ -1020,6 +1021,7 @@ export type Database = {
           location?: string | null
           phone?: string | null
           preferred_contact_method?: string | null
+          privacy_settings?: Json | null
           profile_photo_url?: string | null
           research_interests?: string[] | null
           resume_url?: string | null
@@ -1052,6 +1054,7 @@ export type Database = {
           location?: string | null
           phone?: string | null
           preferred_contact_method?: string | null
+          privacy_settings?: Json | null
           profile_photo_url?: string | null
           research_interests?: string[] | null
           resume_url?: string | null

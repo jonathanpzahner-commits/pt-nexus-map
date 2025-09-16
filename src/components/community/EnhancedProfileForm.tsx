@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, X, Plus, Camera, Upload, User } from 'lucide-react';
+import { Loader2, X, Plus, Camera, Upload, User, Shield, Eye, EyeOff } from 'lucide-react';
 
 const profileSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -35,6 +35,16 @@ const profileSchema = z.object({
   available_for_mentoring: z.boolean().default(false),
   preferred_contact_method: z.enum(['email', 'phone', 'linkedin']).default('email'),
 });
+
+type PrivacySettings = {
+  contact_info: boolean;
+  location: boolean;
+  professional_info: boolean;
+  online_presence: boolean;
+  specializations: boolean;
+  interests: boolean;
+  profile_photo: boolean;
+};
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
@@ -125,6 +135,15 @@ const EnhancedProfileForm = ({ onComplete }: EnhancedProfileFormProps) => {
   const [newInterest, setNewInterest] = useState('');
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({
+    contact_info: true,
+    location: true,
+    professional_info: true,
+    online_presence: true,
+    specializations: true,
+    interests: true,
+    profile_photo: true,
+  });
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ['profile', user?.id],
@@ -183,6 +202,15 @@ const EnhancedProfileForm = ({ onComplete }: EnhancedProfileFormProps) => {
       setInterests(profile.interests || []);
       setSitePurposes(profile.site_purposes || []);
       setProfilePhoto(profile.profile_photo_url || null);
+      setPrivacySettings((profile.privacy_settings as PrivacySettings) || {
+        contact_info: true,
+        location: true,
+        professional_info: true,
+        online_presence: true,
+        specializations: true,
+        interests: true,
+        profile_photo: true,
+      });
     }
   }, [profile, form]);
 
@@ -237,6 +265,7 @@ const EnhancedProfileForm = ({ onComplete }: EnhancedProfileFormProps) => {
         interests,
         site_purposes: sitePurposes,
         profile_photo_url: profilePhoto,
+        privacy_settings: privacySettings,
         updated_at: new Date().toISOString(),
       };
 
@@ -673,6 +702,169 @@ const EnhancedProfileForm = ({ onComplete }: EnhancedProfileFormProps) => {
               {form.formState.errors.about_me.message}
             </p>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Privacy Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Privacy Settings
+          </CardTitle>
+          <p className="text-muted-foreground">
+            Control what information is visible to other community members
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Profile Photo</div>
+                <div className="text-xs text-muted-foreground">Your profile picture</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPrivacySettings(prev => ({ ...prev, profile_photo: !prev.profile_photo }))}
+                className="gap-2"
+              >
+                {privacySettings.profile_photo ? (
+                  <><Eye className="h-4 w-4" />Visible</>
+                ) : (
+                  <><EyeOff className="h-4 w-4" />Hidden</>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Contact Information</div>
+                <div className="text-xs text-muted-foreground">Email and phone number</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPrivacySettings(prev => ({ ...prev, contact_info: !prev.contact_info }))}
+                className="gap-2"
+              >
+                {privacySettings.contact_info ? (
+                  <><Eye className="h-4 w-4" />Visible</>
+                ) : (
+                  <><EyeOff className="h-4 w-4" />Hidden</>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Location</div>
+                <div className="text-xs text-muted-foreground">City, state, and location details</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPrivacySettings(prev => ({ ...prev, location: !prev.location }))}
+                className="gap-2"
+              >
+                {privacySettings.location ? (
+                  <><Eye className="h-4 w-4" />Visible</>
+                ) : (
+                  <><EyeOff className="h-4 w-4" />Hidden</>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Professional Information</div>
+                <div className="text-xs text-muted-foreground">Current employer, position, experience</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPrivacySettings(prev => ({ ...prev, professional_info: !prev.professional_info }))}
+                className="gap-2"
+              >
+                {privacySettings.professional_info ? (
+                  <><Eye className="h-4 w-4" />Visible</>
+                ) : (
+                  <><EyeOff className="h-4 w-4" />Hidden</>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Online Presence</div>
+                <div className="text-xs text-muted-foreground">LinkedIn and website links</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPrivacySettings(prev => ({ ...prev, online_presence: !prev.online_presence }))}
+                className="gap-2"
+              >
+                {privacySettings.online_presence ? (
+                  <><Eye className="h-4 w-4" />Visible</>
+                ) : (
+                  <><EyeOff className="h-4 w-4" />Hidden</>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Specializations</div>
+                <div className="text-xs text-muted-foreground">Your PT specializations</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPrivacySettings(prev => ({ ...prev, specializations: !prev.specializations }))}
+                className="gap-2"
+              >
+                {privacySettings.specializations ? (
+                  <><Eye className="h-4 w-4" />Visible</>
+                ) : (
+                  <><EyeOff className="h-4 w-4" />Hidden</>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-0.5">
+                <div className="text-sm font-medium">Professional Interests</div>
+                <div className="text-xs text-muted-foreground">Your professional interests and focus areas</div>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPrivacySettings(prev => ({ ...prev, interests: !prev.interests }))}
+                className="gap-2"
+              >
+                {privacySettings.interests ? (
+                  <><Eye className="h-4 w-4" />Visible</>
+                ) : (
+                  <><EyeOff className="h-4 w-4" />Hidden</>
+                )}
+              </Button>
+            </div>
+          </div>
+          
+          <div className="p-3 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              <strong>Note:</strong> These settings control the visibility of specific information sections. 
+              Your profile must be set to "public" below for any information to be visible to other members.
+            </p>
+          </div>
         </CardContent>
       </Card>
 
