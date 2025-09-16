@@ -16,6 +16,7 @@ import { useServerSearch } from '@/hooks/useServerSearch';
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 interface LocationSuggestion {
   id: string;
@@ -103,6 +104,27 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
     isLoading,
     totalResults,
   } = useServerSearch(contextTypes as any);
+  
+  // Get dashboard totals for consistent display
+  const { data: dashboardStats } = useQuery({
+    queryKey: ['dashboard-totals'],
+    queryFn: async () => {
+      const [providers, companies, schools, jobs] = await Promise.all([
+        supabase.from('providers').select('*', { count: 'exact', head: true }),
+        supabase.from('companies').select('*', { count: 'exact', head: true }),
+        supabase.from('schools').select('*', { count: 'exact', head: true }),
+        supabase.from('job_listings').select('*', { count: 'exact', head: true })
+      ]);
+      
+      return {
+        providers: providers.count || 0,
+        companies: companies.count || 0,
+        schools: schools.count || 0,
+        jobs: jobs.count || 0,
+        total: (providers.count || 0) + (companies.count || 0) + (schools.count || 0) + (jobs.count || 0)
+      };
+    },
+  });
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -572,7 +594,10 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
        totalResults >= 0 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
-            {totalResults.toLocaleString()} {searchQuery.trim().length > 0 || activeFiltersCount > 0 ? 'results found' : 'total records available'}
+            {searchQuery.trim().length > 0 || activeFiltersCount > 0 
+              ? `${totalResults.toLocaleString()} results found`
+              : `${dashboardStats?.total?.toLocaleString() || 0} total records available`
+            }
           </span>
           {activeFiltersCount > 0 && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
