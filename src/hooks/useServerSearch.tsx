@@ -339,6 +339,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
       // Search job listings
       if (filters.entityTypes.includes('job_listings') && currentPage === 1) {
+        console.log('=== SEARCHING JOB LISTINGS ===');
         let query = supabase
           .from('job_listings')
           .select('*', { count: 'exact' })
@@ -357,11 +358,28 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
           query = query.ilike('experience_level', `%${filters.experienceLevel}%`);
         }
 
+        // Order by Twin Boro Physical Therapy jobs first, then by created_at desc
+        query = query.order('created_at', { ascending: false });
+
         const { data: jobs, error, count } = await query;
-        if (error) throw error;
+        console.log('Job listings query result:', { data: jobs?.length, error, count });
+        if (error) {
+          console.error('Job listings query error:', error);
+          throw error;
+        }
 
         if (jobs) {
-          jobs.forEach(job => {
+          // Sort to put Twin Boro jobs first
+          const sortedJobs = jobs.sort((a, b) => {
+            const aTwinBoro = a.company_name?.toLowerCase().includes('twin boro') || false;
+            const bTwinBoro = b.company_name?.toLowerCase().includes('twin boro') || false;
+            
+            if (aTwinBoro && !bTwinBoro) return -1;
+            if (!aTwinBoro && bTwinBoro) return 1;
+            return 0;
+          });
+
+          sortedJobs.forEach(job => {
             const location = `${job.city}, ${job.state}`;
             results.push({
               id: job.id,
