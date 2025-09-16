@@ -1500,6 +1500,75 @@ export type Database = {
         }
         Relationships: []
       }
+      consultant_companies_secure: {
+        Row: {
+          bio: string | null
+          certifications: string[] | null
+          city: string | null
+          company: string | null
+          consulting_categories: string[] | null
+          created_at: string | null
+          has_contact_info: boolean | null
+          id: string | null
+          industries: string[] | null
+          latitude: number | null
+          linkedin_url: string | null
+          longitude: number | null
+          name: string | null
+          state: string | null
+          territories: string[] | null
+          title: string | null
+          updated_at: string | null
+          website: string | null
+          years_experience: number | null
+          zip_code: string | null
+        }
+        Insert: {
+          bio?: string | null
+          certifications?: string[] | null
+          city?: string | null
+          company?: string | null
+          consulting_categories?: string[] | null
+          created_at?: string | null
+          has_contact_info?: never
+          id?: string | null
+          industries?: string[] | null
+          latitude?: number | null
+          linkedin_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          state?: string | null
+          territories?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+          zip_code?: string | null
+        }
+        Update: {
+          bio?: string | null
+          certifications?: string[] | null
+          city?: string | null
+          company?: string | null
+          consulting_categories?: string[] | null
+          created_at?: string | null
+          has_contact_info?: never
+          id?: string | null
+          industries?: string[] | null
+          latitude?: number | null
+          linkedin_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          state?: string | null
+          territories?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_credits: {
@@ -1573,6 +1642,32 @@ export type Database = {
           zip_code: string
         }[]
       }
+      consultant_companies_within_radius_secure: {
+        Args: { radius_miles: number; user_lat: number; user_lng: number }
+        Returns: {
+          bio: string
+          certifications: string[]
+          city: string
+          company: string
+          consulting_categories: string[]
+          created_at: string
+          distance_miles: number
+          has_contact_info: boolean
+          id: string
+          industries: string[]
+          latitude: number
+          linkedin_url: string
+          longitude: number
+          name: string
+          state: string
+          territories: string[]
+          title: string
+          updated_at: string
+          website: string
+          years_experience: number
+          zip_code: string
+        }[]
+      }
       equipment_companies_within_radius: {
         Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
@@ -1599,6 +1694,15 @@ export type Database = {
           updated_at: string
           website: string
           zip_code: string
+        }[]
+      }
+      get_consultant_contact_info: {
+        Args: { target_id: string }
+        Returns: {
+          email: string
+          first_name: string
+          last_name: string
+          phone: string
         }[]
       }
       get_geocoding_progress: {
