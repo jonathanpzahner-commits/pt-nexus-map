@@ -271,7 +271,7 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
       case 'job_listing':
         return (
           <div className="space-y-2 text-sm">
-            {data.company_name && (
+            {(data.company_name || data.company_id) && (
               <div>
                 <span className="font-medium">Company: </span>
                 {data.company_id ? (
@@ -279,9 +279,9 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
                     onClick={() => window.location.href = `/entity/companies/${data.company_id}`}
                     className="text-primary hover:underline font-medium cursor-pointer"
                   >
-                    {data.company_name}
+                    {data.company_name || 'View Company Details'}
                   </button>
-                ) : (
+                ) : data.company_name ? (
                   <button
                     onClick={async () => {
                       // Search for company by name if no company_id
@@ -308,7 +308,7 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
                   >
                     {data.company_name}
                   </button>
-                )}
+                ) : null}
               </div>
             )}
             {data.salary_min && data.salary_max && (
