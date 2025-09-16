@@ -1431,7 +1431,75 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      consultant_companies_public: {
+        Row: {
+          bio: string | null
+          certifications: string[] | null
+          city: string | null
+          company: string | null
+          consulting_categories: string[] | null
+          created_at: string | null
+          has_contact_info: boolean | null
+          id: string | null
+          industries: string[] | null
+          latitude: number | null
+          linkedin_url: string | null
+          longitude: number | null
+          name: string | null
+          state: string | null
+          territories: string[] | null
+          title: string | null
+          updated_at: string | null
+          website: string | null
+          years_experience: number | null
+          zip_code: string | null
+        }
+        Insert: {
+          bio?: string | null
+          certifications?: string[] | null
+          city?: string | null
+          company?: string | null
+          consulting_categories?: string[] | null
+          created_at?: string | null
+          has_contact_info?: never
+          id?: string | null
+          industries?: string[] | null
+          latitude?: number | null
+          linkedin_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          state?: string | null
+          territories?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+          zip_code?: string | null
+        }
+        Update: {
+          bio?: string | null
+          certifications?: string[] | null
+          city?: string | null
+          company?: string | null
+          consulting_categories?: string[] | null
+          created_at?: string | null
+          has_contact_info?: never
+          id?: string | null
+          industries?: string[] | null
+          latitude?: number | null
+          linkedin_url?: string | null
+          longitude?: number | null
+          name?: string | null
+          state?: string | null
+          territories?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          website?: string | null
+          years_experience?: number | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_credits: {
@@ -1489,16 +1557,13 @@ export type Database = {
           consulting_categories: string[]
           created_at: string
           distance_miles: number
-          email: string
-          first_name: string
+          has_contact_info: boolean
           id: string
           industries: string[]
-          last_name: string
           latitude: number
           linkedin_url: string
           longitude: number
           name: string
-          phone: string
           state: string
           territories: string[]
           title: string
