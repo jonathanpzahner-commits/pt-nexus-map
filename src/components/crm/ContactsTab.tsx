@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ContactUnlockButton } from "@/components/ui/contact-unlock-button";
 import { Search, Plus, Mail, Phone, Building, User } from "lucide-react";
 
 export function ContactsTab() {
@@ -108,14 +109,14 @@ export function ContactsTab() {
                         <Building className="h-4 w-4" />
                         <span>{contact.company}</span>
                       </div>
-                      <div className="flex items-center space-x-1">
-                        <Mail className="h-4 w-4" />
-                        <span>{contact.email}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Phone className="h-4 w-4" />
-                        <span>{contact.phone}</span>
-                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <ContactUnlockButton 
+                        entityId={contact.id}
+                        entityType="profile"
+                        hasContactInfo={!!(contact.email || contact.phone)}
+                        size="sm"
+                      />
                     </div>
                     <p className="text-xs text-muted-foreground">
                       Last contact: {new Date(contact.lastContactDate).toLocaleDateString()}

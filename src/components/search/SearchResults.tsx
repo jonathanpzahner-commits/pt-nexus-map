@@ -5,6 +5,7 @@ import { Building2, GraduationCap, Users, Briefcase, MapPin, ExternalLink, Star,
 import { SearchResult } from '@/types/search';
 import { supabase } from '@/integrations/supabase/client';
 import { NotesSection } from '@/components/notes/NotesSection';
+import { ContactUnlockButton } from '@/components/ui/contact-unlock-button';
 import { useState } from 'react';
 
 interface SearchResultsProps {
@@ -279,16 +280,13 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
                 <span className="text-muted-foreground">{data.license_number} ({data.license_state})</span>
               </div>
             )}
-            {data.email && (
-              <div>
-                <a 
-                  href={`mailto:${data.email}`}
-                  className="text-primary hover:underline"
-                >
-                  {data.email}
-                </a>
-              </div>
-            )}
+            <ContactUnlockButton 
+              entityId={data.id}
+              entityType="provider"
+              userId={data.user_id}
+              hasContactInfo={!!(data.email || data.phone)}
+              size="sm"
+            />
           </div>
         );
       
@@ -412,16 +410,12 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
                 <span className="text-muted-foreground">{data.territories.join(', ')}</span>
               </div>
             )}
-            {data.email && (
-              <div>
-                <a 
-                  href={`mailto:${data.email}`}
-                  className="text-primary hover:underline"
-                >
-                  {data.email}
-                </a>
-              </div>
-            )}
+            <ContactUnlockButton 
+              entityId={data.id}
+              entityType="consultant_company"
+              hasContactInfo={!!(data.email || data.phone)}
+              size="sm"
+            />
             {data.website && (
               <div>
                 <a 

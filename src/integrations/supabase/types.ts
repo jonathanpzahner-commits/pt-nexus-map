@@ -316,6 +316,39 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_access_logs: {
+        Row: {
+          contact_info: Json | null
+          created_at: string
+          credits_charged: number
+          id: string
+          target_entity_id: string | null
+          target_entity_type: string
+          target_user_id: string | null
+          user_id: string
+        }
+        Insert: {
+          contact_info?: Json | null
+          created_at?: string
+          credits_charged?: number
+          id?: string
+          target_entity_id?: string | null
+          target_entity_type: string
+          target_user_id?: string | null
+          user_id: string
+        }
+        Update: {
+          contact_info?: Json | null
+          created_at?: string
+          credits_charged?: number
+          id?: string
+          target_entity_id?: string | null
+          target_entity_type?: string
+          target_user_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       credit_transactions: {
         Row: {
           amount: number
@@ -1505,6 +1538,10 @@ export type Database = {
       }
       get_geocoding_progress: {
         Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      get_public_profile_data: {
+        Args: { profile_row: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: Json
       }
       get_user_colleagues: {

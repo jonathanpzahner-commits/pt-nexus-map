@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ContactUnlockButton } from "@/components/ui/contact-unlock-button";
 import { Search, Plus, Building, Globe, Phone, Mail, Users, DollarSign } from "lucide-react";
 
 export function CompaniesTab() {
@@ -130,14 +131,12 @@ export function CompaniesTab() {
                             {company.website.replace('https://', '')}
                           </a>
                         </div>
-                        <div className="flex items-center space-x-2 text-muted-foreground">
-                          <Phone className="h-4 w-4" />
-                          <span>{company.phone}</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-muted-foreground">
-                          <Mail className="h-4 w-4" />
-                          <span>{company.email}</span>
-                        </div>
+                        <ContactUnlockButton 
+                          entityId={company.id}
+                          entityType="profile"
+                          hasContactInfo={!!(company.email || company.phone)}
+                          size="sm"
+                        />
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2 text-muted-foreground">

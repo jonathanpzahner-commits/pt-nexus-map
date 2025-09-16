@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import Dashboard from '@/components/Dashboard';
 import ProfileCompletionBanner from '@/components/ProfileCompletionBanner';
+import { CreditsDisplay } from '@/components/ui/credits-display';
 import { User, Users, Settings } from 'lucide-react';
 
 const Index = () => {
@@ -102,6 +103,8 @@ const Index = () => {
             </nav>
             
             <div className="flex items-center gap-3">
+              <CreditsDisplay />
+              
               <div className="text-right">
                 <span className="text-sm font-medium text-foreground block">
                   {user.email?.split('@')[0]}
