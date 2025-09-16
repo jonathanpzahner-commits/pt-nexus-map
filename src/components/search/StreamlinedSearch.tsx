@@ -42,6 +42,57 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
   const searchSuggestionsRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
+  // Generate contextual placeholder text
+  const getPlaceholderText = () => {
+    if (!contextTypes || contextTypes.length === 0) {
+      return "Search providers, companies, specializations...";
+    }
+    
+    const typeLabels: Record<string, string> = {
+      'providers': 'providers',
+      'companies': 'companies', 
+      'schools': 'schools',
+      'job_listings': 'jobs',
+      'consultant_companies': 'consultants',
+      'equipment_companies': 'equipment vendors',
+      'pe_firms': 'PE firms',
+      'profiles': 'profiles'
+    };
+    
+    const labels = contextTypes.map(type => typeLabels[type] || type);
+    
+    if (labels.length === 1) {
+      const single = labels[0];
+      switch (single) {
+        case 'providers':
+          return "Search by name, specialization, location...";
+        case 'companies':
+          return "Search by company name, type, location...";
+        case 'schools':
+          return "Search by school name, program, location...";
+        case 'jobs':
+          return "Search by job title, company, location...";
+        case 'consultants':
+          return "Search by consultant name, specialty, location...";
+        case 'equipment vendors':
+          return "Search by company name, equipment type...";
+        case 'PE firms':
+          return "Search by firm name, focus area...";
+        case 'profiles':
+          return "Search by name, position, specialization...";
+        default:
+          return `Search ${single}...`;
+      }
+    }
+    
+    if (labels.length === 2) {
+      return `Search ${labels[0]} and ${labels[1]}...`;
+    }
+    
+    const lastLabel = labels.pop();
+    return `Search ${labels.join(', ')}, and ${lastLabel}...`;
+  };
+  
   const {
     searchQuery,
     setSearchQuery,
@@ -361,7 +412,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 ref={searchInputRef}
-                placeholder="Search providers, companies, specializations..."
+                placeholder={getPlaceholderText()}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onFocus={() => searchSuggestions.length > 0 && setShowSearchSuggestions(true)}
