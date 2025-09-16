@@ -345,6 +345,10 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
     filters.certification,
     filters.consultantCategory,
     filters.consultantSpecialty,
+    filters.costCategory,
+    filters.programLength,
+    filters.programType,
+    filters.accreditation,
   ].filter(Boolean).length;
 
   return (

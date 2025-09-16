@@ -224,6 +224,52 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
           query = query.or(`city.ilike.%${locationTerm}%,state.ilike.%${locationTerm}%,zip_code.ilike.%${locationTerm}%`);
         }
 
+        // Apply school-specific filters
+        if (filters.accreditation?.trim()) {
+          query = query.ilike('accreditation', `%${filters.accreditation}%`);
+        }
+        if (filters.programType?.trim()) {
+          query = query.contains('programs_offered', [filters.programType]);
+        }
+        if (filters.programLength?.trim()) {
+          switch (filters.programLength) {
+            case 'Less than 1 year':
+              query = query.lt('program_length_months', 12);
+              break;
+            case '1-2 years':
+              query = query.gte('program_length_months', 12).lte('program_length_months', 24);
+              break;
+            case '2-3 years':
+              query = query.gte('program_length_months', 24).lte('program_length_months', 36);
+              break;
+            case '3-4 years':
+              query = query.gte('program_length_months', 36).lte('program_length_months', 48);
+              break;
+            case 'More than 4 years':
+              query = query.gt('program_length_months', 48);
+              break;
+          }
+        }
+        if (filters.costCategory?.trim()) {
+          switch (filters.costCategory) {
+            case 'Under $10,000':
+              query = query.lte('tuition_per_year', 10000);
+              break;
+            case '$10,000 - $25,000':
+              query = query.gte('tuition_per_year', 10000).lte('tuition_per_year', 25000);
+              break;
+            case '$25,000 - $50,000':
+              query = query.gte('tuition_per_year', 25000).lte('tuition_per_year', 50000);
+              break;
+            case '$50,000 - $100,000':
+              query = query.gte('tuition_per_year', 50000).lte('tuition_per_year', 100000);
+              break;
+            case 'Over $100,000':
+              query = query.gt('tuition_per_year', 100000);
+              break;
+          }
+        }
+
         const { data: schools, error, count } = await query;
         if (error) throw error;
 
@@ -458,7 +504,11 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
       filters.specialty ||
       filters.certification ||
       filters.consultantCategory ||
-      filters.consultantSpecialty
+      filters.consultantSpecialty ||
+      filters.costCategory ||
+      filters.programLength ||
+      filters.programType ||
+      filters.accreditation
     ),
   });
 
