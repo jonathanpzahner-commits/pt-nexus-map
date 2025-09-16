@@ -33,10 +33,44 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
   const [filters, setFilters] = useState<SearchFilters>(() => createDefaultFilters(preselectedTypes));
   const [currentPage, setCurrentPage] = useState(1);
 
+  console.log('useServerSearch - Current filters:', filters);
+  console.log('useServerSearch - Search query:', searchQuery);
+  console.log('useServerSearch - Entity types:', filters.entityTypes);
+  
+  const isQueryEnabled = (searchQuery.trim().length > 2) || Boolean(
+    filters.location ||
+    filters.specialization ||
+    filters.companyType ||
+    filters.employmentType ||
+    filters.experienceLevel ||
+    filters.primarySetting ||
+    filters.subSetting ||
+    filters.specialty ||
+    filters.certification ||
+    filters.consultantCategory ||
+    filters.consultantSpecialty ||
+    filters.costCategory ||
+    filters.programLength ||
+    filters.programType ||
+    filters.accreditation
+  ) || Boolean(
+    // Auto-load non-provider entity types
+    filters.entityTypes.some(type => 
+      ['companies', 'schools', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'].includes(type)
+    )
+  );
+  
+  console.log('Query enabled:', isQueryEnabled);
+
   // Server-side search with pagination
   const { data: searchData, isLoading } = useQuery({
     queryKey: ['server-search', searchQuery, filters, currentPage],
     queryFn: async () => {
+      console.log('=== SERVER SEARCH STARTING ===');
+      console.log('Search query:', searchQuery);
+      console.log('Filters:', filters);
+      console.log('Current page:', currentPage);
+      
       const results: SearchResult[] = [];
       let totalCount = 0;
 
@@ -181,6 +215,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
       // Search companies
       if (filters.entityTypes.includes('companies') && currentPage === 1) {
+        console.log('=== SEARCHING COMPANIES ===');
         let query = supabase
           .from('companies')
           .select('*', { count: 'exact' })
@@ -196,7 +231,11 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
         }
 
         const { data: companies, error, count } = await query;
-        if (error) throw error;
+        console.log('Companies query result:', { data: companies?.length, error, count });
+        if (error) {
+          console.error('Companies query error:', error);
+          throw error;
+        }
 
         if (companies) {
           companies.forEach(company => {
@@ -501,28 +540,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
         totalPages: Math.ceil(totalCount / RESULTS_PER_PAGE),
       };
     },
-    enabled: (searchQuery.trim().length > 2) || Boolean(
-      filters.location ||
-      filters.specialization ||
-      filters.companyType ||
-      filters.employmentType ||
-      filters.experienceLevel ||
-      filters.primarySetting ||
-      filters.subSetting ||
-      filters.specialty ||
-      filters.certification ||
-      filters.consultantCategory ||
-      filters.consultantSpecialty ||
-      filters.costCategory ||
-      filters.programLength ||
-      filters.programType ||
-      filters.accreditation
-    ) || Boolean(
-      // Auto-load non-provider entity types
-      filters.entityTypes.some(type => 
-        ['companies', 'schools', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'].includes(type)
-      )
-    ),
+    enabled: isQueryEnabled,
   });
 
   const updateFilters = useCallback((newFilters: Partial<SearchFilters>) => {
