@@ -263,7 +263,7 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
         if (searchQuery.trim()) {
           const searchTerm = searchQuery.toLowerCase();
-          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,accreditation.ilike.%${searchTerm}%,programs_offered.cs.{${searchTerm}},specializations.cs.{${searchTerm}}`);
+          query = query.or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,state.ilike.%${searchTerm}%,zip_code.ilike.%${searchTerm}%,accreditation.ilike.%${searchTerm}%,programs_offered.cs.{${searchTerm}},specializations.cs.{${searchTerm}},dce_info.ilike.%${searchTerm}%,graduation_season.ilike.%${searchTerm}%,boards_timing.ilike.%${searchTerm}%`);
         }
 
         if (filters.location.trim()) {

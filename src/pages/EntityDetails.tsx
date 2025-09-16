@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, MapPin, Globe, Phone, Mail, Star, Building2, TrendingUp } from 'lucide-react';
+import { ArrowLeft, MapPin, Globe, Phone, Mail, Star, Building2, TrendingUp, Calendar } from 'lucide-react';
 import { NotesSection } from '@/components/notes/NotesSection';
 
 const EntityDetails = () => {
@@ -510,10 +510,13 @@ const EntityDetails = () => {
         
       case 'schools':
         return (
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div className="flex flex-wrap gap-2 mb-4">
               {(entity as any).accreditation && (
                 <Badge variant="secondary">{(entity as any).accreditation}</Badge>
+              )}
+              {(entity as any).dce_info && (
+                <Badge variant="outline">DCE: {(entity as any).dce_info}</Badge>
               )}
               {(entity as any).faculty_count && (
                 <Badge variant="outline">{(entity as any).faculty_count} faculty</Badge>
@@ -523,37 +526,101 @@ const EntityDetails = () => {
               )}
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="font-semibold mb-2">Program Information</h3>
-                <div className="space-y-2 text-sm">
+            {/* Academic Calendar & Important Dates */}
+            <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-6 border">
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Academic Calendar & Key Dates
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(entity as any).graduation_season && (
+                  <div className="text-center p-3 bg-background/50 rounded">
+                    <div className="font-medium text-muted-foreground text-sm">Graduation Season</div>
+                    <div className="text-lg font-bold text-primary">{(entity as any).graduation_season}</div>
+                  </div>
+                )}
+                {(entity as any).boards_timing && (
+                  <div className="text-center p-3 bg-background/50 rounded">
+                    <div className="font-medium text-muted-foreground text-sm">Board Exam Schedule</div>
+                    <div className="text-lg font-bold text-primary">{(entity as any).boards_timing}</div>
+                  </div>
+                )}
+              </div>
+              
+              {(entity as any).career_fair_dates?.length > 0 && (
+                <div className="mt-4">
+                  <div className="font-medium text-sm mb-2">Career Fair Dates</div>
+                  <div className="flex flex-wrap gap-2">
+                    {(entity as any).career_fair_dates.map((date: string, index: number) => (
+                      <Badge key={index} variant="outline" className="text-xs">
+                        {date}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg border-b pb-2">Program Information</h3>
+                <div className="space-y-3 text-sm">
                   {(entity as any).program_length_months && (
-                    <p><span className="font-medium">Duration:</span> {(entity as any).program_length_months} months</p>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Program Duration:</span> 
+                      <span>{(entity as any).program_length_months} months</span>
+                    </div>
                   )}
                   {(entity as any).tuition_per_year && (
-                    <p><span className="font-medium">Tuition:</span> ${(entity as any).tuition_per_year.toLocaleString()}/year</p>
+                    <div className="flex justify-between">
+                      <span className="font-medium">Annual Tuition:</span> 
+                      <span>${(entity as any).tuition_per_year.toLocaleString()}</span>
+                    </div>
+                  )}
+                  {(entity as any).average_class_size && (
+                    <div className="flex justify-between">
+                      <span className="font-medium">Average Class Size:</span> 
+                      <span>{(entity as any).average_class_size} students</span>
+                    </div>
+                  )}
+                  {(entity as any).faculty_count && (
+                    <div className="flex justify-between">
+                      <span className="font-medium">Faculty Members:</span> 
+                      <span>{(entity as any).faculty_count}</span>
+                    </div>
                   )}
                 </div>
               </div>
               
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="h-4 w-4" />
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg border-b pb-2">Location</h3>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-primary" />
                   <span className="text-sm">{(entity as any).city}, {(entity as any).state}</span>
                 </div>
+                
+                {/* DCE Information */}
+                {(entity as any).dce_info && (
+                  <div className="mt-4">
+                    <h4 className="font-medium text-sm mb-2">Director of Clinical Education (DCE)</h4>
+                    <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded">
+                      {(entity as any).dce_info}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
             
             {(entity as any).description && (
-              <div>
-                <h3 className="font-semibold mb-2">Description</h3>
-                <p className="text-sm">{(entity as any).description}</p>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">About the Program</h3>
+                <p className="text-sm leading-relaxed">{(entity as any).description}</p>
               </div>
             )}
             
             {(entity as any).programs_offered?.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Programs Offered</h3>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Programs Offered</h3>
                 <div className="flex flex-wrap gap-2">
                   {(entity as any).programs_offered.map((program: string) => (
                     <Badge key={program} variant="secondary">{program}</Badge>
@@ -563,8 +630,8 @@ const EntityDetails = () => {
             )}
             
             {(entity as any).specializations?.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Specializations</h3>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-lg border-b pb-2">Areas of Focus</h3>
                 <div className="flex flex-wrap gap-2">
                   {(entity as any).specializations.map((spec: string) => (
                     <Badge key={spec} variant="outline">{spec}</Badge>

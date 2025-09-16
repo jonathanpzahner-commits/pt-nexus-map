@@ -1178,10 +1178,14 @@ export type Database = {
         Row: {
           accreditation: string | null
           average_class_size: number | null
+          boards_timing: string | null
+          career_fair_dates: string[] | null
           city: string
           created_at: string
+          dce_info: string | null
           description: string | null
           faculty_count: number | null
+          graduation_season: string | null
           id: string
           latitude: number | null
           longitude: number | null
@@ -1197,10 +1201,14 @@ export type Database = {
         Insert: {
           accreditation?: string | null
           average_class_size?: number | null
+          boards_timing?: string | null
+          career_fair_dates?: string[] | null
           city: string
           created_at?: string
+          dce_info?: string | null
           description?: string | null
           faculty_count?: number | null
+          graduation_season?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
@@ -1216,10 +1224,14 @@ export type Database = {
         Update: {
           accreditation?: string | null
           average_class_size?: number | null
+          boards_timing?: string | null
+          career_fair_dates?: string[] | null
           city?: string
           created_at?: string
+          dce_info?: string | null
           description?: string | null
           faculty_count?: number | null
+          graduation_season?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
