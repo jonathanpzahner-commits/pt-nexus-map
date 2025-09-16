@@ -152,9 +152,18 @@ export const EcosystemOverview = ({ onNavigateToTab }: EcosystemOverviewProps) =
                         <CardTitle className="text-xl font-display font-bold group-hover:text-primary transition-colors">
                           {section.title}
                         </CardTitle>
-                        <div className="flex items-center gap-1 text-accent mt-2">
-                          <MapPin className="h-4 w-4" />
-                          <span className="text-sm font-medium">Active</span>
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="text-3xl font-display font-bold text-foreground">
+                            {statsLoading ? (
+                              <div className="h-8 w-20 bg-muted animate-pulse rounded-lg"></div>
+                            ) : (
+                              section.count.toLocaleString()
+                            )}
+                          </span>
+                          <div className="flex items-center gap-1 text-accent">
+                            <MapPin className="h-4 w-4" />
+                            <span className="text-sm font-medium">Active</span>
+                          </div>
                         </div>
                       </div>
                     </div>
