@@ -111,30 +111,14 @@ export const EcosystemOverview = ({ onNavigateToTab }: EcosystemOverviewProps) =
             and career opportunities in one unified, intelligent ecosystem. Built for the future of healthcare.
           </p>
           
-          {!statsLoading && (
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-gradient-accent rounded-lg">
-                  <TrendingUp className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <span className="text-3xl font-display font-bold text-foreground block">
-                    {stats?.total.toLocaleString()}
-                  </span>
-                  <span className="text-sm text-muted-foreground">Active Records</span>
-                </div>
-              </div>
-              
-              <div className="flex gap-3">
-                <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium border border-primary/20">
-                  🚀 Live Data
-                </span>
-                <span className="px-4 py-2 bg-accent/10 text-accent rounded-full text-sm font-medium border border-accent/20">
-                  ✨ AI-Powered
-                </span>
-              </div>
-            </div>
-          )}
+          <div className="flex gap-3">
+            <span className="px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium border border-primary/20">
+              🚀 Live Data
+            </span>
+            <span className="px-4 py-2 bg-accent/10 text-accent rounded-full text-sm font-medium border border-accent/20">
+              ✨ AI-Powered
+            </span>
+          </div>
         </div>
         
         {/* Background Elements */}
