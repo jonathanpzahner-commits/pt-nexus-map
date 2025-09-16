@@ -262,6 +262,23 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
       case 'provider':
         return (
           <div className="space-y-2 text-sm">
+            {data.current_employer && (
+              <div>
+                <span className="font-medium">Works at: </span>
+                <span className="text-muted-foreground">{data.current_employer}</span>
+                {data.current_job_title && (
+                  <span className="text-muted-foreground"> - {data.current_job_title}</span>
+                )}
+              </div>
+            )}
+            {data.zip_code && (
+              <div>
+                <span className="font-medium">Address: </span>
+                <span className="text-muted-foreground">
+                  {data.city}, {data.state} {data.zip_code}
+                </span>
+              </div>
+            )}
             {data.specializations && data.specializations.length > 0 && (
               <div>
                 <span className="font-medium">Specializations: </span>
