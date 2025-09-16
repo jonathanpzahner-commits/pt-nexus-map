@@ -571,7 +571,9 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
         filters.entityTypes.some(type => ['companies', 'schools', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'].includes(type))) && 
        totalResults >= 0 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{totalResults.toLocaleString()} results found</span>
+          <span>
+            {totalResults.toLocaleString()} {searchQuery.trim().length > 0 || activeFiltersCount > 0 ? 'results found' : 'total records available'}
+          </span>
           {activeFiltersCount > 0 && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
               <X className="h-3 w-3 mr-1" />
