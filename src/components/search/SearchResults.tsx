@@ -207,6 +207,36 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
       case 'school':
         return (
           <div className="space-y-2 text-sm">
+            {data.accreditation && (
+              <div>
+                <span className="font-medium">Accreditation: </span>
+                <span className="text-muted-foreground">{data.accreditation}</span>
+              </div>
+            )}
+            {data.dce_info && (
+              <div>
+                <span className="font-medium">DCE: </span>
+                <span className="text-muted-foreground">{data.dce_info}</span>
+              </div>
+            )}
+            {data.graduation_season && (
+              <div>
+                <span className="font-medium">Graduation Season: </span>
+                <span className="text-muted-foreground">{data.graduation_season}</span>
+              </div>
+            )}
+            {data.boards_timing && (
+              <div>
+                <span className="font-medium">Boards: </span>
+                <span className="text-muted-foreground">{data.boards_timing}</span>
+              </div>
+            )}
+            {data.career_fair_dates && data.career_fair_dates.length > 0 && (
+              <div>
+                <span className="font-medium">Career Fairs: </span>
+                <span className="text-muted-foreground">{data.career_fair_dates.join(', ')}</span>
+              </div>
+            )}
             {data.programs_offered && data.programs_offered.length > 0 && (
               <div>
                 <span className="font-medium">Programs: </span>
@@ -223,12 +253,6 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
               <div>
                 <span className="font-medium">Program Length: </span>
                 <span className="text-muted-foreground">{data.program_length_months} months</span>
-              </div>
-            )}
-            {data.accreditation && (
-              <div>
-                <span className="font-medium">Accreditation: </span>
-                <span className="text-muted-foreground">{data.accreditation}</span>
               </div>
             )}
           </div>

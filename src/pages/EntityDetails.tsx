@@ -525,6 +525,12 @@ const EntityDetails = () => {
                 <Badge variant="outline">Class size: {(entity as any).average_class_size}</Badge>
               )}
             </div>
+            {(entity as any).dce_info && (
+              <div className="mt-2">
+                <div className="font-medium text-sm">Director of Clinical Education (DCE)</div>
+                <p className="text-sm text-muted-foreground">{(entity as any).dce_info}</p>
+              </div>
+            )}
             
             {/* Academic Calendar & Important Dates */}
             <div className="bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg p-6 border">
@@ -599,15 +605,6 @@ const EntityDetails = () => {
                   <span className="text-sm">{(entity as any).city}, {(entity as any).state}</span>
                 </div>
                 
-                {/* DCE Information */}
-                {(entity as any).dce_info && (
-                  <div className="mt-4">
-                    <h4 className="font-medium text-sm mb-2">Director of Clinical Education (DCE)</h4>
-                    <p className="text-sm text-muted-foreground bg-muted/30 p-3 rounded">
-                      {(entity as any).dce_info}
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
             
