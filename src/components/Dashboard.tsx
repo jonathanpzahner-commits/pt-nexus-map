@@ -35,6 +35,7 @@ import { SimpleBulkUpload } from './upload/SimpleBulkUpload';
 import { GeocodingManager } from './search/GeocodingManager';
 import { FastGeocodingManager } from './dashboard/FastGeocodingManager';
 import CompanyGeocodingManager from './dashboard/CompanyGeocodingManager';
+import { ExportProviders } from './search/ExportProviders';
 
 import { EcosystemOverview } from './dashboard/EcosystemOverview';
 import { BusinessPartnersTab } from './dashboard/BusinessPartnersTab';
@@ -219,7 +220,9 @@ const Dashboard = () => {
               <Search className="h-6 w-6 text-primary" />
               <h2 className="text-2xl font-bold text-foreground">Global Search</h2>
             </div>
-            <GlobalSearch />
+        <div className="mb-6">
+          <ExportProviders />
+        </div>
           </div>
         </TabsContent>
         
@@ -298,7 +301,21 @@ const Dashboard = () => {
         </TabsContent>
 
         <TabsContent value="toolkit" className="space-y-4">
-          <ToolKitTab />
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <Wrench className="h-6 w-6 text-primary" />
+              <h2 className="text-2xl font-bold text-foreground">Toolkit & Utilities</h2>
+            </div>
+            
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <ExportProviders />
+              </div>
+              <div>
+                <ToolKitTab />
+              </div>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="survey" className="space-y-4">
