@@ -588,17 +588,10 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
           </CardContent>
         </Card>
       )}
-      {/* Results Summary - Only show when actively searching or when non-provider entity types are selected */}
-      {((searchQuery.trim().length > 0 || activeFiltersCount > 0) || 
-        filters.entityTypes.some(type => ['companies', 'schools', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'].includes(type))) && 
-       totalResults >= 0 && (
+      {/* Results Summary - Only show when actively searching */}
+      {(searchQuery.trim().length > 0 || activeFiltersCount > 0) && totalResults >= 0 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>
-            {searchQuery.trim().length > 0 || activeFiltersCount > 0 
-              ? `${totalResults.toLocaleString()} results found`
-              : `${dashboardStats?.total?.toLocaleString() || 0} total records available`
-            }
-          </span>
+          <span>{`${totalResults.toLocaleString()} results found`}</span>
           {activeFiltersCount > 0 && (
             <Button variant="ghost" size="sm" onClick={clearFilters}>
               <X className="h-3 w-3 mr-1" />
@@ -607,6 +600,7 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
           )}
         </div>
       )}
+
 
       {/* Expandable Filters */}
       <Collapsible open={showFilters} onOpenChange={setShowFilters}>
