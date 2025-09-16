@@ -496,8 +496,9 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
         </CardContent>
       </Card>
 
-      {/* Example Profile Placeholder - Only show when no search and no results */}
-      {!searchQuery.trim() && !isLoading && results.length === 0 && (
+      {/* Example Profile Placeholder - Only show when no search, no results, and only providers are selected */}
+      {!searchQuery.trim() && !isLoading && results.length === 0 && 
+       filters.entityTypes.length === 1 && filters.entityTypes.includes('providers') && (
         <Card className="opacity-60 pointer-events-none">
           <CardContent className="p-4">
             <div className="flex items-center gap-4">
@@ -514,8 +515,10 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
           </CardContent>
         </Card>
       )}
-      {/* Results Summary - Only show when actively searching */}
-      {(searchQuery.trim().length > 0 || activeFiltersCount > 0) && totalResults >= 0 && (
+      {/* Results Summary - Only show when actively searching or when non-provider entity types are selected */}
+      {((searchQuery.trim().length > 0 || activeFiltersCount > 0) || 
+        filters.entityTypes.some(type => ['companies', 'schools', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'].includes(type))) && 
+       totalResults >= 0 && (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>{totalResults.toLocaleString()} results found</span>
           {activeFiltersCount > 0 && (
@@ -680,8 +683,9 @@ export const StreamlinedSearch = ({ contextTypes }: StreamlinedSearchProps) => {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Search Results - Only show when there's a search query or active filters */}
-      {(searchQuery.trim().length > 0 || activeFiltersCount > 0) && (
+      {/* Search Results - Only show when there's a search query, active filters, or non-provider entity types selected */}
+      {((searchQuery.trim().length > 0 || activeFiltersCount > 0) || 
+        filters.entityTypes.some(type => ['companies', 'schools', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'].includes(type))) && (
         <SearchResults results={results as any} isLoading={isLoading} />
       )}
     </div>

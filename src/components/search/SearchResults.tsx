@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, GraduationCap, Users, Briefcase, MapPin, ExternalLink, Star } from 'lucide-react';
-import { SearchResult } from '@/hooks/useSearch';
+import { Building2, GraduationCap, Users, Briefcase, MapPin, ExternalLink, Star, Wrench, DollarSign, UserCheck } from 'lucide-react';
+import { SearchResult } from '@/types/search';
 import { NotesSection } from '@/components/notes/NotesSection';
 import { useState } from 'react';
 
@@ -34,6 +34,16 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
         return <Users className="h-4 w-4 text-amber-500" />;
       case 'job_listing':
         return <Briefcase className="h-4 w-4 text-red-500" />;
+      case 'consultant_company':
+        return <UserCheck className="h-4 w-4 text-purple-500" />;
+      case 'equipment_company':
+        return <Wrench className="h-4 w-4 text-orange-500" />;
+      case 'pe_firm':
+        return <DollarSign className="h-4 w-4 text-gray-500" />;
+      case 'profile':
+        return <Users className="h-4 w-4 text-pink-500" />;
+      default:
+        return <Building2 className="h-4 w-4 text-gray-500" />;
     }
   };
 
@@ -47,6 +57,16 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
         return 'bg-amber-100 text-amber-800 border-amber-200';
       case 'job_listing':
         return 'bg-red-100 text-red-800 border-red-200';
+      case 'consultant_company':
+        return 'bg-purple-100 text-purple-800 border-purple-200';
+      case 'equipment_company':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'pe_firm':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'profile':
+        return 'bg-pink-100 text-pink-800 border-pink-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -60,6 +80,16 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
         return 'Provider';
       case 'job_listing':
         return 'Job';
+      case 'consultant_company':
+        return 'Consultant';
+      case 'equipment_company':
+        return 'Equipment Vendor';
+      case 'pe_firm':
+        return 'PE Firm';
+      case 'profile':
+        return 'Profile';
+      default:
+        return 'Entity';
     }
   };
 
@@ -289,6 +319,256 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
             )}
           </div>
         );
+      
+      case 'consultant_company':
+        return (
+          <div className="space-y-2 text-sm">
+            {data.consulting_categories && data.consulting_categories.length > 0 && (
+              <div>
+                <span className="font-medium">Categories: </span>
+                <span className="text-muted-foreground">{data.consulting_categories.join(', ')}</span>
+              </div>
+            )}
+            {data.industries && data.industries.length > 0 && (
+              <div>
+                <span className="font-medium">Industries: </span>
+                <span className="text-muted-foreground">{data.industries.join(', ')}</span>
+              </div>
+            )}
+            {data.years_experience && (
+              <div>
+                <span className="font-medium">Experience: </span>
+                <span className="text-muted-foreground">{data.years_experience} years</span>
+              </div>
+            )}
+            {data.certifications && data.certifications.length > 0 && (
+              <div>
+                <span className="font-medium">Certifications: </span>
+                <span className="text-muted-foreground">{data.certifications.join(', ')}</span>
+              </div>
+            )}
+            {data.territories && data.territories.length > 0 && (
+              <div>
+                <span className="font-medium">Territories: </span>
+                <span className="text-muted-foreground">{data.territories.join(', ')}</span>
+              </div>
+            )}
+            {data.email && (
+              <div>
+                <a 
+                  href={`mailto:${data.email}`}
+                  className="text-primary hover:underline"
+                >
+                  {data.email}
+                </a>
+              </div>
+            )}
+            {data.website && (
+              <div>
+                <a 
+                  href={data.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Visit Website
+                </a>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'equipment_company':
+        return (
+          <div className="space-y-2 text-sm">
+            {data.equipment_categories && data.equipment_categories.length > 0 && (
+              <div>
+                <span className="font-medium">Equipment Categories: </span>
+                <span className="text-muted-foreground">{data.equipment_categories.join(', ')}</span>
+              </div>
+            )}
+            {data.product_lines && data.product_lines.length > 0 && (
+              <div>
+                <span className="font-medium">Product Lines: </span>
+                <span className="text-muted-foreground">{data.product_lines.join(', ')}</span>
+              </div>
+            )}
+            {data.target_markets && data.target_markets.length > 0 && (
+              <div>
+                <span className="font-medium">Target Markets: </span>
+                <span className="text-muted-foreground">{data.target_markets.join(', ')}</span>
+              </div>
+            )}
+            {data.employee_count && (
+              <div>
+                <span className="font-medium">Employees: </span>
+                <span className="text-muted-foreground">{data.employee_count}</span>
+              </div>
+            )}
+            {data.founded_year && (
+              <div>
+                <span className="font-medium">Founded: </span>
+                <span className="text-muted-foreground">{data.founded_year}</span>
+              </div>
+            )}
+            {data.website && (
+              <div>
+                <a 
+                  href={data.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Visit Website
+                </a>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'pe_firm':
+        return (
+          <div className="space-y-2 text-sm">
+            {data.investment_stage && data.investment_stage.length > 0 && (
+              <div>
+                <span className="font-medium">Investment Stage: </span>
+                <span className="text-muted-foreground">{data.investment_stage.join(', ')}</span>
+              </div>
+            )}
+            {data.sector_focus && data.sector_focus.length > 0 && (
+              <div>
+                <span className="font-medium">Sector Focus: </span>
+                <span className="text-muted-foreground">{data.sector_focus.join(', ')}</span>
+              </div>
+            )}
+            {data.geographic_focus && data.geographic_focus.length > 0 && (
+              <div>
+                <span className="font-medium">Geographic Focus: </span>
+                <span className="text-muted-foreground">{data.geographic_focus.join(', ')}</span>
+              </div>
+            )}
+            {data.total_aum && (
+              <div>
+                <span className="font-medium">Total AUM: </span>
+                <span className="text-muted-foreground">${data.total_aum.toLocaleString()}</span>
+              </div>
+            )}
+            {data.typical_deal_size_min && data.typical_deal_size_max && (
+              <div>
+                <span className="font-medium">Typical Deal Size: </span>
+                <span className="text-muted-foreground">
+                  ${data.typical_deal_size_min.toLocaleString()} - ${data.typical_deal_size_max.toLocaleString()}
+                </span>
+              </div>
+            )}
+            {data.healthcare_focus && (
+              <div>
+                <span className="font-medium">Healthcare Focus: </span>
+                <span className="text-muted-foreground">Yes</span>
+              </div>
+            )}
+            {data.founded_year && (
+              <div>
+                <span className="font-medium">Founded: </span>
+                <span className="text-muted-foreground">{data.founded_year}</span>
+              </div>
+            )}
+            {data.website && (
+              <div>
+                <a 
+                  href={data.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Visit Website
+                </a>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'profile':
+        return (
+          <div className="space-y-2 text-sm">
+            {data.current_position && (
+              <div>
+                <span className="font-medium">Position: </span>
+                <span className="text-muted-foreground">{data.current_position}</span>
+              </div>
+            )}
+            {data.current_employer && (
+              <div>
+                <span className="font-medium">Employer: </span>
+                <span className="text-muted-foreground">{data.current_employer}</span>
+              </div>
+            )}
+            {data.years_experience && (
+              <div>
+                <span className="font-medium">Experience: </span>
+                <span className="text-muted-foreground">{data.years_experience} years</span>
+              </div>
+            )}
+            {data.specializations && data.specializations.length > 0 && (
+              <div>
+                <span className="font-medium">Specializations: </span>
+                <span className="text-muted-foreground">{data.specializations.join(', ')}</span>
+              </div>
+            )}
+            {data.interests && data.interests.length > 0 && (
+              <div>
+                <span className="font-medium">Interests: </span>
+                <span className="text-muted-foreground">{data.interests.join(', ')}</span>
+              </div>
+            )}
+            {data.certifications && data.certifications.length > 0 && (
+              <div>
+                <span className="font-medium">Certifications: </span>
+                <span className="text-muted-foreground">{data.certifications.join(', ')}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              {data.available_for_mentoring && (
+                <Badge variant="secondary" className="text-xs">Available for Mentoring</Badge>
+              )}
+              {data.available_for_collaboration && (
+                <Badge variant="secondary" className="text-xs">Available for Collaboration</Badge>
+              )}
+            </div>
+            {data.linkedin_url && (
+              <div>
+                <a 
+                  href={data.linkedin_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  LinkedIn Profile
+                </a>
+              </div>
+            )}
+            {data.website && (
+              <div>
+                <a 
+                  href={data.website} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Personal Website
+                </a>
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return null;
     }
   };
 

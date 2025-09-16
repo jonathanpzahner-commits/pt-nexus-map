@@ -33,7 +33,7 @@ const noteSchema = z.object({
 type NoteFormData = z.infer<typeof noteSchema>;
 
 interface AddNoteDialogProps {
-  entityType: 'company' | 'school' | 'job_listing' | 'provider';
+  entityType: 'company' | 'school' | 'job_listing' | 'provider' | 'consultant_company' | 'equipment_company' | 'pe_firm' | 'profile';
   entityId: string;
   note?: any;
   onClose?: () => void;

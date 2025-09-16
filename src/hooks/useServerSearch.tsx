@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { SearchFilters, SearchResult } from '@/types/search';
 
 const createDefaultFilters = (preselectedTypes?: SearchFilters['entityTypes']): SearchFilters => ({
-  entityTypes: preselectedTypes || ['companies', 'schools', 'providers', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'],
+  entityTypes: preselectedTypes || ['companies', 'schools', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles', 'providers'],
   location: '',
   specialization: '',
   companyType: '',
@@ -42,8 +42,16 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
 
       const offset = (currentPage - 1) * RESULTS_PER_PAGE;
 
-      // Search providers
-      if (filters.entityTypes.includes('providers')) {
+      // Search providers - only when there's a search query or provider-specific filters
+      if (filters.entityTypes.includes('providers') && (
+        searchQuery.trim().length > 2 || 
+        filters.specialization ||
+        filters.primarySetting ||
+        filters.subSetting ||
+        filters.specialty ||
+        filters.certification ||
+        filters.location
+      )) {
         let query = supabase
           .from('providers')
           .select('*', { count: 'exact' })
@@ -509,6 +517,11 @@ export const useServerSearch = (preselectedTypes?: SearchFilters['entityTypes'])
       filters.programLength ||
       filters.programType ||
       filters.accreditation
+    ) || Boolean(
+      // Auto-load non-provider entity types
+      filters.entityTypes.some(type => 
+        ['companies', 'schools', 'job_listings', 'consultant_companies', 'equipment_companies', 'pe_firms', 'profiles'].includes(type)
+      )
     ),
   });
 

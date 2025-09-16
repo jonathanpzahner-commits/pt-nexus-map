@@ -8,7 +8,7 @@ import { AddNoteDialog } from './AddNoteDialog';
 import { NoteCard } from './NoteCard';
 
 interface NotesSectionProps {
-  entityType: 'company' | 'school' | 'job_listing' | 'provider';
+  entityType: 'company' | 'school' | 'job_listing' | 'provider' | 'consultant_company' | 'equipment_company' | 'pe_firm' | 'profile';
   entityId: string;
   entityName: string;
 }
