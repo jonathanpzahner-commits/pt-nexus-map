@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, GraduationCap, Users, Briefcase, MapPin, ExternalLink, Star, Wrench, DollarSign, UserCheck } from 'lucide-react';
 import { SearchResult } from '@/types/search';
+import { supabase } from '@/integrations/supabase/client';
 import { NotesSection } from '@/components/notes/NotesSection';
 import { useState } from 'react';
 
@@ -273,7 +274,41 @@ export const SearchResults = ({ results, isLoading }: SearchResultsProps) => {
             {data.company_name && (
               <div>
                 <span className="font-medium">Company: </span>
-                <span className="text-muted-foreground">{data.company_name}</span>
+                {data.company_id ? (
+                  <button
+                    onClick={() => window.location.href = `/entity/companies/${data.company_id}`}
+                    className="text-primary hover:underline font-medium cursor-pointer"
+                  >
+                    {data.company_name}
+                  </button>
+                ) : (
+                  <button
+                    onClick={async () => {
+                      // Search for company by name if no company_id
+                      try {
+                        const { data: companies } = await supabase
+                          .from('companies')
+                          .select('id')
+                          .ilike('name', data.company_name)
+                          .limit(1);
+                        
+                        if (companies && companies.length > 0) {
+                          window.location.href = `/entity/companies/${companies[0].id}`;
+                        } else {
+                          // If no exact match, search for companies with that name
+                          window.location.href = `/search?query=${encodeURIComponent(data.company_name)}&types=companies`;
+                        }
+                      } catch (error) {
+                        console.error('Error finding company:', error);
+                        // Fallback to search
+                        window.location.href = `/search?query=${encodeURIComponent(data.company_name)}&types=companies`;
+                      }
+                    }}
+                    className="text-primary hover:underline font-medium cursor-pointer"
+                  >
+                    {data.company_name}
+                  </button>
+                )}
               </div>
             )}
             {data.salary_min && data.salary_max && (
