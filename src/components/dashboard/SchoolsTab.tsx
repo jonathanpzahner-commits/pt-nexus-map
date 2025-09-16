@@ -252,6 +252,27 @@ export const SchoolsTab = () => {
                     </div>
                   )}
 
+                  {/* Academic Timeline */}
+                  <div className="space-y-2">
+                    {school.graduation_season && (
+                      <div className="flex items-center gap-2">
+                        <GraduationCap className="h-4 w-4" />
+                        <span className="text-sm">
+                          <span className="font-medium">Graduation:</span> {school.graduation_season}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {school.boards_timing && (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4" />
+                        <span className="text-sm">
+                          <span className="font-medium">Boards:</span> {school.boards_timing}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Faculty and Specializations */}
                   <div className="space-y-2">
                     {school.faculty_count && (
@@ -275,6 +296,13 @@ export const SchoolsTab = () => {
                             </Badge>
                           )}
                         </div>
+                      </div>
+                    )}
+                    
+                    {school.dce_info && (
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">DCE Contact:</p>
+                        <p className="text-sm text-muted-foreground">{school.dce_info}</p>
                       </div>
                     )}
                   </div>
