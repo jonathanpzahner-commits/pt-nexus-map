@@ -153,24 +153,40 @@ const ComprehensivePitchDeck = () => {
       title: "Market Opportunity",
       content: (
         <div className="space-y-8">
-          <h2 className="text-4xl font-bold text-center mb-8">$87.83B Market by 2031</h2>
-          <div className="text-center mb-8">
-            <img src={marketGrowthChart} alt="PT Market Growth Chart" className="mx-auto rounded-lg shadow-lg max-w-full h-auto" />
-          </div>
+          <h2 className="text-4xl font-bold text-center mb-8">PT Market Opportunity</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="p-6 text-center">
-              <div className="text-3xl font-bold text-primary mb-2">$87.83B</div>
-              <p className="text-sm text-muted-foreground">US PT Market Size by 2031</p>
+              <div className="text-2xl font-bold text-primary mb-2">$87.83B by 2031</div>
+              <p className="text-sm text-muted-foreground">U.S. physical therapy services market size</p>
+              <a
+                href="https://www.globenewswire.com/news-release/2024/08/23/2934817/28124/en/US-Physical-Therapy-Industry-on-the-Rise-Market-Projected-to-Reach-87-83-Billion-by-2031.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs underline text-primary"
+              >Source</a>
             </Card>
             <Card className="p-6 text-center">
-              <div className="text-3xl font-bold text-primary mb-2">Growing</div>
-              <p className="text-sm text-muted-foreground">Steady market expansion driven by aging population</p>
+              <div className="text-2xl font-bold text-primary mb-2">Workforce Shortages</div>
+              <p className="text-sm text-muted-foreground">APTA projects PT shortages through 2037</p>
+              <a
+                href="https://www.apta.org/news/2025/03/04/workforce-forecast-2022-2037"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs underline text-primary"
+              >Source</a>
             </Card>
             <Card className="p-6 text-center">
-              <div className="text-3xl font-bold text-primary mb-2">Shortage</div>
-              <p className="text-sm text-muted-foreground">APTA projects PT workforce shortages through 2037</p>
+              <div className="text-2xl font-bold text-primary mb-2">Active M&A</div>
+              <p className="text-sm text-muted-foreground">Strong private equity interest in PT sector</p>
+              <a
+                href="https://www.providenthp.com/expertise/investment-consolidation-in-the-physical-therapy-pt-sector/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs underline text-primary"
+              >Source</a>
             </Card>
           </div>
+          <p className="text-xs text-muted-foreground text-center">All figures cite sources; no speculative projections or fabricated charts.</p>
         </div>
       )
     },
@@ -513,7 +529,7 @@ const ComprehensivePitchDeck = () => {
         <div className="space-y-8">
           <h2 className="text-4xl font-bold text-center mb-8">Leadership Team</h2>
           <div className="text-center mb-8">
-            <img src={businessTeamMeeting} alt="Professional Team" className="mx-auto rounded-lg shadow-lg max-w-full h-auto" />
+            <img src={ecosystemDashboard} alt="Platform overview" className="mx-auto rounded-lg shadow-lg max-w-full h-auto" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="p-6 text-center">
