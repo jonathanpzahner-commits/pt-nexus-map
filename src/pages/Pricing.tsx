@@ -66,6 +66,9 @@ const Pricing = () => {
               <a href="/about" className="text-muted-foreground hover:text-foreground transition-colors">
                 About
               </a>
+              <a href="/pitch-deck" className="text-muted-foreground hover:text-foreground transition-colors">
+                Pitch Deck
+              </a>
               <a href="/pricing" className="text-foreground font-medium">
                 Pricing
               </a>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, Play, Users, Building2, GraduationCap, Briefcase, Map, MessageSquare, BarChart3, Target, TrendingUp, DollarSign, Shield, Zap, Award, Globe, Heart, Brain, Stethoscope, Database, Search, UserCheck, Network } from 'lucide-react';
@@ -12,6 +12,30 @@ import businessModel from '@/assets/business-model.jpg';
 
 const ComprehensivePitchDeck = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // SEO: dynamic title, description, canonical
+  useEffect(() => {
+    const title = "PT Ecosystem Pitch Deck | 25-slide investor presentation";
+    document.title = title;
+
+    const metaDescContent = "PT Ecosystem: 25-slide deck covering problem, solution, market, traction, financials, roadmap. 289K+ PTs/PTAs, 26K+ companies.";
+    let metaDesc = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = 'description';
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.content = metaDescContent;
+
+    let linkCanonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!linkCanonical) {
+      linkCanonical = document.createElement('link');
+      linkCanonical.rel = 'canonical';
+      document.head.appendChild(linkCanonical);
+    }
+    linkCanonical.href = window.location.origin + '/pitch-deck';
+  }, []);
+
 
   const slides = [
     // Slide 1: Title
