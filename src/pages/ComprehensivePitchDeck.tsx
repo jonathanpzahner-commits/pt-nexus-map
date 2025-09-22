@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, Play, Users, Building2, GraduationCap, Briefcase, Map, MessageSquare, BarChart3, Target, TrendingUp, DollarSign, Shield, Zap, Award, Globe, Heart, Brain, Stethoscope, Database, Search, UserCheck, Network } from 'lucide-react';
-import marketGrowthChart from '@/assets/pt-market-growth-chart.jpg';
-import ecosystemDashboard from '@/assets/pt-ecosystem-dashboard.jpg';
-import workforceShortage from '@/assets/pt-workforce-shortage.jpg';
-import ptClinicProfessional from '@/assets/pt-clinic-professional.jpg';
-import businessTeamMeeting from '@/assets/business-team-meeting.jpg';
+import marketGrowthChart from '@/assets/market-growth.jpg';
+import ecosystemDashboard from '@/assets/dashboard-mockup.jpg';
+import workforceShortage from '@/assets/analytics-mockup.jpg';
+import ptClinicProfessional from '@/assets/crm-mockup.jpg';
+import businessTeamMeeting from '@/assets/business-model.jpg';
 
 const ComprehensivePitchDeck = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
