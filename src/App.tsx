@@ -14,6 +14,7 @@ import ProfileSetup from "./pages/ProfileSetup";
 import Community from "./pages/Community";
 import InvestorPresentation from "./pages/InvestorPresentation";
 import FractionalVPPitch from "./pages/FractionalVPPitch";
+import ComprehensivePitchDeck from "./pages/ComprehensivePitchDeck";
 import Survey from "./pages/Survey";
 
 import NotFound from "./pages/NotFound";
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/community" element={<Community />} />
             <Route path="/investors" element={<InvestorPresentation />} />
             <Route path="/fractional-vp" element={<FractionalVPPitch />} />
+            <Route path="/pitch-deck" element={<ComprehensivePitchDeck />} />
             <Route path="/survey/:role" element={<Survey />} />
             
             <Route path="/entity/:type/:id" element={<EntityDetails />} />
