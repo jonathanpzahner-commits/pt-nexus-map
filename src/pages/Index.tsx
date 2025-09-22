@@ -97,6 +97,14 @@ const Index = () => {
               >
                 Pricing
               </Button>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/pitch-deck')}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                Pitch Deck
+              </Button>
               <span className="text-xs font-medium text-accent px-3 py-1.5 rounded-full bg-accent/10 border border-accent/20">
                 Beta Platform
               </span>
