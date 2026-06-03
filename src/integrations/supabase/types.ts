@@ -1705,10 +1705,7 @@ export type Database = {
           phone: string
         }[]
       }
-      get_geocoding_progress: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
+      get_geocoding_progress: { Args: never; Returns: Json }
       get_public_profile_data: {
         Args: { profile_row: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: Json
@@ -1778,10 +1775,7 @@ export type Database = {
           zip_code: string
         }[]
       }
-      process_geocoding_jobs: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      process_geocoding_jobs: { Args: never; Returns: undefined }
       providers_within_radius: {
         Args: { radius_miles: number; user_lat: number; user_lng: number }
         Returns: {
@@ -1814,10 +1808,7 @@ export type Database = {
           zip_code: string
         }[]
       }
-      trigger_company_geocoding: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      trigger_company_geocoding: { Args: never; Returns: undefined }
       update_user_presence: {
         Args: {
           p_activity_status?: string
