@@ -47,12 +47,9 @@ function downloadBlob(content: string, filename: string, mime: string) {
 
 function toCSV(rows: any[]): string {
   if (rows.length === 0) return '';
-  const headers = Array.from(
-    rows.reduce((set: Set<string>, row) => {
-      Object.keys(row).forEach((k) => set.add(k));
-      return set;
-    }, new Set<string>())
-  );
+  const headerSet = new Set<string>();
+  rows.forEach((row) => Object.keys(row).forEach((k) => headerSet.add(k)));
+  const headers = Array.from(headerSet);
   const escape = (val: any) => {
     if (val === null || val === undefined) return '';
     const str =
