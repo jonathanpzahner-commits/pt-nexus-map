@@ -10,13 +10,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
-import { Download } from 'lucide-react';
+import { Download, type LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface SearchOnlyTabProps {
   title: string;
   description: string;
-  icon: React.ComponentType<any>;
+  icon: LucideIcon;
 }
 
 const PAGE_SIZE = 1000;
@@ -114,9 +114,10 @@ export const SearchOnlyTab = ({ title, description, icon: Icon }: SearchOnlyTabP
       }
 
       toast.success(`Exported ${rows.length} companies`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Export failed:', error);
-      toast.error(`Export failed: ${error?.message ?? 'unknown error'}`);
+      const message = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Export failed: ${message}`);
     } finally {
       setExporting(false);
     }
